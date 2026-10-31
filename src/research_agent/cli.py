@@ -52,6 +52,33 @@ def cmd_job(args, settings: Settings) -> int:
     return run_job(args.kind, settings, args.profile, week_ending, main)
 
 
+def cmd_gmail(args, settings: Settings) -> int:
+    """One-time Gmail sign-in: opens the browser, asks Google for permission to create drafts (never to read or send), and writes the refresh token
+    straight into .env. Nothing secret is printed."""
+    from .infrastructure.envfile import set_env_values
+    from .infrastructure.publishers import GMAIL_COMPOSE_SCOPE, build_gmail_service
+    from .settings import PROJECT_ROOT
+    if not (settings.google_client_id and settings.google_client_secret):
+        print("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env first (an OAuth client of type Desktop app; see README, section Gmail drafts).")
+        return 2
+    try:
+        from google_auth_oauthlib.flow import InstalledAppFlow
+    except ImportError:
+        print('Gmail support is not installed here: pip install -e ".[gmail]"')
+        return 2
+    config = {"installed": {"client_id": settings.google_client_id, "client_secret": settings.google_client_secret,
+                            "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "redirect_uris": ["http://localhost"]}}
+    flow = InstalledAppFlow.from_client_config(config, scopes=[GMAIL_COMPOSE_SCOPE])
+    creds = flow.run_local_server(port=args.port, access_type="offline", prompt="consent")
+    if not creds.refresh_token:
+        print("Google did not return a refresh token. Remove this app at https://myaccount.google.com/permissions and run the command again.")
+        return 1
+    set_env_values(PROJECT_ROOT / ".env", {"GOOGLE_REFRESH_TOKEN": creds.refresh_token})
+    build_gmail_service(settings.google_client_id, settings.google_client_secret, creds.refresh_token).users().drafts().list(userId="me", maxResults=1).execute()
+    print("Gmail is authorised for creating drafts. GOOGLE_REFRESH_TOKEN was written to .env (not shown); copy it into the weekly-newsletter service's variables.")
+    return 0
+
+
 def cmd_seed(args, settings: Settings) -> int:
     profile, field = load_profile(settings.config_dir, args.profile)
     with session_scope(session_factory(settings)) as s:
@@ -133,6 +160,11 @@ def cmd_pmc_lag(args, settings: Settings) -> int:
     return 0
 
 
+def choose_recipients(settings: Settings, profile) -> list[str]:
+    """The 'To' addresses for a draft: NEWSLETTER_RECIPIENTS if set, otherwise the profile's list (empty by default)."""
+    return list(settings.newsletter_recipients) or list(profile.newsletter.recipients)
+
+
 def cmd_newsletter(args, settings: Settings) -> int:
     from .application.newsletter import IssueExists
     profile, field = load_profile(settings.config_dir, args.profile)
@@ -170,7 +202,7 @@ def cmd_newsletter(args, settings: Settings) -> int:
         if status == "sent":
             print("issue is already marked sent")
             return 1
-        ref = build_publisher(settings, args.to).publish(subject, html, text, key, profile.newsletter.recipients, ref)
+        ref = build_publisher(settings, args.to).publish(subject, html, text, key, choose_recipients(settings, profile), ref)
         svc.mark_published(profile.id, key, ref)
         print(f"{key}: draft ready via {args.to}: {ref}")
         return 0
@@ -263,6 +295,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_db)
     p = sub.add_parser("job", help="a scheduled job: daily (collect) or weekly (full text, newsletter edition)")
     p.add_argument("kind", choices=["daily", "weekly"]); p.add_argument("--profile", default="curt"); p.add_argument("--week-ending", help="weekly: YYYY-MM-DD; default today UTC"); p.set_defaults(fn=cmd_job)
+    p = sub.add_parser("gmail", help="one-time Gmail sign-in so the weekly job can create drafts")
+    p.add_argument("action", choices=["authorize"]); p.add_argument("--port", type=int, default=0, help="local port for Google's redirect (default: any free port)"); p.set_defaults(fn=cmd_gmail)
     p = sub.add_parser("seed"); p.add_argument("--profile", default="curt"); p.set_defaults(fn=cmd_seed)
     p = sub.add_parser("plan"); p.add_argument("--profile", default="curt"); p.add_argument("--sources"); p.add_argument("--paths"); p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("collect")

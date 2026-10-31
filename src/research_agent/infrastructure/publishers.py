@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 ISSUE_HEADER = "X-Research-Agent-Issue-Key"
-GMAIL_COMPOSE_SCOPE = "https://www.googleapis.com/auth/gmail.compose"  # create and edit drafts; narrower than gmail.modify and cannot read the mailbox
+GMAIL_COMPOSE_SCOPE = "https://www.googleapis.com/auth/gmail.compose"  # create and edit drafts (Google has no draft-only scope: this one would also allow sending, which this code never does); cannot read the mailbox
 
 
 def mime_message(subject: str, html: str, text: str, issue_key: str, recipients: list[str]) -> EmailMessage:

@@ -80,7 +80,7 @@ with its items. Rules:
   are model-written, and each stored item records which kind it got. With no model configured, or `--no-llm`, extracts are used.
 * The first edition covers `lookback_days` (7); later ones reach back to the last edition but never past `max_catchup_days` (28), so a missed week or a section cap loses nothing.
 * `build` is idempotent per week; `--rebuild` replaces an unpublished edition; published or sent editions are never rebuilt.
-* `publish --to file` writes `newsletter.html/.txt/.eml` under `outputs/`; `--to gmail` creates a Gmail **draft** once per issue (it cannot send). `mark-sent` records that a person sent it.
+* `publish --to file` writes `newsletter.html/.txt/.eml` under `outputs/`; `--to gmail` creates a Gmail **draft** once per issue. The program never sends mail. (Google's `gmail.compose` permission would technically allow sending, because Google has no draft-only permission; the code only ever creates drafts, and the permission cannot read the mailbox.) `mark-sent` records that a person sent it.
 * **Edition size is capped, and the caps are settings** in the profile (`newsletter.caps` in `config/profiles/curt.yaml`): `per_section` (default 30 direct, 15 mechanisms, 10 preprints, 10 trials; a missing or null section is uncapped), `priority_to_watched` (default true: papers from a watched journal or researcher are chosen before any other when a cap bites, and are the last to be trimmed by the size limit), `total` (optional), and `max_html_kb` (95: if the HTML is still larger, the lowest-ranked papers are trimmed until it fits, because Gmail clips messages near 100 KB). Retractions are never trimmed. Papers held back are not marked as sent: they are considered again next week for up to `max_catchup_days` (28), after which they age out. The footer says how many were held back; the build output and the issue's stats say why.
 * The printable PDF edition is **not built**: its template has not been supplied yet. Each stored issue item already records the paper's full-text status for it.
 
@@ -140,6 +140,16 @@ v2.0. Run it behind HTTPS (the API does not terminate TLS itself).
 
 **Database roles (Supabase).** The jobs (collection, full text, newsletter) use `DATABASE_URL`, the owner. The API should not. `research-agent db roles` creates two limited roles (`--print-sql` shows the SQL first): `curt_api_read` (SELECT on the ten tables the API shows; its sessions are read-only) and `curt_api_config` (read and write on `newsletter_selections` only). Each gets an explicit row-level-security policy (no BYPASSRLS, no superuser), random passwords, and the two connection strings are written into `.env` as `API_DATABASE_URL` and `API_ADMIN_DATABASE_URL` without being shown. Running it again rotates the passwords.
 
+## Gmail drafts (one-time setup)
+
+The weekly job can put the edition in a Gmail **draft** for a person to review and send. Setup, once:
+1. In the Google Cloud console create a project and enable the **Gmail API**.
+2. Google Auth Platform (OAuth consent screen): user type **External** (an ordinary Gmail account) or **Internal** (a Google Workspace organisation); add the scope `https://www.googleapis.com/auth/gmail.compose`.
+3. **Publish the app** (Audience > Publish app, status *In production*) *before* signing in. While an external app stays in *Testing*, Google expires the refresh token after 7 days and the weekly draft would stop. An unpublished-for-review app shows an "unverified app" warning at sign-in; that is expected for an app only you use.
+4. Create an OAuth client of type **Desktop app**. Put its ID and secret in `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+5. `pip install -e ".[gmail]"`, then `research-agent gmail authorize`. Sign in as the Gmail account that should hold the drafts. The refresh token goes straight into `.env` (not shown).
+6. Copy the three `GOOGLE_*` values into the weekly-newsletter service's variables. The next weekly run then adds a draft step. Set `NEWSLETTER_RECIPIENTS` (comma separated plain addresses) in the same place to address the draft; it overrides `newsletter.recipients` in the profile, and is kept out of git on purpose. With neither set the draft has no "To" address.
+
 ## Deployment and scheduling
 
 The API, the web page and both scheduled jobs are set up for Railway (one `Dockerfile`, three services: `api`, `daily-collect` running `research-agent job daily`, `weekly-newsletter` running `research-agent job weekly`), with Supabase as the database (use its pooler: the direct address is IPv6 only). `research-agent status --max-age-hours 36` fails when no successful collection has finished recently, and the weekly job uses it as a guard. The weekly edition is stored in the database and shown in the web page's Editions tab. Step-by-step instructions, the variables to set and what is not yet verified are in `DEPLOYMENT.md`.
@@ -166,7 +176,7 @@ src/research_agent/
   infrastructure/         http client, database (models, repository, migrations helper), one adapter per source
   bootstrap.py cli.py     wiring and command line
 migrations/               Alembic (Postgres gets row level security enabled for Supabase's REST API)
-tests/                    407 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
+tests/                    420 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
 ```
 
 ## Adding another profile or field

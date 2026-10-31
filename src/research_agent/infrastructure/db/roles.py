@@ -17,6 +17,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
 
+from ..envfile import set_env_values
+
 READ_ROLE, CONFIG_ROLE = "curt_api_read", "curt_api_config"
 CONFIG_TABLE = "newsletter_selections"
 # every table the query layer and the settings view read
@@ -78,18 +80,6 @@ def role_url(owner_url: str, role: str, password: str, *, pooler_host: str | Non
             raise ValueError("cannot work out the Supabase project reference from this connection string")
         u = u.set(host=pooler_host, port=pooler_port)
     return u.set(username=f"{role}.{ref}" if through_pooler and ref else role, password=password).render_as_string(hide_password=False)
-
-
-def set_env_values(path: Path, values: dict[str, str]) -> None:
-    """Set KEY=value lines in a .env file, keeping every other line as it is."""
-    lines = path.read_text(encoding="utf8").splitlines() if path.exists() else []
-    pending = dict(values)
-    for i, line in enumerate(lines):
-        key = line.split("=", 1)[0].strip()
-        if key in pending and not line.lstrip().startswith("#"):
-            lines[i] = f"{key}={pending.pop(key)}"
-    lines += [f"{k}={v}" for k, v in pending.items()]
-    path.write_text("\n".join(lines) + "\n", encoding="utf8")
 
 
 def apply_roles(owner_url: str, env_path: Path, pooler_host: str | None = None, pooler_port: int = 5432) -> None:

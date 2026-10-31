@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -12,6 +13,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 def _secret() -> str | None:
     return field(default=None, repr=False)
+
+
+_EMAIL = re.compile(r"^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
+
+
+def parse_recipients(raw: str) -> tuple[str, ...]:
+    """'a@x.org, b@y.com' -> ('a@x.org', 'b@y.com'). Only plain addresses are accepted, so nothing odd can end up in a mail header."""
+    out = tuple(x.strip() for x in raw.split(",") if x.strip())
+    bad = [x for x in out if not _EMAIL.match(x)]
+    if bad:
+        raise ValueError(f"NEWSLETTER_RECIPIENTS has an entry that is not a plain email address: {bad[0]!r}")
+    return out
 
 
 @dataclass(frozen=True)
@@ -51,6 +64,7 @@ class Settings:
     api_rate_limit_per_minute: int = 120                           # requests per client address per minute; 0 = off
     api_auth_failures_per_minute: int = 10                         # wrong-token attempts per client address per minute before it is blocked; 0 = off
     api_client_ip_header: str = ""                                 # API_CLIENT_IP_HEADER: header the host's proxy sets to the visitor's address (e.g. X-Real-IP); empty = use the connecting address
+    newsletter_recipients: tuple[str, ...] = ()                    # NEWSLETTER_RECIPIENTS: comma separated 'To' addresses for the Gmail draft; overrides newsletter.recipients in the profile
     job_overlap_days: int = 3                                      # JOB_OVERLAP_DAYS: how far back the daily collection looks
     job_fulltext_limit: int = 500                                  # JOB_FULLTEXT_LIMIT: papers the weekly full-text pass handles per run
     api_admin_database_url: str | None = None                     # API_ADMIN_DATABASE_URL: the connection used for those changes (a role limited to newsletter_selections); default DATABASE_URL
@@ -99,6 +113,7 @@ class Settings:
             api_rate_limit_per_minute=int(e("API_RATE_LIMIT_PER_MINUTE") or 120),
             api_auth_failures_per_minute=int(e("API_AUTH_FAILURES_PER_MINUTE") or 10),
             api_client_ip_header=(e("API_CLIENT_IP_HEADER") or "").strip(),
+            newsletter_recipients=parse_recipients(e("NEWSLETTER_RECIPIENTS") or ""),
             job_overlap_days=int(e("JOB_OVERLAP_DAYS") or 3),
             job_fulltext_limit=int(e("JOB_FULLTEXT_LIMIT") or 500),
             api_profile=e("API_PROFILE") or "curt",
