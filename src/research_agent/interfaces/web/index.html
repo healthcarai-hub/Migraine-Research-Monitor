@@ -167,6 +167,7 @@ details { margin-top:10px; } summary { cursor:pointer; color:var(--link); font-w
 .stat b { font-size:15px; }
 .stat.red { background:var(--badbg); color:var(--bad); } .stat.amber { background:var(--warnbg); color:var(--warn); } .stat.teal { background:var(--r-t); color:var(--r-i); } .stat.grey { background:var(--head); color:var(--muted); }
 .edbar { display:flex; gap:8px; flex-wrap:wrap; padding:0 20px 18px; }
+.edbar .btn[aria-pressed="true"] { background:var(--blue); border-color:var(--blue); color:#fff; }       /* blue marks the view that is showing */
 .ed > .fulltext { margin:0 20px 18px; }
 .pv { border-top:1px solid var(--line); background:var(--zebra); }
 .pvbar { display:flex; align-items:center; gap:14px; padding:10px 20px; background:var(--card); border-bottom:1px solid var(--line); flex-wrap:wrap; }

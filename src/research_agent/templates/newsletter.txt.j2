@@ -45,6 +45,15 @@ Monitored researchers:
   {{ name }}: {{ n }}
 {% endfor %}
 {% endif %}
+{% if cfg.app_link %}
+
+
+{{ cfg.app_link.title | upper }}
+{{ cfg.app_link.text }}
+{{ cfg.app_link.button }}: {{ cfg.app_link.url }}
+{% if cfg.app_link.note %}{{ cfg.app_link.note }}
+{% endif %}
+{% endif %}
 {% if cfg.results_lead %}
 
 {{ cfg.results_lead }}

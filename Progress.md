@@ -1,110 +1,103 @@
-# Progress: Curt Migraine Monitoring, Source Validation
+# Progress: Curt Migraine Monitoring
 
-_Last updated: 2026-10-30 (v1.0 collection pipeline built)_
+_Last updated: 2026-10-31. The detailed running log of every note and decision is kept in `Progress_history.md`; this file is the clean summary._
 
 ## 1. Where the project stands
-Building a new version of the migraine research agent. The client supplied one workbook, `Akeso Migraine Monitoring System Sources - Adnan.xlsx`. Current scope is **only** the four data sheets (Journals, Researchers, Discovery APIs, Search Subjects): confirm that each resource is reachable, what its usage limits are, and whether it costs money. The **Agent - Instructions** sheet has been deliberately left out for now.
 
-Starting point (analysed first): the existing `scholar-newsletter-agent` repo (Python, reads Google Scholar alert emails from Gmail, categorises with an LLM, stores vectors in Postgres, creates Gmail drafts, never sends). Its V2 roadmap is not part of this work.
+A field-configurable research-monitoring agent whose first profile is **Curt (migraine)**. It collects new papers every day, keeps them in a database, and every week builds a newsletter that lands in Gmail as a **draft** (the program never sends anything). A small web application lets the team search the database and switch topics, journals, researchers and sources on or off for the newsletter.
 
-## 2. Done so far
+| Part | Status |
+|---|---|
+| Daily collection (PubMed, Europe PMC, Crossref, OpenAlex, ClinicalTrials.gov, preprints) | **Built, deployed, scheduled** |
+| Full-text stage (free full text, abstract recovery from the full text) | **Built, deployed** |
+| Weekly digital newsletter (HTML and text, Gmail draft) | **Built, deployed, scheduled** |
+| Application: API, web page (Search, Editions, Newsletter settings) | **Built, deployed** |
+| Hosting: Railway (API and two cron jobs) and Supabase (database) | **Live**; first scheduled runs still to be watched |
+| Printable PDF edition | **Not started: waiting for the client's template** |
+| Multi-user sign-up and other fields (v2.0) | Deferred on purpose |
 
-| Item | Status | Log |
-|------|--------|-----|
-| Analysis of the existing newsletter agent repo | Done | (this conversation) |
-| Read all sheets of the workbook (10 journals, 30 researchers, 10 discovery sources, 12 subject rows) | Done | |
-| Journal validation (identity, reachability, feeds, PubMed volume, OA/APC) | Done | `Journal_source_validation.md` |
-| Researcher validation (PubMed, ORCID, OpenAlex for all 30) | Done, 7 need human confirmation | `Researchers_source_validation.md` |
-| Discovery API validation (all 10 services + subject-term probes) | Done | `Discovery_API_check.md` |
-| Pipeline design | First draft done; scope set by the owner (application side in v1.0, multi-user scaling v2.0) | `Pipeline_design_plan.md` |
-| **Build v1.0, phases 0 to 2** (skeleton, schema, discovery, ingestion) | **Done and tested on the real services**: 531 offline tests, 95% coverage, 1 live test; 94 searches per daily run in about 50 s; repeat runs add nothing; about 20 new papers a day | `README.md`, `Pipeline_design_plan.md` section 13, code in `src/research_agent/` |
+Quality: 536 offline tests and 1 live test pass. Every run, search and decision below was checked against the real services; nothing was bought and no secret is written in any log.
 
-How it was done: read-only requests from a laptop, no signups, no API keys created, nothing bought. Every number in the logs is tagged as observed live, from docs, or unverified.
+## 2. What was done, in phases
 
-* **Instructions sheet reviewed (2026-10-30).** 11 engineering rules and 3 seed references. The seed links resolve to a 2025 bibliometric paper, a 2021 epidemiology review and the 2024 AHS research-priorities paper (rows 11 and 13 overlap in label). The owner says the rules are **not exhaustive and can be changed while building**; more will be added as questions come up. See the retraction test below for the one rule whose data source was untested.
-* **Two pipelines and scope (owner, 2026-10-30).** "Two pipelines" means (1) an **application side** that serves users on the go from the database and (2) the **newsletter**; the daily collection job feeds the database for both (my reading, to confirm). **Multi-user scaling (sign-up, other fields such as L-theanine, per-user sources) is deferred to v2.0.** v1 serves Curt only, but the architecture stays flexible for other profiles: field settings in configuration, a profile id on searches, matches and issues, searches read from a stored list. Details in `Pipeline_design_plan.md` section 12.
-* **Pipeline shape and full-text requirement (owner, 2026-10-30).** Two parts: (1) a **daily backend job** at a fixed time that searches the sources and writes data and results to a database; (2) a **weekly newsletter job** that reads the week's rows from the database and builds the newsletter. The newsletter must carry the **full text** of each source, not just the abstract, because the reader cannot use a screen and the newsletter is printed. The **digital version** must also carry links. In the test window, 277 of 421 recent migraine papers are open access in Europe PMC (mostly CC BY), and OpenAlex/Unpaywall find a free copy for about 87 more, so roughly 86% have some free copy and about 12% look closed (my earlier "one third closed" was too high); see `Discovery_API_check.md` section 2.12. A free copy to read is not always one we may reproduce, and publisher sites block scripts, so some will be link-only. PDF test: 13 of 30 sampled free PDFs downloaded and gave usable text; Wiley blocked all 14 attempts. **Owner decision 2026-10-30 for papers without free full text:** show as much as we can (title, authors, abstract and any other openly available text) and point to the PDFs and links that exist, so the reader or a helper can open and print them. Each item carries a full-text status (`full text` or `abstract and links only`), and the print edition shows each link as a **scannable QR code** (owner change 2026-10-30, replacing readable text links) since printed links cannot be clicked. **Owner addition 2026-10-30:** every paper in the print edition gets a QR code, whether it has full text or only an abstract, plus a small printed DOI line under it as a fallback if the QR is misprinted. Still open: licences (NC/ND), how many papers per print edition and who selects them, and print layout (large print?) for the reader.
+| Phase | What | Result |
+|---|---|---|
+| **1. Source validation** (30 Oct) | Read the client's workbook (10 journals, 30 researchers, 10 discovery sources, 12 subject rows) and tested every resource live: reachability, limits, cost, identity. Logs: `Journal_source_validation.md`, `Researchers_source_validation.md`, `Discovery_API_check.md`, `Window_filter_tests.md`. | All 30 researchers resolved to an ORCID and OpenAlex ID and confirmed by the owner. Reliable free sources found; Google Scholar and Cochrane cannot be scripted (PubMed stands in for Cochrane). |
+| **2. Design** (30 Oct) | `Pipeline_design_plan.md`: two parts (daily collection, weekly newsletter), database design, rules for flags and retractions, build order. Owner decisions recorded (section 5). | Scope fixed: Curt only in v1.0, the application side included. |
+| **3. Collection pipeline** (30 Oct) | Project skeleton, database schema and migrations, three search paths per source (topic, journal, researcher), the "migraine" gate, de-duplication, retraction flags from three sources, preprints and trials, content types (deposits and datasets stored but kept out of digests). | 94 searches per run; about 20 new papers a day; a repeat run adds nothing. |
+| **4. Full text and enrichment** (30 to 31 Oct) | Provider tiers (Europe PMC full text, Springer Nature open access, free PDFs), PDF text extraction, abstracts recovered from the full text (also for editorials), repair of words glued together in abstracts. | About half of recent papers carry full text; papers with no abstract are listed last in their section. |
+| **5. Weekly newsletter** (31 Oct) | Selection by the date we first stored a paper, never resent, 7-day freshness limit, size caps, held-back papers return once and rank lower, AI summaries with checks (Groq), retractions section, Gmail draft. Layout rebuilt for Gmail (tables with inline styles, header and category headings like the older newsletter), the **At a glance** summary panel, one navy-and-blue colour scheme, outro signed by the Healthcar AI Research Team. | A real weekly edition builds in about 7 minutes and arrives as a Gmail draft. |
+| **6. Application** (31 Oct) | Read-only token-protected API, one search endpoint (date, source, journal, researcher, topic, author, full text, sorts), newsletter on/off switches stored separately from the collection, web page with coloured chip filters, Editions tab with a formatted preview in a locked frame. Rate limiting, wrong-token lockout and limited database roles. | Everything is served by the API itself at `/app`. |
+| **7. Hosting and scheduling** (31 Oct) | Railway with three services from one Docker image; Supabase through the session pooler; GitHub only runs the tests; Gmail sign-in done once. Speed work (batched database calls, a commit per search) took the daily run from about 23 minutes to about 2. | Daily collection 05:30 UTC (11:00 IST). Weekly job Thursday 14:30 UTC (20:00 IST), edition dated Friday, 12-hour freshness guard. See `DEPLOYMENT.md`. |
+| **8. Print edition** | PDF with full text, QR code and DOI line per paper, retracted section. | **Not started** (see section 3). |
 
-## 3. Key findings
+How this lines up with the original build order in the design plan: its phases 0 to 4 and 6 (scheduling) are done; phase 5 (print) is the only one not started; "monitoring" (watching real unattended runs) begins with the first scheduled runs.
 
-1. **The sheet's researcher links are broken.** `"First M. Last"[Author]` returns zero results in PubMed (confirmed for all 30 via the API and for 3 on the website). PubMed needs `Surname Initials`.
-2. **Eight of ten journal homepages block scripts (HTTP 403).** Article data must come from PubMed/Crossref/Europe PMC by ISSN. Eight working publisher RSS feeds were found; JAMA Neurology and Nutrients (MDPI) have none we could reach.
-3. **Two discovery sources cannot be scripted:** Google Scholar (no API, scraping against its terms; keep the existing email alerts) and Cochrane Library (Cloudflare 403). PubMed carries Cochrane migraine reviews as a proxy (113 total, 4 in 2025-26).
-4. **Reliable and free:** PubMed (3 req/s, 10 with a free key), Europe PMC, Crossref (1-5 req/s public), ClinicalTrials.gov, bioRxiv/medRxiv.
-5. **OpenAlex is now metered:** without a key it shares a $0.10/day budget per IP (about 100 simple calls); a free key gives $1/day. Needs a decision.
-6. **Volume is modest:** about 237 PubMed items per 30 days contain "migraine" in title/abstract (~55/week). Only 11 of the 30 researchers published migraine papers in the last 30 days (19 papers total).
-7. **Track B is thin:** Redox Biology has **zero** migraine papers; Brain Behav Immun 9; Nutrients 66. Generic Track B terms (oxidative stress, microglia, microbiome...) are only usable with a migraine gate, which also removes indirect-mechanism papers.
-8. **Identity:** all 30 researchers have a resolved ORCID + OpenAlex ID (7 flagged ones re-resolved 2026-10-30) and the owner has confirmed all 30 profiles. Jan Hoffmann, Shuu-Jiun Wang and Andrew Charles are still ambiguous in PubMed name search (3-8% migraine), so search them by ORCID/OpenAlex ID. Sheet name "Anne MacGregor" is E. Anne MacGregor.
-9. **"CSD" is ambiguous** as warned: only 9% of its 5,632 PubMed hits mention migraine.
-* **Retraction flags (rule 8) are split across sources (tested 2026-10-30).** Of 18 migraine papers PubMed marks retracted, Crossref flags 10, OpenAlex 12, Europe PMC 12; 6 are flagged only by PubMed. PubMed in turn misses 11 withdrawn/retracted originals that Crossref records. Proposed: flag if any of PubMed, Crossref or OpenAlex says so. **Owner decided 2026-10-30:** retracted papers are kept and flagged separately in the newsletter, not dropped; retraction notices attach to the original rather than appearing as new papers. A notice for a never-sent paper is shown only if the original was sent or is in the same week's results (confirmed). Details in `Discovery_API_check.md` section 2.11.
-* **Date and category filters inside the 3-day window (tested 2026-10-30; `Window_filter_tests.md`).** Entry/index-date filters are exact (PubMed `edat`, Europe PMC `FIRST_IDATE`, Crossref `created`); publication-date filters find only about a third of new records. No single source finds more than about half of the distinct new papers in a window, so the pipeline needs the union (Crossref adds papers PubMed never indexes). Use `migrain*` as the gate. OpenAlex created/updated filters need a paid plan. Late arrivals could not be measured; re-run the saved snapshot tomorrow.
+## 3. Open items
 
-## 4. Open decisions (need the owner)
+| Item | Kind | Notes |
+|---|---|---|
+| **Printable PDF edition** | Waiting on the client | Needs their template. Also unanswered: papers per edition and who chooses them, large print or high contrast and the font size, figures and tables. Full text, the "printable" ranking signal and the rule that licences do not limit printing are already in place. |
+| Feed URLs for JAMA Neurology and Nutrients | Question for the client | Both are covered through the databases only today. |
+| What "abstract-only" means in rule 8 of the instructions sheet | Question for the client | Our reading: only the abstract is readable. |
+| Track B bridge list: who approves it, and a starting list | Question for the client | Today a "mechanism" paper needs "migraine" in the title or abstract, or a bridge entry. |
+| Papers only Crossref or OpenAlex index (low-profile journals): include, with what quality check | Question for the client | |
+| Are the Scholar alert emails still wanted as an extra source | Question for the client | |
+| Core and Targeted wording under the Monitored journals table | Owner to confirm | Draft text in `newsletter.priority_notes` in `config/profiles/curt.yaml`. |
+| Three choices made on the owner's behalf: switching a journal off removes only that route in; "sources" means the five discovery databases; search relevance is a simple points score | Owner to confirm | Change on request. |
+| Watch the first real runs: daily on 1 Nov, weekly on 5 Nov (draft dated 6 Nov) | To check once live | The log shows each step with a time. |
+| Failure alerts in Railway | To check | Not verified on the owner's plan. |
+| Gmail OAuth app set to "In production" | To check | Otherwise Google expires the token after about 7 days and the weekly draft fails. |
+| Multi-user sign-up, other fields, per-user sources | Deferred (v2.0) | The design keeps this possible. |
 
-| # | Decision | Why it matters |
-|---|----------|----------------|
-| 1 | **Done 2026-10-30:** OpenAlex key created for healthcarai@gmail.com, activated, and tested (HTTP 200, header shows a 10,000-credit / $1 per day allowance). Stored in `.env`, not in these logs. Original question: create an OpenAlex API key? The response says it can be requested with an email address and confirmed by a link. I did not do it. | Without it, OpenAlex is limited to about 100 calls/day per shared IP |
-| 2 | **Done 2026-10-30:** NCBI key added to `.env` and accepted; PubMed now reports `X-Ratelimit-Limit: 10` per second. Original question: create a free NCBI API key? | Raises PubMed from 3 to 10 req/s |
-| 3 | **Decided 2026-10-30:** use the project mailbox (healthcarai@gmail.com) as the polite-pool contact for Crossref/ORCID/OpenAlex requests. Original question: which email address? | Faster Crossref pool and good practice |
-| 4 | ~~Accept PubMed as the Cochrane proxy?~~ **Decided 2026-10-30: yes, PubMed is the Cochrane stand-in.** | Cochrane itself is blocked |
-| 5 | **Done 2026-10-30:** the owner checked all 30 researcher profiles against `Researchers_recent_papers.pdf` and confirmed they look right. IDs in the researcher log are now owner-confirmed. | Wrong IDs would mean watching the wrong people |
-| 6 | ~~Should Track B journals stay in the journal path?~~ **Decided 2026-10-30: yes, they stay.** Note: the journal filter alone will surface few Track B items (Redox Biology = 0 migraine papers), so the Track B subject-term gate still does the real work. | Journal filter alone will not surface Track B content |
-| 7 | **Decided 2026-10-30 (my call, provisional, client can overrule):** "curated mechanistic bridge" = a short, human-maintained list of specific mechanism-to-migraine links approved by the client. Default rule stays: a paper needs `migraine` in title/abstract. A Track B paper without that word is admitted only if it matches an entry on the bridge list, and is then labelled "exploratory". Generic terms are never allowed alone: `oxidative stress` alone is 363,862 PubMed papers, so a bridge entry must be a narrow pair (e.g. a named molecule plus a named pathway), not a single broad term. Initial list to be proposed by us, approved by the client. | Without a bridge list, indirect-mechanism papers can never reach the digest; with a loose one, thousands of unrelated papers would |
-| 8 | **Decided 2026-10-30: yes, include preprints from the extra servers** (Research Square, Preprints.org, PsyArXiv, and any other server Europe PMC returns under `SRC:PPR`). Every preprint carries the non-peer-reviewed label. | Europe PMC returns them for free; 5 of 6 migraine preprints in the test week came from these servers |
+## 4. How it runs day to day
 
-## 5. Caveats on the evidence
-* All checks are from one IP on one day; some blocks (403) may behave differently from a server or with publisher agreements.
-* Publisher terms of use and text-and-data-mining rules were **not** reviewed.
-* ORCID/OpenAlex agreement is a corroboration, not proof of identity. The owner has now reviewed all 30 profiles and found them correct (2026-10-30).
-* Several generic subject terms (e.g. `prevention`, `sleep`, `glucose`) were not probed, and the numeric rate limits for Europe PMC, bioRxiv/medRxiv and ClinicalTrials.gov were not found; both are marked unverified in the logs.
+| Service | Runs | Does |
+|---|---|---|
+| `api` | always | The API and the web page at `/app`. |
+| `daily-collect` | `30 5 * * *` UTC | Collects new papers (looks back 3 days, so one failed day is recovered). |
+| `weekly-newsletter` | `30 14 * * 4` UTC (Thursday 20:00 IST) | Checks a collection ran in the last 12 hours, fetches full text, builds the edition, creates the Gmail draft. |
 
-## 6. Suggested next steps
-1. Walk the owner through the open decisions above.
-2. ~~Human-confirm all 30 researchers~~ Done by the owner 2026-10-30. Store `{orcid, openalex_id, pubmed_query, aliases}`.
-3. Find or obtain feed URLs for JAMA Neurology and Nutrients, or accept index-only coverage for them.
-4. ~~Test Europe PMC preprint search~~ **Done 2026-10-30: works; use `SRC:PPR` queries instead of bulk-pulling bioRxiv/medRxiv.** It also returns preprints from Research Square and Preprints.org, which are not in the client's sheet (decision needed).
-5. ~~Review the Agent - Instructions sheet~~ Done 2026-10-30; retraction sources tested (see findings). **Decided by the owner 2026-10-30:** the digest is English-only; rule 6 uses a 3-day overlapping window; the "Curt delivery route" is the existing Gmail-draft route. **Still open:** what "abstract-only" means in rule 8 (conference abstracts, or papers where only the abstract is readable).
-6. ~~Springer Nature API key~~ Done 2026-10-30: key stored in `.env`; the Open Access API returned full-text JATS for 14 of 28 Springer/BMC sample papers (the rest are not open access). Details in `Discovery_API_check.md` section 2.12.
-7a. ~~**Tomorrow (2026-10-31):** re-run the saved snapshot comparison to measure late arrivals (records dated on or before 2026-10-30 that were not there today). **Owner decision 2026-10-30:** whether to add a weekly publication-date cross-check (or a weekly 2-week entry-date re-run) is deferred until this result is in. Until then the design uses entry-date filters only.~~ **Done 2026-10-31:** no back-dated records found; decided against a weekly cross-check (item 8e).
-7. ~~Wiley TDM token and Elsevier API key~~ **Dropped by the owner 2026-10-30.** Wiley, Elsevier and SAGE papers that scripts cannot reach stay "abstract, QR code and links" (the Springer Nature key stays). Reasoning and numbers in `Discovery_API_check.md` section 2.12.
-8zb. **Editions tab redesigned 2026-10-31 (owner approved the PNG plan `outputs/editions_plan_1_desktop.png` and `editions_plan_2_phone_preview.png`, asked for the line with the key, dates and build time to be removed):** the tab showed the plain-text email, which looked like raw text. Each edition is now a card (subject, status badge, coloured count chips); Preview shows the real formatted edition inline in a sandboxed frame (no scripts, links in a new tab) with a Desktop and Phone width switch, and Open in new tab and Plain text remain. The newest edition opens on its own; one preview at a time; a fixed-height frame that scrolls. No API change. A built edition's badge reads "Draft not created yet" (owner wording). Browser-tested on a scratch SQLite copy with every database URL overridden. Dark mode and the narrow screen use the same tokens.
-8za. **Weekly timing and edition date 2026-10-31 (owner decisions):** the weekly job moves to Thursday 14:30 UTC (20:00 IST), cron `30 14 * * 4`; the daily collection stays at 05:30 UTC, 9 hours earlier, so Thursday's papers are always in (Friday's go into the next edition). The edition is dated Friday: new profile setting `newsletter.edition_weekday` (4 for Curt) gives the next Friday on or after the run's UTC day, used by `job weekly` and `newsletter build` when no `--week-ending` is given; only the label moves, the content still runs up to the build. The weekly job's freshness guard is now 12 hours (was 36), so a failed Thursday collection stops the weekly job instead of leaving the day's papers out. 531 offline tests.
-8z. **Web page redesigned with chip filters 2026-10-31 (owner reviewed and approved the PNG plans `outputs/web_plan_v3_1_search.png`, `web_plan_v2_2_settings.png`, `web_plan_3_mobile.png`):** coloured chips replace the old text boxes and tick boxes. Search: Sources, Journals, Researchers, Topics chips (click to add; a cross on each chosen chip, shown on hover or focus and always on touch screens), a "Filtering by" tray at the bottom of the filter card, a Published dropdown (last 7 days default, 15, 30, 90, all time, custom range), a Full text held checkbox, sort and order. The Author box was removed from the page (the `author` filter stays in the API). Researchers and topics show their first row then "Show the other N". Newsletter settings: included chips with a cross, switched-off dashed chips, sources first, unsaved-change bar with Discard and Save. New API filters `source` and `topic` (no schema change; topics match the stored subject codes) and `sources`/`topics` with paper counts in `/v1/papers/filters`. Only the newest search may draw its answer. 531 offline tests. Browser-tested against a scratch SQLite copy. **Slip to remember:** the first test server read production Supabase (read-only role) because `.env` sets `API_DATABASE_URL`; nothing was written; see the memory note on overriding all three database URLs.
-8y. **At a glance panel and navy colour grading 2026-10-31 (owner approved the layout, then asked for the rest of the newsletter to match):** the edition opens with an "Edition Coverage Summary" panel: four figures (publications, with full text, from monitored journals or researchers, retrieval sources contributing) and three tables, each listing only what contributed publications: Retrieval sources (source, coverage, publications; a paper found by two sources counts for both, said in a footnote; a source switched off in the application is left out), Monitored journals (journal, priority, publications, with a short key explaining each priority that appears) and Monitored researchers (identity-confirmed only). No share-of-edition columns, no other-journals or preprint lists. The header band, panel, section strips and category headings use one navy (`newsletter.deep_color`, #0b2545) with blue (`accent_color`, #1d4e89) for links, rules and pills. The plain-text edition carries the same lists. The priority wording is `newsletter.priority_notes` in `curt.yaml` and is a draft for the owner to confirm. Paper labels now say "Monitored journal/researcher" (were "Watched"). 531 offline tests.
-8x. **Papers with no abstract go last (owner, 2026-10-31):** gathered under "Without an abstract" at the end of Direct research (last in sections without categories; retractions exempt) with "No abstract available."; stored-text recovery also covers XML-derived texts and cleans citation debris.
-8w. **Abstract recovery extended to editorials 2026-10-31 (owner reminded me of the original fix):** the one production paper with full text and no abstract was an editorial with no abstract, summary or introduction heading; a last-resort rule now takes its opening paragraph and labels it. 31 papers still have no abstract and no full text. Store it for the existing paper with `fulltext --recover-abstracts`.
-8v. **Header and category headings now follow the older newsletter (owner, 2026-10-31):** same header band, title, subtitle and date/results row, 19 px category headings with a rule, the older blue, no "week ending"; the subject is "This Week in Migraine Research — <date>" (`newsletter.subject`).
-8u. **Readability 2026-10-31 (owner feedback on the draft):** category headings made prominent, more spacing between results and around intro and outro, and abstract word joins repaired (`fix-abstracts`). Lowercase joins such as `selfadministeredelectronic` are split with the `wordsegment` dictionary (owner approved the package) under strict rules: 7 splits on the real data, all correct, none wrong.
-8t. **Newsletter layout and wording 2026-10-31 (owner: the HTML looked bad in Gmail drafts):** rebuilt with inline styles in tables (Gmail's compose window drops style blocks), greeting, introduction, closing, signature and footer as profile settings in the older agent's spirit. An already-built edition keeps its old layout until rebuilt (`newsletter build --rebuild`).
-8s. **Owner decision 2026-10-31:** a paper held back by a cap returns in the next edition only (look-back 14 days instead of 28) and ranks 3 points lower for being late (`newsletter.max_catchup_days`, `carryover_penalty`), so only old papers with strong signals get in; after that it stays in the database and the app. Details in `Pipeline_design_plan.md` section 15.
-8r. **Hosting and scheduling prepared 2026-10-31 (owner chose Railway for everything, after first choosing GitHub Actions and Vercel):** one Dockerfile and three Railway services (API and web page; daily collection job; weekly newsletter job), `research-agent job daily|weekly` with step-by-step stop on failure and hard time limits, a staleness guard, `/v1/whoami` and `API_CLIENT_IP_HEADER` for the rate limiter, an Editions tab in the web page, and `DEPLOYMENT.md`. Needs from the owner: Supabase pooler host, a private GitHub repository (nothing is committed yet), a Railway account. Not yet built with Docker or run on Railway.
-8q. **Hosting readiness 2026-10-31:** API rate limiting and wrong-token lockout; `research-agent db roles` makes a read-only and a switches-only Postgres role with their own connection strings (`API_DATABASE_URL`, `API_ADMIN_DATABASE_URL`). Supabase schema (migration 0010) and the Curt profile are in place; no papers collected yet (waiting for scheduling). **Roles applied to Supabase 2026-10-31 and checked live:** the read role can only read (writes refused, ungranted tables refused), the config role can only write `newsletter_selections`, and the API ran on those two connections alone (with a deliberately wrong owner URL) and served search, filters and settings.
-8p. **Web page built 2026-10-31** (owner chose a simple web page): search and newsletter settings, served by the API at `/app`; checked in a browser at desktop and phone width. Still open: hosting with HTTPS, rate limiting, the three confirmations in item 8o.
-8o. **Application scope set by the owner 2026-10-31:** Curt only; endpoints to switch topics, journals, researchers and sources on or off (changes newsletter runs only); one search endpoint filtered by date, journal, author, researcher and sorted by date, relevance or full-text availability. Built and tested (531 offline tests; checked live). Needs the owner's confirmation of three choices listed at the end of `Pipeline_design_plan.md` section 16.
-8n. **Application side started 2026-10-31:** read-only token-protected API built and tested (35 tests; checked live on the real server). Open: the form of the front end (question 12), hosting, rate limiting. Details in `Pipeline_design_plan.md` section 16.
-8m. **Owner decision 2026-10-31 (after reviewing the edition):** papers from watched journals and researchers are chosen first when a cap bites. Review also led to hiding letters and corrections by default and tidying titles. Edition: 35 items, 36 KB.
-8l. **2026-10-31:** digital edition shows a "Full text available" label; abstracts missing everywhere else are recovered from the paper's own PDF text (blind test: accurate for 25 of 29 real PDFs); stored and new PDF texts are checked to be the right paper (an OpenAlex link had pointed at a different article). Details in `Pipeline_design_plan.md` section 15.
-8k. **Owner decision 2026-10-31:** licences do not limit printing full text (any text we hold is printable; licence and rights still recorded; strict mode kept as an option); papers with printable full text rank higher (weight 3, tunable in `newsletter.ranking`). Saved as a standing note for this agent.
-8j. **Owner decision 2026-10-31:** the newsletter leaves out papers published more than 7 days (setting `newsletter.freshness.max_publication_age_days`) before we first found them; they stay in the database and app. Test data: 178 matching -> 79 left out as stale, 64 held by caps, 35 in the edition.
-8i. **Owner decision 2026-10-31:** edition size is capped, with the caps as profile settings (`newsletter.caps`): per-section caps, optional total, and a 95 KB size safety net. Test edition 178 items -> 44, 45 KB. Held-back papers roll over for up to 28 days. Details in `Pipeline_design_plan.md` section 15.
-8h. **Groq summaries tested live 2026-10-31:** `qwen/qwen3.8-27b` (a Groq preview model) passes all checks; a full 178-item edition took about 15 minutes at this key's 8,000 tokens a minute, 161 model-written summaries, 2 fell back to extracts. Production fallback verified: `openai/gpt-oss-20b` with `LLM_REASONING_EFFORT=low`. Details in `Pipeline_design_plan.md` section 15.
-8g. **Owner direction 2026-10-31:** newsletter summaries use the Groq API as the earlier agent did. Built with checks and caching; needs `LLM_MODEL` and `LLM_API_KEY` to run live (not yet supplied). Details in `Pipeline_design_plan.md` section 15.
-8f. **Built 2026-10-31:** weekly digital newsletter (HTML + text, issues stored, never-twice rule, retraction section, file and Gmail draft publishers). Print/PDF edition deliberately not started (owner: waiting for the client's template). Open: edition size (Gmail clips about 100 KB; test edition 160 KB), LLM summaries or not, Gmail credentials. Details in `Pipeline_design_plan.md` section 15.
-8e. **Owner decision 2026-10-31:** no weekly publication-date cross-check or weekly re-run for now. The next-day snapshot comparison showed no back-dated records (0 of 289 earlier-day records, three sources). Revisit after a few weeks of real daily runs. Details in `Window_filter_tests.md` section 9.
-8d. **Owner decision 2026-10-30:** papers are never resent in a later edition; full text found after a paper went out stays in the database and the app only.
-8c. **Owner decision 2026-10-30:** the newsletter selects papers by the date our database first stored them (`first_seen_at`), shows the publication date as information, and records what each edition sent. Details in `Pipeline_design_plan.md` section 9.
-8b. **Build status 2026-10-30:** collection pipeline and the full-text stage work end to end (SQLite); provider tiers built so premium keys route automatically (`Pipeline_design_plan.md` section 14). Next in order: apply the schema to Supabase (needs the connection string), weekly newsletter job (digital then print), read-only application API (v1.0), scheduling. Open questions from the build are listed in `Pipeline_design_plan.md` section 13.
-8a. **Updated 2026-10-30:** multi-user scaling moved to v2.0; section 12 of the plan now lists what v1 keeps flexible. **Owner: the application side is in v1.0; build skeleton, schema, discovery and ingestion first.**
-8. ~~Design the pipeline~~ First draft written 2026-10-30 in `Pipeline_design_plan.md` (plan only; 10 open questions listed in its section 10). Next: owner review, then client questions.
+An edition is **dated Friday** but holds everything stored up to the Thursday build. The Editions tab labels a built edition "Draft not created yet", then "Published" once the Gmail draft exists, and "Sent" only if someone marks it sent by hand. Setup, settings and recovery steps are in `DEPLOYMENT.md`.
 
-## 7. Files
-* `Journal_source_validation.md`
-* `Researchers_source_validation.md`
-* `Researchers_recent_papers.md` (5 recent migraine papers per researcher, for the human identity check)
-* `Researchers_recent_papers.pdf` (same list as a printable PDF, 12 pages, landscape)
-* `Discovery_API_check.md`
-* `Window_filter_tests.md` (do the date and category filters hold inside the 3-day window; run 2026-10-30)
-* `Pipeline_design_plan.md` (design plan for the daily backend job, the weekly newsletter job, the database, the print edition and the open questions; section 13 is the build status)
-* `README.md`, `pyproject.toml`, `alembic.ini`, `.env.example` (the project)
-* `src/research_agent/` (code), `config/` (migraine field and Curt profile as YAML), `migrations/` (schema), `tests/` (317 offline tests plus fixtures of real API responses), `data/` (local SQLite databases, git-ignored)
-* `Progress.md` (this file)
+## 5. Decisions made by the owner
+
+| Area | Decision |
+|---|---|
+| Scope | Curt only in v1.0; the application side is in v1.0; multi-user is v2.0. English only. |
+| Sources | PubMed stands in for Cochrane. Track B journals stay. Preprints from the extra servers are included and labelled. No Wiley or Elsevier keys; their papers stay "abstract, QR code and links". Retracted papers are kept and flagged, and a retraction of something already sent is always announced. |
+| Collection | 3-day overlapping window; no weekly cross-check. Papers are chosen by the date we first stored them. |
+| Newsletter content | Never resend a paper. Leave out papers published more than 7 days before we found them. Edition size is capped; a held-back paper returns once, ranked lower, then drops out. Papers from monitored journals and researchers are chosen first. Papers with no abstract go last. Summaries come from Groq. The program creates drafts only. |
+| Printing | Licences do not limit printing full text. The print edition waits for the client's template. |
+| Newsletter look | Header, title and category headings follow the older newsletter. At a glance panel with Retrieval sources, Monitored journals (with what Core and Targeted mean) and Monitored researchers, listing only those with publications. Navy and blue colours throughout. A box under At a glance links to the web app (there only, not in the outro; the address is `newsletter.app_link.url` in the profile and the email never carries a token). The outro is signed "Healthcar AI Research Team" in large navy type with an accent bar. |
+| Timing | Weekly job Thursday 20:00 IST; edition dated Friday; freshness guard 12 hours. |
+| Application | Chip filters, Published dropdown (last 7 days by default), Full text checkbox, Author box removed. Editions tab with an inline preview and a "Draft not created yet" label. |
+| Hosting | Railway for everything, Supabase for the database, GitHub private and used only to run tests. |
+
+## 6. Main findings from the source validation
+
+1. The client's researcher links in the sheet return no results; searches need `Surname Initials`, or better the ORCID and OpenAlex IDs we resolved.
+2. Eight of ten journal homepages block scripts, so article data comes from PubMed, Crossref and Europe PMC by ISSN.
+3. No single source finds more than about half of the new papers in a window, so the pipeline uses the union of sources.
+4. Retraction flags are split across sources; a paper is flagged if any of PubMed, Crossref or OpenAlex says so.
+5. OpenAlex and PubMed keys were created and work; the project mailbox is the contact address for Crossref, ORCID and OpenAlex.
+6. Volume is modest: about 55 migraine papers a week by PubMed alone, about 20 new papers a day across all sources.
+7. Track B is thin; Redox Biology has no migraine papers, so the topic gate does the real work there.
+8. "CSD" is ambiguous (only 9% of its PubMed hits mention migraine).
+
+## 7. Caveats
+
+* The validation checks were made from one IP on one day; some blocks may behave differently from a server.
+* Publisher terms of use were not reviewed; the owner has decided licences do not limit printing.
+* ORCID and OpenAlex agreement corroborates an identity but is not proof; the owner reviewed all 30 profiles.
+* A few generic subject terms were not probed, and the rate limits of Europe PMC, bioRxiv/medRxiv and ClinicalTrials.gov were not found (marked unverified in the logs).
+* `Pipeline_design_plan.md` still opens with "Plan only: nothing is built"; its sections 13 to 16 hold the current build status.
+
+## 8. Files
+
+* `README.md`: how to install, run and use everything.
+* `DEPLOYMENT.md`: Railway and Supabase setup, schedules, first checks, day to day.
+* `Pipeline_design_plan.md`: the design, with build status in sections 13 to 16.
+* `Progress.md` (this file) and `Progress_history.md` (the detailed log).
+* `Journal_source_validation.md`, `Researchers_source_validation.md`, `Researchers_recent_papers.md` (and its PDF), `Discovery_API_check.md`, `Window_filter_tests.md`: the validation logs.
+* `src/research_agent/` (code), `config/` (the migraine field and the Curt profile), `migrations/` (database schema), `tests/` (536 offline tests with saved real API responses), `data/` (local SQLite databases, not in git), `outputs/` (design pictures and screenshots reviewed with the owner).

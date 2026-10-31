@@ -171,6 +171,21 @@ class SignatureConfig(BaseModel):
     disclaimer: str | None = None
 
 
+class AppLinkConfig(BaseModel):
+    """A box under the At a glance panel that sends the reader to the web application. Leave `app_link` out of the profile for no box."""
+    url: str
+    title: str = "Explore this edition and the full database"
+    text: str = "Search every paper we have collected, filter by source, journal, researcher or topic, and read the full text we hold."
+    button: str = "Open the web app"
+    note: str = "Sign in with the access token we gave you."      # empty for no note; never put a token itself in the email
+
+    @model_validator(mode="after")
+    def _https(self) -> "AppLinkConfig":
+        if not self.url.startswith("https://"):
+            raise ValueError("app_link.url must start with https://")
+        return self
+
+
 class NewsletterConfig(BaseModel):
     """Digital edition settings. Print-edition settings are deliberately absent: the print template has not been supplied yet."""
     title: str = "Research digest"
@@ -190,6 +205,7 @@ class NewsletterConfig(BaseModel):
     no_abstract_heading: str = "Without an abstract"   # papers with no abstract of any kind are listed last in their section, under this heading
     closing: str = "That is everything for this week. Have a good weekend."
     signature: SignatureConfig | None = None
+    app_link: AppLinkConfig | None = None   # the web application link box under At a glance (HTML and text)
     footer: str = ""                  # a line at the very end of the edition, e.g. who prepared it
     lookback_days: int = 7            # normal window length: papers first stored in the last 7 days
     max_catchup_days: int = 14        # how far back a later edition looks: this week plus one more, so a paper held back once may return in the next edition and then drops out

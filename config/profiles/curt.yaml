@@ -36,6 +36,8 @@ newsletter:
   signature:                                                   # the team name only (owner decision 2026-10-31); add title:, email: or phone: here if you ever want them printed (they would then be in git)
     name: Healthcar AI Research Team
     disclaimer: "This message is confidential and intended only for its recipient."
+  app_link:                                                    # the box under At a glance (owner decision 2026-10-31: there only, not in the outro)
+    url: "https://api-production-c72b3.up.railway.app/app"
   footer: "Prepared for Curt by the Healthcar AI Research Team."
   recheck_retraction_weeks: 8      # papers sent in the last N weeks are re-checked for a retraction before each build
   freshness:                       # owner decision 2026-10-31: papers published long before we found them do not appear in the week they surface

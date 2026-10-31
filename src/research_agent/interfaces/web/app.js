@@ -316,8 +316,8 @@ function editionCard(e) {
   const subject = e.subject || e.key;
   const status = el("span", { class: "status " + (e.status || "") }, el("i"), STATUS_LABELS[e.status] || e.status);
 
-  const previewBtn = el("button", { type: "button", class: "btn primary" }, "Preview");
-  const textBtn = el("button", { type: "button", class: "btn" }, "Plain text");
+  const previewBtn = el("button", { type: "button", class: "btn", "aria-pressed": "false" }, "Preview");     // blue (aria-pressed) while its view is the one showing
+  const textBtn = el("button", { type: "button", class: "btn", "aria-pressed": "false" }, "Plain text");
   const tabBtn = el("button", { type: "button", class: "btn" }, "Open in new tab");
   const textBox = el("div", { class: "fulltext hidden" });
   const stage = el("div", { class: "stage" });
@@ -333,13 +333,13 @@ function editionCard(e) {
   desk.addEventListener("click", () => width(false));
   phone.addEventListener("click", () => width(true));
 
-  const hideText = () => { textBox.classList.add("hidden"); textBtn.textContent = "Plain text"; };      // one view at a time on a card: the formatted preview or the plain text
+  const hideText = () => { textBox.classList.add("hidden"); textBtn.textContent = "Plain text"; textBtn.setAttribute("aria-pressed", "false"); };      // one view at a time on a card: the formatted preview or the plain text
   let loaded = false;
   async function show() {
     if (openEdition && openEdition !== handle) openEdition.hide();
     openEdition = handle;
     hideText();
-    panel.classList.remove("hidden"); card.classList.add("open"); previewBtn.textContent = "Hide preview";
+    panel.classList.remove("hidden"); card.classList.add("open"); previewBtn.textContent = "Hide preview"; previewBtn.setAttribute("aria-pressed", "true");
     if (loaded) return;
     loaded = true;
     stage.replaceChildren(el("p", { class: "none" }, "Loading the edition…"));
@@ -350,7 +350,7 @@ function editionCard(e) {
       stage.replaceChildren(frame);
     } catch (x) { loaded = false; stage.replaceChildren(el("p", { class: "none" }, x.message)); }
   }
-  function hide() { panel.classList.add("hidden"); card.classList.remove("open"); previewBtn.textContent = "Preview"; if (openEdition === handle) openEdition = null; }
+  function hide() { panel.classList.add("hidden"); card.classList.remove("open"); previewBtn.textContent = "Preview"; previewBtn.setAttribute("aria-pressed", "false"); if (openEdition === handle) openEdition = null; }
   const handle = { show, hide };
   previewBtn.addEventListener("click", () => (panel.classList.contains("hidden") ? show() : hide()));
   closeBtn.addEventListener("click", hide);
@@ -359,6 +359,7 @@ function editionCard(e) {
   textBtn.addEventListener("click", async () => {
     const hidden = textBox.classList.toggle("hidden");
     textBtn.textContent = hidden ? "Plain text" : "Hide plain text";
+    textBtn.setAttribute("aria-pressed", String(!hidden));
     if (hidden) return;
     if (!panel.classList.contains("hidden")) hide();
     if (textLoaded) return;

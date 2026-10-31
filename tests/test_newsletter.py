@@ -1102,3 +1102,50 @@ def test_an_edition_dated_for_friday_built_on_thursday_still_holds_everything_st
         assert issue.subject == "This Week in Migraine Research — November 6, 2026" and "November 6, 2026" in issue.html
         assert issue.window_end.replace(tzinfo=timezone.utc) == thursday         # the content stops at the run, not at the dated Friday
     assert {pid for pid, *_ in item_ids(factory)} == {1, 2}
+
+
+def test_the_web_app_link_box_sits_under_at_a_glance_and_before_the_papers_and_nowhere_in_the_outro(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2)
+    cfg = profile.newsletter
+    assert cfg.app_link and cfg.app_link.url.startswith("https://")                                   # Curt's profile carries the link
+    html, text = built(factory, profile, field)
+    from markupsafe import escape
+    url = cfg.app_link.url
+    assert html.index("Edition Coverage Summary") < html.index(cfg.app_link.title) < html.index(escape(cfg.results_lead))      # the HTML escapes apostrophes
+    assert f'href="{url}"' in html and html.count(url) == 1                                          # one link, the button; none in the outro or the footer
+    assert url not in html[html.index(escape(cfg.closing)):]
+    assert text.index("AT A GLANCE") < text.index(cfg.app_link.title.upper()) < text.index(cfg.results_lead)
+    assert f"{cfg.app_link.button}: {url}" in text and text.count(url) == 1 and cfg.app_link.note in text and cfg.app_link.note in html
+
+
+def test_there_is_no_link_box_without_app_link_and_no_note_when_it_is_empty(factory, seeded):
+    from research_agent.domain.field_config import AppLinkConfig
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2)
+    html, text = built(factory, with_config(profile, app_link=None), field)
+    assert "Explore this edition" not in html and "Explore this edition".upper() not in text and "web app" not in html.lower()
+    r = svc(factory).build(with_config(profile, app_link=AppLinkConfig(url="https://x.example/app", note="")), field, WEEK_END, rebuild=True)
+    with session_scope(factory) as s:
+        h = s.get(m.Issue, r.issue_id).html
+    assert "https://x.example/app" in h and "access token" not in h
+
+
+def test_the_app_link_must_be_https():
+    import pytest as _pytest
+    from pydantic import ValidationError
+    from research_agent.domain.field_config import AppLinkConfig
+    AppLinkConfig(url="https://example.org/app")
+    for bad in ("http://example.org/app", "example.org/app", "javascript:alert(1)"):
+        with _pytest.raises(ValidationError):
+            AppLinkConfig(url=bad)
+
+
+def test_the_team_name_in_the_outro_is_large_navy_and_has_an_accent_bar(factory, seeded):
+    import re
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2)
+    html, _ = built(factory, profile, field)
+    name = profile.newsletter.signature.name
+    assert re.search(r'font-size:20px;line-height:27px;font-weight:700;color:#0b2545;">%s</div>' % re.escape(name), html)
+    assert "border-left:4px solid #1d4e89" in html[html.index(name) - 600:html.index(name)]            # the accent bar beside it

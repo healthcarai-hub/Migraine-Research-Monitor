@@ -364,6 +364,9 @@ def test_the_editions_tab_shows_the_formatted_edition_in_a_locked_frame_without_
     for label in ("Preview", "Hide preview", "Open in new tab", "Plain text", "Desktop", "Phone"):
         assert label in js
     assert "built: \"Draft not created yet\"" in js                                                # the owner renamed the Built tag
+    assert js.count('"aria-pressed"') >= 2 and 'previewBtn.setAttribute("aria-pressed", "true")' in js and 'textBtn.setAttribute("aria-pressed", String(!hidden))' in js
+    assert 'class: "btn primary" }, "Preview")' not in js                                           # the Preview button is not blue all the time any more
+    assert '.edbar .btn[aria-pressed="true"]' in html                                              # blue marks the view that is showing
     assert "hideText" in js                                                                        # a card shows the formatted preview or the plain text, never both
     assert "cards[0].handle.show()" in js and "openEdition" in js                                  # the newest edition opens itself; only one preview is open at a time
     csp = c.get("/app").headers["content-security-policy"]

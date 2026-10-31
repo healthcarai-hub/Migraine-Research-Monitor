@@ -83,6 +83,16 @@
 </td></tr>
 </table>
 </td></tr>
+{% if cfg.app_link %}
+<tr><td style="padding:16px 24px 4px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{{ zebra }};border:1px solid {{ rule }};border-left:4px solid {{ accent }};border-radius:6px;"><tr>
+<td style="padding:16px 18px;font-family:{{ font }};">
+<div style="font-size:15px;line-height:22px;font-weight:700;color:{{ deep }};">{{ cfg.app_link.title }}</div>
+<div style="font-size:13.5px;line-height:21px;color:{{ muted }};padding-top:3px;">{{ cfg.app_link.text }}</div>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:12px;"><tr><td style="background:{{ deep }};border-radius:6px;"><a href="{{ cfg.app_link.url }}" style="display:inline-block;padding:10px 20px;font-family:{{ font }};font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">{{ cfg.app_link.button }} &rarr;</a></td></tr></table>
+{% if cfg.app_link.note %}<div style="font-size:12px;line-height:18px;color:#6c7d91;padding-top:8px;">{{ cfg.app_link.note }}</div>{% endif %}
+</td></tr></table></td></tr>
+{% endif %}
 {% if cfg.results_lead %}<tr><td style="padding:24px 24px 0;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};font-weight:700;">{{ cfg.results_lead }}</td></tr>{% endif %}
 {% endif %}
 
@@ -123,11 +133,13 @@
 {% endif %}
 {% if cfg.signature %}
 <tr><td style="padding:0 24px 36px;font-family:{{ font }};font-size:12.5px;line-height:20px;color:{{ muted }};">
-<div style="font-size:13.5px;font-weight:700;color:{{ ink }};">{{ cfg.signature.name }}</div>
-{% if cfg.signature.title %}<div style="margin:0;">{{ cfg.signature.title }}</div>{% endif %}
-{% if cfg.signature.email %}<div style="margin:0;"><a href="mailto:{{ cfg.signature.email }}" style="color:{{ accent }};text-decoration:none;">{{ cfg.signature.email }}</a></div>{% endif %}
-{% if cfg.signature.phone %}<div style="margin:0;">{{ cfg.signature.phone }}</div>{% endif %}
-{% if cfg.signature.disclaimer %}<div style="margin-top:12px;font-size:11px;line-height:16px;color:#8791a3;">{{ cfg.signature.disclaimer }}</div>{% endif %}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td style="border-left:4px solid {{ accent }};padding:2px 0 2px 16px;font-family:{{ font }};">
+<div style="font-size:20px;line-height:27px;font-weight:700;color:{{ deep }};">{{ cfg.signature.name }}</div>
+{% if cfg.signature.title %}<div style="margin:0;font-size:13.5px;color:{{ muted }};">{{ cfg.signature.title }}</div>{% endif %}
+{% if cfg.signature.email %}<div style="margin:0;font-size:13px;"><a href="mailto:{{ cfg.signature.email }}" style="color:{{ accent }};text-decoration:none;">{{ cfg.signature.email }}</a></div>{% endif %}
+{% if cfg.signature.phone %}<div style="margin:0;font-size:13px;">{{ cfg.signature.phone }}</div>{% endif %}
+</td></tr></table>
+{% if cfg.signature.disclaimer %}<div style="margin-top:14px;font-size:11px;line-height:16px;color:#8791a3;">{{ cfg.signature.disclaimer }}</div>{% endif %}
 </td></tr>
 {% endif %}
 
