@@ -181,7 +181,7 @@ src/research_agent/
   infrastructure/         http client, database (models, repository, migrations helper), one adapter per source
   bootstrap.py cli.py     wiring and command line
 migrations/               Alembic (Postgres gets row level security enabled for Supabase's REST API)
-tests/                    522 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
+tests/                    531 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
 ```
 
 ## Adding another profile or field

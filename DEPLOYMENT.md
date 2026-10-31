@@ -6,7 +6,7 @@ Nothing here has been run on Railway yet: that needs your account. The code, the
 |---|---|---|
 | `api` | the API and the web page (`/app`), the image's default command | only the two limited roles (`API_DATABASE_URL`, `API_ADMIN_DATABASE_URL`) |
 | `daily-collect` | `research-agent job daily`, cron `30 5 * * *` | the owner connection (`DATABASE_URL`) |
-| `weekly-newsletter` | `research-agent job weekly`, cron `0 6 * * 5` | the owner connection (`DATABASE_URL`) |
+| `weekly-newsletter` | `research-agent job weekly`, cron `30 14 * * 4` (Thursday 14:30 UTC = 20:00 IST) | the owner connection (`DATABASE_URL`) |
 
 All three are built from the same repository and the same `Dockerfile`; only the start command and schedule differ. The owner connection is given to the two job services only, never to the public API service. Cron times are UTC (Railway's rule).
 
@@ -52,7 +52,7 @@ Create a project and add the repository three times (New > GitHub Repo). Railway
 * Variables: `DATABASE_URL` (the **Session pooler** owner string), `CONTACT_EMAIL`, `NCBI_API_KEY`, `OPENALEX_API_KEY`. Optional: `JOB_OVERLAP_DAYS` (default 3).
 
 **Service `weekly-newsletter`**
-* Settings > Deploy: Custom Start Command `research-agent job weekly`, Cron Schedule `0 6 * * 5`. No public domain.
+* Settings > Deploy: Custom Start Command `research-agent job weekly`, Cron Schedule `30 14 * * 4` (Thursday 14:30 UTC, 20:00 IST; the edition is built then and dated Friday, see section 5). No public domain.
 * Variables: the same four as above, plus `SPRINGER_API_KEY` (optional), `LLM_API_KEY`, `LLM_MODEL` (Groq; without them the edition uses abstract extracts), optionally `LLM_BASE_URL` and `LLM_REASONING_EFFORT` (for example `low` for `openai/gpt-oss-20b`), and optionally `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` (with them the job also creates a Gmail **draft**; it never sends) and `NEWSLETTER_RECIPIENTS` (the draft's "To" addresses, comma separated). `JOB_FULLTEXT_LIMIT` (default 500) is optional.
 * Railway's Shared Variables can hold the values the two job services have in common, so they are entered once.
 
@@ -68,7 +68,10 @@ Railway cron rules to know (from its docs): schedules are UTC and at least 5 min
 5. Put the schedules back and leave them.
 
 ## 5. Day to day
-* **Failure signals:** a failed job exits non-zero, so Railway marks the run failed; check the project's notification settings in Railway for email or chat alerts (I have not verified what Railway offers on your plan). Separately, the weekly job refuses to build if no successful collection finished in the last 36 hours (`status --max-age-hours 36`), so a silently stopped schedule cannot give you a stale newsletter.
+
+**Timing and the edition date (owner decision 2026-10-31).** The weekly job runs on Thursday at 14:30 UTC (20:00 IST), 9 hours after that day's collection, so Thursday's papers are in. The edition is dated for Friday (`newsletter.edition_weekday: 4` in the profile; Monday is 0): the date is the next Friday on or after the UTC day of the run. Only the date moves: the contents are everything stored up to the moment the job starts, so papers found on Friday morning go into the following Thursday's edition, and none is ever lost or sent twice. Running the job again on Friday gives the same date, and an edition that is already published is never rebuilt. Keep the weekly time clear of the daily one (they must not overlap) and between 00:00 and 18:29 UTC, so the UTC day is also the day in India.
+
+* **Failure signals:** a failed job exits non-zero, so Railway marks the run failed; check the project's notification settings in Railway for email or chat alerts (I have not verified what Railway offers on your plan). Separately, the weekly job refuses to build if no successful collection finished in the last 12 hours (`status --max-age-hours 12`). The daily collection runs at 05:30 UTC and the weekly job at 14:30 UTC on Thursday, 9 hours later, so if Thursday's collection failed the weekly job fails too (Railway shows it as failed) instead of quietly leaving Thursday's papers out; fix the collection, run the daily job by hand, then run the weekly job again.
 * **Times:** change the Cron Schedule in each service's settings. Run the daily job by hand with `JOB_OVERLAP_DAYS` raised to catch up after an outage longer than 3 days, then lower it again.
 * **Re-running the weekly job** for the same date is safe: an unpublished edition is returned unchanged, a paper is never carried twice, and a published edition is never rebuilt. To replace an unpublished edition run `research-agent newsletter build --rebuild` locally.
 * **Schema changes:** both jobs run `db upgrade` first, so a pushed migration is applied by the next run. Re-run `db roles` only if a new table is added to what the API reads.

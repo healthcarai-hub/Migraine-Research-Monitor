@@ -179,6 +179,7 @@ class NewsletterConfig(BaseModel):
     subject: str = "{title}: {date}"          # the email subject; {title} and {date} (for example October 30, 2026) are filled in
     recipients: list[str] = Field(default_factory=list)
     accent_color: str = "#1f5f8b"     # links, bars and section rules in the HTML edition; a #rrggbb colour
+    edition_weekday: int | None = None   # the weekday an edition is dated (Monday is 0, Friday 4): a run before it is dated for the coming one. None = the day of the run
     deep_color: str = "#0b2545"       # the dark navy of the header band, the At a glance panel and the section strips; a #rrggbb colour
     priority_notes: dict[str, str] = Field(default_factory=lambda: {
         "core": "Leading journals of the field, which carry most of its literature. When an edition has to be limited in size, their publications rank slightly higher.",
@@ -212,6 +213,8 @@ class NewsletterConfig(BaseModel):
             raise ValueError("max_catchup_days must be at least lookback_days")
         if self.carryover_penalty < 0:
             raise ValueError("carryover_penalty must be 0 or more")
+        if self.edition_weekday is not None and not 0 <= self.edition_weekday <= 6:
+            raise ValueError("edition_weekday must be 0 (Monday) to 6 (Sunday), or left out")
         try:
             fields = [(name, spec, conv) for _, name, spec, conv in string.Formatter().parse(self.subject) if name is not None]
         except ValueError:

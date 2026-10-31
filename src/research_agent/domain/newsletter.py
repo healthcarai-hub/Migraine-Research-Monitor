@@ -101,6 +101,12 @@ def format_pub(label: str | None) -> str:
         return label
 
 
+def edition_date(today: date, weekday: int | None) -> date:
+    """The date an edition is dated: the next occurrence of `weekday` (Monday is 0) on or after `today`, or `today` when no weekday is set.
+    A Thursday-evening run is thus dated Friday, the day the edition goes out. Only the label moves: what the edition contains is still everything stored up to the run."""
+    return today if weekday is None else today + timedelta(days=(weekday - today.weekday()) % 7)
+
+
 def format_long_date(d: date) -> str:
     """date(2026, 10, 30) -> 'October 30, 2026' (the older newsletters' style)."""
     return f"{d.strftime('%B')} {d.day}, {d.year}"

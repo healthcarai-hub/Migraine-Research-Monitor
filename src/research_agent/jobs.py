@@ -4,7 +4,7 @@ A job is a fixed list of the CLI's own commands run in order. It stops at the fi
 nobody waits for a newsletter built from bad data. Hosts such as Railway do not stop a cron run that hangs, so each job also has a hard time limit.
 
 daily   database schema -> profile -> collect (looks back JOB_OVERLAP_DAYS, default 3)
-weekly  freshness guard (a successful collection within 36 hours) -> schema -> full text (JOB_FULLTEXT_LIMIT papers) -> build the edition
+weekly  freshness guard (a successful collection within 12 hours) -> schema -> full text (JOB_FULLTEXT_LIMIT papers) -> build the edition
         -> create a Gmail draft when Gmail credentials are set. It never sends anything; the edition itself is stored in the database and served by the API.
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ from .settings import Settings
 
 DAILY_TIMEOUT_MINUTES = 45
 WEEKLY_TIMEOUT_MINUTES = 150
-FRESHNESS_HOURS = 36
+FRESHNESS_HOURS = 12     # the daily collection runs 9 hours before the Thursday weekly job: if that day's collection failed, the weekly job fails rather than leave the day's papers out
 
 Step = tuple[str, list[str]]
 

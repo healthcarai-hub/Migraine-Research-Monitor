@@ -138,7 +138,7 @@ def test_the_daily_job_updates_the_schema_and_profile_then_collects_with_the_con
 def test_the_weekly_job_checks_freshness_first_then_full_text_then_builds_and_only_drafts_with_gmail_set_up():
     plain = jobs.weekly_steps(Settings(database_url="sqlite://", job_fulltext_limit=300), "curt", "2026-10-30")
     assert [lbl for lbl, _ in plain] == ["freshness guard", "database schema", "full text", "build the edition"]
-    assert plain[0][1] == ["status", "--runs", "1", "--max-age-hours", "36"] and plain[2][1] == ["fulltext", "--profile", "curt", "--limit", "300"]
+    assert plain[0][1] == ["status", "--runs", "1", "--max-age-hours", "12"] and plain[2][1] == ["fulltext", "--profile", "curt", "--limit", "300"]
     assert plain[3][1] == ["newsletter", "--profile", "curt", "build", "--week-ending", "2026-10-30"]
     gmail = jobs.weekly_steps(Settings(database_url="sqlite://", google_refresh_token="x"), "curt", "2026-10-30")
     assert gmail[-1][1] == ["newsletter", "--profile", "curt", "publish", "curt-2026-10-30", "--to", "gmail"] and len(gmail) == 5
@@ -187,9 +187,26 @@ def test_the_job_command_is_wired_to_the_cli(monkeypatch):
     monkeypatch.setattr("research_agent.jobs.run_job", lambda kind, settings, profile, week, main_fn, out=print: seen.update(kind=kind, profile=profile, week=week) or 0)
     assert main(["job", "weekly", "--week-ending", "2026-10-30"]) == 0
     assert seen == {"kind": "weekly", "profile": "curt", "week": "2026-10-30"}
-    assert main(["job", "daily"]) == 0 and seen["kind"] == "daily" and seen["week"] == datetime.now(timezone.utc).date().isoformat()
+    assert main(["job", "daily"]) == 0 and seen["kind"] == "daily"
     with pytest.raises(SystemExit):
         main(["job", "hourly"])
+
+
+@pytest.mark.parametrize("today, dated", [("2026-11-05", "2026-11-06"),     # Thursday: the edition goes out Friday and is dated Friday
+                                           ("2026-11-06", "2026-11-06"),     # Friday: the same day
+                                           ("2026-11-07", "2026-11-13"),     # Saturday: the coming Friday
+                                           ("2026-11-02", "2026-11-06")])    # Monday
+def test_the_weekly_job_dates_the_edition_for_the_profiles_weekday(monkeypatch, today, dated):
+    from datetime import date as d
+    seen = {}
+    monkeypatch.setattr("research_agent.jobs.run_job", lambda kind, settings, profile, week, main_fn, out=print: seen.update(week=week) or 0)
+    monkeypatch.setattr("research_agent.cli._today", lambda: d.fromisoformat(today))
+    assert main(["job", "weekly"]) == 0 and seen["week"] == dated
+    assert main(["job", "weekly", "--week-ending", "2026-12-25"]) == 0 and seen["week"] == "2026-12-25"        # an explicit date always wins
+
+
+def test_the_weekly_guard_wants_a_collection_from_the_last_12_hours():
+    assert jobs.FRESHNESS_HOURS == 12
 
 
 # ---------------------------------------------------------------- staleness check

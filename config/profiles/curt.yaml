@@ -22,6 +22,7 @@ newsletter:
   title: Weekly Migraine Research Digest                      # header wording taken from the earlier newsletter agent
   header_label: Research briefing                             # the small capitals line above the title
   subtitle: Curated insights from recent publications
+  edition_weekday: 4               # owner decision 2026-10-31: the edition is dated Friday (0 = Monday) even though it is built on Thursday evening; only the date moves, the content runs up to the build
   subject: "This Week in Migraine Research — {date}"          # {date} is filled in like October 30, 2026; {title} is also available
   accent_color: "#1d4e89"                                      # links, bars and section rules (#rrggbb); owner approved the navy and blue look of the At a glance panel, 2026-10-31
   deep_color: "#0b2545"                                        # the navy of the header band, the At a glance panel and the section strips

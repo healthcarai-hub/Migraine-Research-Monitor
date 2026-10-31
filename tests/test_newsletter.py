@@ -1070,3 +1070,35 @@ def test_the_heading_for_papers_without_an_abstract_is_a_setting(factory, seeded
     html, text = edition_docs(factory, profile.model_copy(update={"newsletter": profile.newsletter.model_copy(update={"no_abstract_heading": "Title and link only"})}), field)
     assert "Title and link only</h2>" in html and "[Title and link only]" in text and "Without an abstract" not in html
     assert seeded[0].newsletter.no_abstract_heading == "Without an abstract"
+
+
+def test_edition_date_is_the_next_occurrence_of_the_weekday_or_today_when_none_is_set():
+    from research_agent.domain.newsletter import edition_date
+    assert edition_date(date(2026, 11, 5), 4) == date(2026, 11, 6)       # Thursday -> Friday
+    assert edition_date(date(2026, 11, 6), 4) == date(2026, 11, 6)       # Friday -> itself
+    assert edition_date(date(2026, 11, 7), 4) == date(2026, 11, 13)      # Saturday -> next Friday
+    assert edition_date(date(2026, 11, 5), None) == date(2026, 11, 5)
+    assert edition_date(date(2026, 11, 8), 0) == date(2026, 11, 9)       # Sunday -> Monday
+
+
+def test_edition_weekday_must_be_a_real_weekday(seeded):
+    import pytest as _pytest
+    from pydantic import ValidationError
+    profile, _ = seeded
+    assert profile.newsletter.edition_weekday == 4                         # Curt's edition is dated Friday
+    for bad in (7, -1):
+        with _pytest.raises(ValidationError):
+            profile.newsletter.model_copy(update={"edition_weekday": bad}).model_validate({**profile.newsletter.model_dump(), "edition_weekday": bad})
+
+
+def test_an_edition_dated_for_friday_built_on_thursday_still_holds_everything_stored_up_to_the_run(factory, seeded):
+    profile, field = seeded
+    thursday = datetime(2026, 11, 5, 14, 30, tzinfo=timezone.utc)           # 20:00 IST
+    add(factory, profile, 1, days_ago=0, now=thursday)                       # stored at the moment of the run: in
+    add(factory, profile, 2, days_ago=3, now=thursday)
+    r = svc(factory, now=thursday).build(profile, field, date(2026, 11, 6))   # dated Friday
+    with session_scope(factory) as s:
+        issue = s.get(m.Issue, r.issue_id)
+        assert issue.subject == "This Week in Migraine Research — November 6, 2026" and "November 6, 2026" in issue.html
+        assert issue.window_end.replace(tzinfo=timezone.utc) == thursday         # the content stops at the run, not at the dated Friday
+    assert {pid for pid, *_ in item_ids(factory)} == {1, 2}

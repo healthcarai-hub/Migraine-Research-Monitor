@@ -46,9 +46,17 @@ def cmd_db(args, settings: Settings) -> int:
     return 0
 
 
+def _today() -> date:
+    return datetime.now(timezone.utc).date()
+
+
 def cmd_job(args, settings: Settings) -> int:
+    from .domain.newsletter import edition_date
     from .jobs import run_job
-    week_ending = args.week_ending or datetime.now(timezone.utc).date().isoformat()
+    week_ending = args.week_ending
+    if not week_ending:      # the edition date the profile asks for (Friday for Curt), counted from the UTC day of the run
+        profile, _ = load_profile(settings.config_dir, args.profile)
+        week_ending = edition_date(_today(), profile.newsletter.edition_weekday).isoformat()
     return run_job(args.kind, settings, args.profile, week_ending, main)
 
 
@@ -191,10 +199,11 @@ def choose_recipients(settings: Settings, profile) -> list[str]:
 
 def cmd_newsletter(args, settings: Settings) -> int:
     from .application.newsletter import IssueExists
+    from .domain.newsletter import edition_date
     profile, field = load_profile(settings.config_dir, args.profile)
     svc = build_newsletter(settings, field_name=field.name.lower(), max_words=profile.newsletter.summary_words)
     if args.nl == "build":
-        week_end = date.fromisoformat(args.week_ending) if args.week_ending else datetime.now(timezone.utc).date()
+        week_end = date.fromisoformat(args.week_ending) if args.week_ending else edition_date(_today(), profile.newsletter.edition_weekday)
         try:
             r = svc.build(profile, field, week_end, rebuild=args.rebuild, recheck=not args.no_recheck, use_llm=not args.no_llm)
         except IssueExists as exc:
@@ -318,7 +327,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--pooler-port", type=int, default=5432, help="roles: 5432 = session mode (default, for servers that stay up), 6543 = transaction mode (for serverless functions)")
     p.set_defaults(fn=cmd_db)
     p = sub.add_parser("job", help="a scheduled job: daily (collect) or weekly (full text, newsletter edition)")
-    p.add_argument("kind", choices=["daily", "weekly"]); p.add_argument("--profile", default="curt"); p.add_argument("--week-ending", help="weekly: YYYY-MM-DD; default today UTC"); p.set_defaults(fn=cmd_job)
+    p.add_argument("kind", choices=["daily", "weekly"]); p.add_argument("--profile", default="curt"); p.add_argument("--week-ending", help="weekly: the edition date, YYYY-MM-DD; default: the profile's edition weekday (Friday for Curt) on or after today UTC"); p.set_defaults(fn=cmd_job)
     p = sub.add_parser("gmail", help="one-time Gmail sign-in so the weekly job can create drafts")
     p.add_argument("action", choices=["authorize"]); p.add_argument("--port", type=int, default=0, help="local port for Google's redirect (default: any free port)"); p.set_defaults(fn=cmd_gmail)
     p = sub.add_parser("fix-abstracts", help="repair glued words in stored abstracts (dry run unless --apply)")
@@ -342,7 +351,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--reapply-policy", action="store_true", help="recompute which stored texts are printable after a policy change (no network)"); p.set_defaults(fn=cmd_fulltext)
     p = sub.add_parser("pmc-lag"); p.add_argument("--profile", default="curt"); p.set_defaults(fn=cmd_pmc_lag)
     p = sub.add_parser("newsletter"); p.add_argument("--profile", default="curt"); nl = p.add_subparsers(dest="nl", required=True)
-    b = nl.add_parser("build"); b.add_argument("--week-ending", help="YYYY-MM-DD; default today"); b.add_argument("--rebuild", action="store_true", help="replace an unpublished issue")
+    b = nl.add_parser("build"); b.add_argument("--week-ending", help="the edition date, YYYY-MM-DD; default: the profile's edition weekday (Friday for Curt) on or after today UTC"); b.add_argument("--rebuild", action="store_true", help="replace an unpublished issue")
     b.add_argument("--no-recheck", action="store_true", help="skip the retraction re-check of recently sent papers")
     b.add_argument("--no-llm", action="store_true", help="use abstract extracts instead of model-written summaries")
     nl.add_parser("list")
