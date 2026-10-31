@@ -1,0 +1,561 @@
+{
+ "totalCount": 3,
+ "studies": [
+  {
+   "protocolSection": {
+    "identificationModule": {
+     "nctId": "NCT07903168",
+     "orgStudyIdInfo": {
+      "id": "26/SS/0081-IRAS-367495"
+     },
+     "secondaryIdInfos": [
+      {
+       "id": "GCA25219",
+       "type": "OTHER_GRANT",
+       "domain": "NHS Grampian Charities"
+      },
+      {
+       "id": "2-006-26",
+       "type": "OTHER",
+       "domain": "University of Aberdeen - Sponsor Reference Number"
+      }
+     ],
+     "organization": {
+      "fullName": "University of Aberdeen",
+      "class": "OTHER"
+     },
+     "briefTitle": "Why Do People With Epilepsy Get More Infections?",
+     "officialTitle": "Epilepsy, Immune Dysfunction and Risk of Infection Study - A Prospective Cohort Study of Immune Dysfunction and Infection Risk With Epilepsy",
+     "acronym": "Epi-IRIS"
+    },
+    "statusModule": {
+     "statusVerifiedDate": "2026-10",
+     "overallStatus": "NOT_YET_RECRUITING",
+     "expandedAccessInfo": {
+      "hasExpandedAccess": false
+     },
+     "startDateStruct": {
+      "date": "2026-11",
+      "type": "ESTIMATED"
+     },
+     "primaryCompletionDateStruct": {
+      "date": "2038-05",
+      "type": "ESTIMATED"
+     },
+     "completionDateStruct": {
+      "date": "2038-05",
+      "type": "ESTIMATED"
+     },
+     "studyFirstSubmitDate": "2026-10-21",
+     "studyFirstSubmitQcDate": "2026-10-21",
+     "studyFirstPostDateStruct": {
+      "date": "2026-10-29",
+      "type": "ACTUAL"
+     },
+     "lastUpdateSubmitDate": "2026-10-21",
+     "lastUpdatePostDateStruct": {
+      "date": "2026-10-29",
+      "type": "ACTUAL"
+     }
+    },
+    "sponsorCollaboratorsModule": {
+     "responsibleParty": {
+      "type": "SPONSOR"
+     },
+     "leadSponsor": {
+      "name": "University of Aberdeen",
+      "class": "OTHER"
+     }
+    },
+    "oversightModule": {
+     "oversightHasDmc": false,
+     "isFdaRegulatedDrug": false,
+     "isFdaRegulatedDevice": false
+    },
+    "descriptionModule": {
+     "briefSummary": "People with epilepsy are predisposed to having seizures (\"fits\"), where abnormal electrical activity in the brain disrupts normal brain functioning. It is a common condition with around 1% of the population of Scotland having this condition. They are treated with anti-seizure medications, drugs which reduce the chance of having seizures.\n\nUnfortunately, people with epilepsy are more likely to have severe infections than those without epilepsy and this is known to increase risk of seizures. The reasons for more severe infections in people with epilepsy are unclear, but one factor may be that anti-seizure medications impair the function of the body's immune system, which fights infection. Our previous work looking at residents in the North-East of Scotland showed a link between these medications and risk of infection.\n\nWe plan to study people being started on antiseizure medications (ASMs) with a new diagnosis of epilepsy and those already on ASMs with an established diagnosis of epilepsy in NHS Grampian. We will compare with people not taking ASMs in a group of people with a single seizure and in a group of people with migraine.\n\nWe will investigate immune function and infection risk with more-detailed information about individual's background, their seizures/epilepsy, other health conditions, and blood tests. We will then do laboratory experiments to determine how ASMs may impair the immune system by looking at the function of types of white blood cells that play an important part in immune functioning.\n\nWe also wish to develop statistical tools which can identify an individual's risk of infection when starting ASMs, based on their demographic, medical and social characteristics, to target closer monitoring/changes in treatment to those with higher risk.\n\nThis research will allow us to provide better individualised care in terms of which medication to use for treatment, what doses to use and whether blood tests to screen for impaired immune function would be helpful. We hope that this will lead to reduced risk of infections in people with epilepsy, resulting in better outcomes in this condition.",
+     "detailedDescription": "Background:\n\nEpilepsy is a common neurological condition affecting 1% of the population and is associated with a 2.6-fold increased mortality risk, partly due to infection-related deaths. We previously showed that anti-seizure medications (ASMs) are associated with abnormal immune function (hypogammaglobulinemia, lymphopenia, and neutropenia) and increased infection risk, but further work is needed to understand this risk and whether it can be reduced.\n\nAims:\n\n1. To clarify the effects of ASM on blood immune parameters\n2. To establish whether ASMs are associated with increased infection rates\n3. To explore potential mechanisms of immune dysfunction with commonly used ASMs\n4. To develop predictive models for infection risk based on clinical and laboratory data\n5. To develop and validate algorithms using routinely collected healthcare data to determine diagnosis of epilepsy, recurrence of seizure and good seizure control.\n\nProtocol/methodology:\n\nWe will recruit a cohort of approximately 500 participants: 100 new epilepsy cases and 100 established epilepsy cases (treated with ASMs) and 200-300 first seizures and 0-100 people with migraine (not treated with ASMs) and follow them for 10 years. This will result in an initial cohort of approximately 200 individuals treated with ASMs (new and established epilepsy) and 300 not treated with ASMs (between first seizure and migraine). Using this cohort, we will investigate changes in immune parameters (hypogammaglobulinemia, lymphopenia, neutropenia) in people treated with ASMs. We will then investigate the frequency of infections. These analyses will expand on our previous work by adjusting for co-morbidities and studying specific types of infection, such as opportunistic infections. We will use routinely collected data to support the information we gather from patients during the study, and to validate the use of this for determining diagnosis of epilepsy and seizure frequency.\n\nWe will investigate potential mechanisms of immune system dysfunction with ASMs with in vitro studies of innate immune system activity, including phagocytosis assays, killing assays, and viability assays in cultured macrophages/neutrophils with and without ASMs\n\nWe will then develop a prognostic model to identify people taking ASMs who are at high risk of infection who may need monitoring of immune parameters.\n\nExpected outcomes/benefits:\n\n1. A better understanding of infection risk in those treated with ASMs.\n2. Ability to identify those at high infection risk and intervene to reduce infection-related morbidity/mortality with screening, changing ASMs, or interventions directed at the mechanisms."
+    },
+    "conditionsModule": {
+     "conditions": [
+      "Epilepsy",
+      "Antiepileptic Drugs",
+      "Infection",
+      "Immune Dysfunction"
+     ],
+     "keywords": [
+      "Epilepsy",
+      "Antiseizure medications",
+      "Infections",
+      "Immune dysfunction"
+     ]
+    },
+    "designModule": {
+     "studyType": "OBSERVATIONAL",
+     "patientRegistry": false,
+     "designInfo": {
+      "observationalModel": "COHORT",
+      "timePerspective": "PROSPECTIVE"
+     },
+     "bioSpec": {
+      "retention": "SAMPLES_WITH_DNA",
+      "description": "Whole blood"
+     },
+     "enrollmentInfo": {
+      "count": 500,
+      "type": "ESTIMATED"
+     }
+    },
+    "armsInterventionsModule": {
+     "armGroups": [
+      {
+       "label": "Exposed",
+       "description": "Individuals taking antiseizure medications",
+       "interventionNames": [
+        "Drug: Antiepileptic Drug"
+       ]
+      },
+      {
+       "label": "Unexposed",
+       "description": "Individuals not taking antiseizure medications"
+      }
+     ],
+     "interventions": [
+      {
+       "type": "DRUG",
+       "name": "Antiepileptic Drug",
+       "description": "Antiseizure medications prescribed as routine care",
+       "armGroupLabels": [
+        "Exposed"
+       ],
+       "otherNames": [
+        "Antiseizure medication"
+       ]
+      }
+     ]
+    },
+    "outcomesModule": {
+     "primaryOutcomes": [
+      {
+       "measure": "Infections",
+       "description": "Clinically significant rates of infection (community antimicrobial prescriptions or hospital admissions with infection)",
+       "timeFrame": "During a 10 year period from the time of enrolment"
+      }
+     ],
+     "secondaryOutcomes": [
+      {
+       "measure": "Blood immune system parameters",
+       "description": "Abnormal level of blood immune system parameters (white blood cell counts, immunoglobulins, lymphocyte subsets)",
+       "timeFrame": "During a 10 year period from the time of enrolment"
+      },
+      {
+       "measure": "Experimental laboratory tests",
+       "description": "In vitro macrophage and/or neutrophil functioning with exposure to common ASMs (carbamazepine, lamotrigine, levetiracetam, phenytoin, sodium valproate)",
+       "timeFrame": "Blood obtained during enrolment and/or 6 months after enrolment"
+      },
+      {
+       "measure": "Prediction of infection",
+       "description": "A prognostic model (a statistical tool) that can be used to predict infection frequency in those being started on ASMs.",
+       "timeFrame": "During a 10 year period from the time of enrolment"
+      },
+      {
+       "measure": "Validated algorithm",
+       "description": "Validated algorithms using routinely collected healthcare data to i) identify diagnoses of epilepsy; ii) measure seizure recurrence and iii) good seizure control.",
+       "timeFrame": "During a 10 year period from the time of enrolment"
+      }
+     ]
+    },
+    "eligibilityModule": {
+     "eligibilityCriteria": "Inclusion Criteria:\n\n1. Adults aged 16 or over\n2. Resident in an area covered by NHS Grampian neurology service\n3. Individuals with:\n\n   1. A diagnosis of first unprovoked (or reflex) seizure; or\n   2. A new diagnosis of epilepsy (at least two unprovoked (or reflex) seizures occurring more than 24 hours apart)); or\n   3. Established diagnosis of epilepsy; or\n   4. A diagnosis of migraine\n4. Able to give informed consent to participate or, if lacking capacity, a reliable Welfare Guardian/Welfare Attorney/Nearest Relative can give consent on behalf of the participant.\n\nDefinition of established epilepsy in this context:\n\n1. The individual was diagnosed with epilepsy prior to the consultation at which the clinician referred them to the research team; or\n2. When a potential participant is identified from a previous clinic consultation, they already have a diagnosis of epilepsy.\n\nExclusion Criteria:\n\n1. Functional (non-epileptic) seizures without epileptic seizures or migraine. If the patient has both epileptic and functional seizures, or migraine and functional seizures, they would be eligible for inclusion, provided they meet the other criteria.\n2. Acute symptomatic seizure(s) without previous or subsequent unprovoked seizure(s) (e.g. due to head trauma, severe infection, significant electrolyte abnormality, alcohol withdrawal) would be an exclusion from the first seizure/epilepsy group.\n3. First seizure group:\n\n   a) Those taking or are planned to be started on antiseizure medication(s)\n4. New diagnosis of epilepsy group:\n\n   1. Those not planned to be started on an antiseizure medication\n   2. Those taking, or are planned to be started on, two or more antiseizure medications\n   3. Those already taking an antiseizure medication at the time of their new diagnosis of epilepsy\n5. Established epilepsy group:\n\n   1. Those taking, or are planned to be started on, two or more antiseizure medications\n   2. Those not taking an antiseizure medication, even if planned to be started on an antiseizure medication\n6. Migraine control group:\n\n   1. Receiving treatment with antiseizure medications; or\n   2. Receiving immunosuppressive\\* treatment for another condition; or\n   3. Medical history of single unprovoked seizure or epilepsy\n\n      * Exclusion due to immunosuppression increasing risk of immune dysfunction. Immunosuppression is not an exclusion criterion for first seizure/epilepsy groups as immunosuppression will be used as a variable for other analyses, including risk prediction analyses.",
+     "sex": "ALL",
+     "minimumAge": "16 Years",
+     "stdAges": [
+      "CHILD",
+      "ADULT",
+      "OLDER_ADULT"
+     ],
+     "studyPopulation": "Resident in an area covered by NHS Grampian neurology service.\n\nPotential participants will have either been reviewed by the neurology team as an inpatient or outpatient.",
+     "samplingMethod": "NON_PROBABILITY_SAMPLE"
+    }
+   },
+   "derivedSection": {
+    "miscInfoModule": {
+     "versionHolder": "2026-10-30"
+    },
+    "conditionBrowseModule": {
+     "meshes": [
+      {
+       "id": "D004827",
+       "term": "Epilepsy"
+      },
+      {
+       "id": "D007239",
+       "term": "Infections"
+      },
+      {
+       "id": "D007154",
+       "term": "Immune System Diseases"
+      }
+     ],
+     "ancestors": [
+      {
+       "id": "D001927",
+       "term": "Brain Diseases"
+      },
+      {
+       "id": "D002493",
+       "term": "Central Nervous System Diseases"
+      },
+      {
+       "id": "D009422",
+       "term": "Nervous System Diseases"
+      }
+     ]
+    },
+    "interventionBrowseModule": {
+     "meshes": [
+      {
+       "id": "D000927",
+       "term": "Anticonvulsants"
+      }
+     ],
+     "ancestors": [
+      {
+       "id": "D002491",
+       "term": "Central Nervous System Agents"
+      },
+      {
+       "id": "D045506",
+       "term": "Therapeutic Uses"
+      },
+      {
+       "id": "D020228",
+       "term": "Pharmacologic Actions"
+      },
+      {
+       "id": "D020164",
+       "term": "Chemical Actions and Uses"
+      }
+     ]
+    }
+   },
+   "hasResults": false
+  },
+  {
+   "protocolSection": {
+    "identificationModule": {
+     "nctId": "NCT07906262",
+     "orgStudyIdInfo": {
+      "id": "C4951099"
+     },
+     "organization": {
+      "fullName": "Pfizer",
+      "class": "INDUSTRY"
+     },
+     "briefTitle": "Efficacy of Rimegepant 75 mg for the Acute Treatment of Migraine: a Bayesian Individual Participant Data Meta-analysis Standardized to Defined Target Populations",
+     "officialTitle": "Efficacy of Rimegepant 75 mg for the Acute Treatment of Migraine: a Bayesian Individual Participant Data Meta-analysis Standardized to Defined Target Populations"
+    },
+    "statusModule": {
+     "statusVerifiedDate": "2026-10",
+     "overallStatus": "ACTIVE_NOT_RECRUITING",
+     "expandedAccessInfo": {
+      "hasExpandedAccess": false
+     },
+     "startDateStruct": {
+      "date": "2026-10-12",
+      "type": "ACTUAL"
+     },
+     "primaryCompletionDateStruct": {
+      "date": "2026-12-31",
+      "type": "ESTIMATED"
+     },
+     "completionDateStruct": {
+      "date": "2026-12-31",
+      "type": "ESTIMATED"
+     },
+     "studyFirstSubmitDate": "2026-10-09",
+     "studyFirstSubmitQcDate": "2026-10-27",
+     "studyFirstPostDateStruct": {
+      "date": "2026-10-30",
+      "type": "ACTUAL"
+     },
+     "lastUpdateSubmitDate": "2026-10-27",
+     "lastUpdatePostDateStruct": {
+      "date": "2026-10-30",
+      "type": "ACTUAL"
+     }
+    },
+    "sponsorCollaboratorsModule": {
+     "responsibleParty": {
+      "type": "SPONSOR"
+     },
+     "leadSponsor": {
+      "name": "Pfizer",
+      "class": "INDUSTRY"
+     }
+    },
+    "oversightModule": {
+     "oversightHasDmc": false,
+     "isFdaRegulatedDrug": true,
+     "isFdaRegulatedDevice": false
+    },
+    "descriptionModule": {
+     "briefSummary": "This non-interventional study will evaluate the efficacy of rimegepant 75 mg compared with placebo for the acute treatment of moderate or severe migraine attacks using individual participant data (IPD) from six completed randomized, double-blind, placebo-controlled clinical trials. The analysis includes data from adult participants with migraine with or without aura enrolled across studies conducted in the United States, China, South Korea, Japan, and multiple European and other international locations.\n\nAlthough the efficacy of rimegepant has been established in individual trials and previous pooled analyses, conventional meta-analyses provide average treatment effects based on the mix of participants enrolled in the included studies and may not reflect outcomes expected in specific patient populations. The primary objective is to estimate the average treatment effects of rimegepant 75 mg relative to placebo for moderate or severe migraine attacks with respect to pain and symptom relief in prespecified target populations, including regional populations from Europe, the United States, China, South Korea, and Japan. A secondary objective is to evaluate treatment effects within clinically relevant subgroups defined by demographic and clinical characteristics.\n\nBecause this study uses existing data from completed clinical trials, no new participant recruitment, treatment assignment, or data collection will be conducted. The findings will contribute to the evidence base for rimegepant in the acute treatment of migraine.",
+     "detailedDescription": "Migraine is a disabling neurological disorder characterized by recurrent attacks of moderate to severe headache that are commonly accompanied by symptoms such as nausea, photophobia, and phonophobia. Acute treatment aims to relieve symptoms during individual migraine attacks and restore normal functioning. Rimegepant is an oral calcitonin gene-related peptide (CGRP) receptor antagonist approved for the acute treatment of migraine with or without aura in adults. Multiple randomized, double-blind, placebo-controlled clinical trials have demonstrated the efficacy of a single 75 mg dose of rimegepant across diverse patient populations and geographic regions. Previous pooled analyses and aggregate-data meta-analyses have shown that rimegepant provides clinically meaningful improvements in key acute migraine efficacy outcomes compared with placebo. However, conventional pooled analyses estimate treatment effects based on the combined populations enrolled in the contributing studies and are not standardized to any specific patient population. Because treatment response may vary according to demographic, geographic, and clinical characteristics, average effects derived from pooled study populations may not accurately reflect the benefits expected in specific populations of interest. This study is a non-interventional, Bayesian individual participant data (IPD) meta-analysis that will use participant-level data from six completed randomized, double-blind, placebo-controlled clinical trials evaluating rimegepant 75 mg for the acute treatment of migraine. The contributing studies were conducted in the United States, China, South Korea, Japan, and multiple European and other international locations. The primary objective is to estimate the average treatment effects of rimegepant 75 mg relative to placebo for moderate or severe migraine attacks. A secondary objective is to estimate treatment effects within clinically relevant patient subgroups. The primary efficacy endpoints are pain freedom at 2 hours postdose, freedom from the most bothersome symptom at 2 hours postdose, and pain relief at 2 hours postdose. Secondary endpoints include pain freedom and pain relief at earlier time points; return to normal functioning; sustained pain freedom and sustained pain relief through 24 and 48 hours after dosing; freedom from nausea, photophobia, and phonophobia; and use of rescue medication within 24 hours after dosing. By integrating participant-level data from multiple clinical trials and applying modern standardization methods, this study aims to provide robust and clinically relevant estimates of the efficacy of rimegepant 75 mg across defined geographic populations and patient subgroups. The findings are expected to support evidence-based interpretation of rimegepant efficacy for the acute treatment of migraine."
+    },
+    "conditionsModule": {
+     "conditions": [
+      "Migraine"
+     ],
+     "keywords": [
+      "Migraine",
+      "Acute Migraine",
+      "Migraine With Aura;",
+      "Migraine WithoutAura,",
+      "Rimegepant;",
+      "CGRP Receptor Antagonist",
+      "IndividualParticipant Data Meta-analysis"
+     ]
+    },
+    "designModule": {
+     "studyType": "OBSERVATIONAL",
+     "designInfo": {
+      "observationalModel": "OTHER",
+      "timePerspective": "RETROSPECTIVE"
+     },
+     "enrollmentInfo": {
+      "count": 1,
+      "type": "ACTUAL"
+     }
+    },
+    "armsInterventionsModule": {
+     "armGroups": [
+      {
+       "label": "Rimegepant 75 mg",
+       "description": "Participants from the included randomized, double-blind, placebo-controlled clinical trials who were randomized to receive rimegepant 75 mg for the acute treatment of a moderate or severe migraine attack.",
+       "interventionNames": [
+        "Drug: Rimegepant"
+       ]
+      },
+      {
+       "label": "Placebo",
+       "description": "Participants from the included randomized, double-blind, placebo-controlled clinical trials who were randomized to receive placebo for the acute treatment of a moderate or severe migraine attack.",
+       "interventionNames": [
+        "Drug: Placebo"
+       ]
+      }
+     ],
+     "interventions": [
+      {
+       "type": "DRUG",
+       "name": "Rimegepant",
+       "description": "75mg",
+       "armGroupLabels": [
+        "Rimegepant 75 mg"
+       ]
+      },
+      {
+       "type": "DRUG",
+       "name": "Placebo",
+       "description": "matching placebo",
+       "armGroupLabels": [
+        "Placebo"
+       ]
+      }
+     ]
+    },
+    "outcomesModule": {
+     "primaryOutcomes": [
+      {
+       "measure": "Pain Freedom at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants who achieve pain freedom 2 hours after treatment of a moderate or severe migraine attack.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From the Most Bothersome Symptom at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants who are free from their prespecified most bothersome migraine-associated symptom 2 hours after treatment.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Pain Relief at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants achieving pain relief 2 hours after treatment of a moderate or severe migraine attack.",
+       "timeFrame": "2 hours after administration of study treatment"
+      }
+     ],
+     "secondaryOutcomes": [
+      {
+       "measure": "Pain Freedom at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants who achieve pain freedom 1 hour after treatment of a moderate or severe migraine attack.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Pain Relief at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants achieving pain relief 1 hour after treatment of a moderate or severe migraine attack.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Return to Normal Function at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with normal function 1 hour after treatment.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Return to Normal Function at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with normal function 2 hours after treatment.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Sustained Pain Freedom From 2 to 24 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with sustained pain freedom from 2 through 24 hours after treatment.",
+       "timeFrame": "2 to 24 hours after administration of study treatment"
+      },
+      {
+       "measure": "Sustained Pain Freedom From 2 to 48 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with sustained pain freedom from 2 through 48 hours after treatment.",
+       "timeFrame": "2 to 48 hours after administration of study treatment"
+      },
+      {
+       "measure": "Sustained Pain Relief From 2 to 24 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with sustained pain relief from 2 through 24 hours after treatment.",
+       "timeFrame": "2 to 24 hours after administration of study treatment"
+      },
+      {
+       "measure": "Sustained Pain Relief From 2 to 48 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants with sustained pain relief from 2 through 48 hours after treatment.",
+       "timeFrame": "2 to 48 hours after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Nausea at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from nausea 1 hour after treatment among participants with nausea present at dosing.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Nausea at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from nausea 2 hours after treatment among participants with nausea present at dosing.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Photophobia at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from photophobia 1 hour after treatment among participants with photophobia present at dosing.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Photophobia at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from photophobia 2 hours after treatment among participants with photophobia present at dosing.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Phonophobia at 1 Hour Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from phonophobia 1 hour after treatment among participants with phonophobia present at dosing.",
+       "timeFrame": "1 hour after administration of study treatment"
+      },
+      {
+       "measure": "Freedom From Phonophobia at 2 Hours Postdose",
+       "description": "Average treatment effect of rimegepant 75 mg relative to placebo on the proportion of participants free from phonophobia 2 hours after treatment among participants with phonophobia present at dosing.",
+       "timeFrame": "2 hours after administration of study treatment"
+      },
+      {
+       "measure": "Rescue Medication Use Within 24 Hours Postdose",
+       "description": "Rescue medication use within 24 hours post dose is a binary outcome indicating whether an evaluable participant used rescue medication after administration of study treatment and within 24 hours post dose. The treatment effect of rimegepant 75 mg relative to placebo will be summarized using the risk difference (RD) as the primary effect measure and the risk ratio (RR) as the secondary effect measure.",
+       "timeFrame": "Within 24 hours after administration of study treatment"
+      }
+     ]
+    },
+    "eligibilityModule": {
+     "eligibilityCriteria": "Inclusion Criteria:\n\n* Participants enrolled in one of six completed randomized, double-blind, placebo-controlled clinical trials of rimegepant 75 mg for the acute treatment of migraine.\n* Adults diagnosed with migraine with or without aura according to the eligibility criteria of the parent clinical trial.\n* Randomized to receive either rimegepant 75 mg or placebo for treatment of a qualifying moderate or severe migraine attack.\n* Availability of participant-level data required for the planned analyses.\n\nExclusion Criteria:\n\n* Participants with missing treatment assignment information.\n* Participants lacking data necessary for evaluation of the relevant efficacy endpoints or prespecified covariates used in the analyses.\n* Participants excluded from the parent clinical trials according to the original study-specific eligibility criteria.",
+     "healthyVolunteers": false,
+     "sex": "ALL",
+     "minimumAge": "18 Years",
+     "stdAges": [
+      "ADULT",
+      "OLDER_ADULT"
+     ],
+     "studyPopulation": "The study population consists of adult participants with migraine with or without aura who were enrolled in six completed randomized, double-blind, placebo-controlled clinical trials evaluating rimegepant 75 mg for the acute treatment of migraine. Participants were recruited across multiple geographic regions, including the United States, Europe, China, South Korea, and Japan. Individual participant data from these completed trials will be pooled and analyzed to estimate treatment effects in predefined target populations and clinically relevant subgroups.",
+     "samplingMethod": "NON_PROBABILITY_SAMPLE"
+    },
+    "contactsLocationsModule": {
+     "overallOfficials": [
+      {
+       "name": "Pfizer CT.gov Call Center",
+       "affiliation": "Pfizer",
+       "role": "STUDY_DIRECTOR"
+      }
+     ],
+     "locations": [
+      {
+       "facility": "Pfizer",
+       "city": "New York",
+       "state": "New York",
+       "zip": "10001",
+       "country": "United States",
+       "geoPoint": {
+        "lat": 40.71427,
+        "lon": -74.00597
+       }
+      }
+     ]
+    },
+    "referencesModule": {
+     "seeAlsoLinks": [
+      {
+       "label": "To obtain contact information for a study center near you, click here.",
+       "url": "https://pmiform.com/clinical-trial-info-request?StudyID=C4951099"
+      }
+     ]
+    },
+    "ipdSharingStatementModule": {
+     "ipdSharing": "NO",
+     "description": "Pfizer will provide access to individual de-identified participant data and related study documents (e.g. protocol, Statistical Analysis Plan (SAP), Clinical Study Report (CSR)) upon request from qualified researchers, and subject to certain criteria, conditions, and exceptions. Further details on Pfizer's data sharing criteria and process for requesting access can be found at: https://www.pfizer.com/science/clinical\\_trials/trial\\_data\\_and\\_results/data\\_requests."
+    }
+   },
+   "derivedSection": {
+    "miscInfoModule": {
+     "versionHolder": "2026-10-30"
+    },
+    "conditionBrowseModule": {
+     "meshes": [
+      {
+       "id": "D008881",
+       "term": "Migraine Disorders"
+      },
+      {
+       "id": "D020325",
+       "term": "Migraine with Aura"
+      }
+     ],
+     "ancestors": [
+      {
+       "id": "D051270",
+       "term": "Headache Disorders, Primary"
+      },
+      {
+       "id": "D020773",
+       "term": "Headache Disorders"
+      },
+      {
+       "id": "D001927",
+       "term": "Brain Diseases"
+      },
+      {
+       "id": "D002493",
+       "term": "Central Nervous System Diseases"
+      },
+      {
+       "id": "D009422",
+       "term": "Nervous System Diseases"
+      }
+     ]
+    },
+    "interventionBrowseModule": {
+     "meshes": [
+      {
+       "id": "C578443",
+       "term": "rimegepant sulfate"
+      }
+     ]
+    }
+   },
+   "hasResults": false
+  }
+ ],
+ "nextPageToken": "ZVJ76sWHmqU2wRk2CJf6_LLvzZHcI8Brd7KrgP4YlDeVu_g6IQ"
+}

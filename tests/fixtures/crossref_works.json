@@ -1,0 +1,824 @@
+{
+ "message": {
+  "items": [
+   {
+    "abstract": "<jats:p>Migraine is a prevalent neurological disorder characterized by recurrent and disabling attacks of moderate to severe headache. Migraine attacks are triggerable, a feature systematically investigated in human models of migraine. This has led to the discovery of several endogenous and exogenous triggers of migraine and the development of treatments blocking the migraine-inducing substance calcitonin gene-related peptide (CGRP). Yet despite the success of treatments targeting CGRP signaling, many patients still experience inadequate or no response. Most recently, the model has highlighted another promising target: pituitary adenylate cyclase activating polypeptide (PACAP). Results from a recent phase II trial show that blocking PACAP can reduce the frequency of migraine attacks, suggesting that anti-PACAP medication might soon join the armamentarium of migraine treatments. Given that CGRP and PACAP act through partly different signaling mechanisms, this holds great potential for expanding treatment options for individuals with migraine.</jats:p>",
+    "DOI": "10.68739/j9cxou7t",
+    "type": "posted-content",
+    "created": {
+     "date-parts": [
+      [
+       2026,
+       10,
+       29
+      ]
+     ],
+     "date-time": "2026-10-29T12:57:42Z",
+     "timestamp": 1793278662000
+    },
+    "title": [
+     "Human Models of Migraine and Scientific Advances in Migraine Treatments"
+    ],
+    "author": [
+     {
+      "given": "Rune H\u00e4ckert",
+      "family": "Christensen",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2024,
+       11,
+       21
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.68739/j9cxou7t",
+    "published": {
+     "date-parts": [
+      [
+       2024,
+       11,
+       21
+      ]
+     ]
+    }
+   },
+   {
+    "license": [
+     {
+      "start": {
+       "date-parts": [
+        [
+         2026,
+         10,
+         30
+        ]
+       ],
+       "date-time": "2026-10-30T00:00:00Z",
+       "timestamp": 1793318400000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "http://creativecommons.org/licenses/by-nc/4.0/"
+     }
+    ],
+    "published-print": {
+     "date-parts": [
+      [
+       2026,
+       10,
+       31
+      ]
+     ]
+    },
+    "abstract": "<jats:p>Migraine has traditionally been understood as a neurovascular and neuroinflammatory disorder, but the glymphatic system, a brain-wide waste-clearance network mediated by cerebrospinal fluid and interstitial fluid exchange, has been proposed as a contributor to migraine pathophysiology. This review synthesizes current evidence on the role of glymphatic system dysfunction in migraine onset and chronification, integrating findings from preclinical animal models and multimodal clinical neuroimaging studies. Converging data suggest that cortical spreading depression during migraine attacks induces astrocyte swelling and aquaporin-4 (AQP4) depolarization, leading to physical collapse of the perivascular space, disruption of convective bulk flow, and impaired glymphatic clearance. This clearance failure may prolong the accumulation of nociceptive molecules, including calcitonin gene-related peptide, potassium ions, and glutamate, within the brain parenchyma, thereby exacerbating trigeminovascular sensitization and potentially contributing to migraine chronification. Clinically, alterations in neuroimaging markers such as the diffusion tensor imaging analysis along the perivascular space index and enlarged perivascular spaces have been associated with progressive fluid stagnation and an increased brain age gap in patients with chronic migraine. Glymphatic clearance failure may therefore contribute to the cycle of neuroinflammation and pain that sustains migraine. Future therapeutic strategies may benefit from moving beyond single-receptor blockade toward approaches that normalize the brain microenvironment, potentially by supporting glymphatic clearance through targeted pharmacological interventions and AQP4 channel modulation.</jats:p>",
+    "DOI": "10.62087/hpr.2026.0033",
+    "type": "journal-article",
+    "created": {
+     "date-parts": [
+      [
+       2026,
+       10,
+       30
+      ]
+     ],
+     "date-time": "2026-10-30T07:56:01Z",
+     "timestamp": 1793346961000
+    },
+    "title": [
+     "Glymphatic System Dysfunction in Migraine: From Cortical Spreading Depression to Migraine Chronification"
+    ],
+    "author": [
+     {
+      "ORCID": "https://orcid.org/0000-0001-5360-2951",
+      "authenticated-orcid": true,
+      "given": "Jeongwook",
+      "family": "Park",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Headache and Pain Research"
+    ],
+    "link": [
+     {
+      "URL": "http://e-hpr.org/upload/pdf/hpr-2026-0033.pdf",
+      "content-type": "application/pdf",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "http://e-hpr.org/journal/view.php?doi=10.62087/hpr.2026.0033",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "http://e-hpr.org/upload/pdf/hpr-2026-0033.pdf",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2026,
+       10,
+       31
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.62087/hpr.2026.0033",
+    "ISSN": [
+     "3022-9057",
+     "3022-4764"
+    ],
+    "published": {
+     "date-parts": [
+      [
+       2026,
+       10,
+       31
+      ]
+     ]
+    }
+   },
+   {
+    "update-to": [
+     {
+      "DOI": "10.1016/j.lpmfor.2019.12.002",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "retraction-watch",
+      "updated": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         30
+        ]
+       ],
+       "date-time": "2020-03-30T00:00:00Z",
+       "timestamp": 1585526400000
+      },
+      "record-id": "41633"
+     },
+     {
+      "DOI": "10.1016/j.lpmfor.2019.12.002",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         30
+        ]
+       ],
+       "date-time": "2020-03-30T00:00:00Z",
+       "timestamp": 1585526400000
+      }
+     }
+    ],
+    "license": [
+     {
+      "start": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         1
+        ]
+       ],
+       "date-time": "2020-03-01T00:00:00Z",
+       "timestamp": 1583020800000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+     },
+     {
+      "start": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         1
+        ]
+       ],
+       "date-time": "2020-03-01T00:00:00Z",
+       "timestamp": 1583020800000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/legal/tdmrep-license"
+     }
+    ],
+    "published-print": {
+     "date-parts": [
+      [
+       2020,
+       3
+      ]
+     ]
+    },
+    "DOI": "10.1016/j.lpmfor.2019.12.002",
+    "type": "journal-article",
+    "created": {
+     "date-parts": [
+      [
+       2020,
+       3,
+       30
+      ]
+     ],
+     "date-time": "2020-03-30T06:36:32Z",
+     "timestamp": 1585550192000
+    },
+    "title": [
+     "WITHDRAWN:\u00a0Perspectives th\u00e9rapeutiques dans la migraine"
+    ],
+    "author": [
+     {
+      "given": "Anne",
+      "family": "Donnet",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "updated-by": [
+     {
+      "DOI": "10.1016/j.lpmfor.2019.12.002",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "retraction-watch",
+      "updated": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         30
+        ]
+       ],
+       "date-time": "2020-03-30T00:00:00Z",
+       "timestamp": 1585526400000
+      },
+      "record-id": "41633"
+     },
+     {
+      "DOI": "10.1016/j.lpmfor.2019.12.002",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2020,
+         3,
+         30
+        ]
+       ],
+       "date-time": "2020-03-30T00:00:00Z",
+       "timestamp": 1585526400000
+      }
+     }
+    ],
+    "container-title": [
+     "La Presse M\u00e9dicale Formation"
+    ],
+    "link": [
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2666479819300023?httpAccept=text/xml",
+      "content-type": "text/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2666479819300023?httpAccept=text/plain",
+      "content-type": "text/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2020,
+       3
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1016/j.lpmfor.2019.12.002",
+    "ISSN": [
+     "2666-4798"
+    ],
+    "published": {
+     "date-parts": [
+      [
+       2020,
+       3
+      ]
+     ]
+    }
+   },
+   {
+    "update-to": [
+     {
+      "DOI": "10.1016/j.eurox.2024.100319",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2024,
+         9,
+         1
+        ]
+       ],
+       "date-time": "2024-09-01T00:00:00Z",
+       "timestamp": 1725148800000
+      }
+     }
+    ],
+    "license": [
+     {
+      "start": {
+       "date-parts": [
+        [
+         2024,
+         9,
+         1
+        ]
+       ],
+       "date-time": "2024-09-01T00:00:00Z",
+       "timestamp": 1725148800000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+     },
+     {
+      "start": {
+       "date-parts": [
+        [
+         2024,
+         9,
+         1
+        ]
+       ],
+       "date-time": "2024-09-01T00:00:00Z",
+       "timestamp": 1725148800000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/legal/tdmrep-license"
+     },
+     {
+      "start": {
+       "date-parts": [
+        [
+         2024,
+         6,
+         10
+        ]
+       ],
+       "date-time": "2024-06-10T00:00:00Z",
+       "timestamp": 1717977600000
+      },
+      "content-version": "vor",
+      "delay-in-days": 0,
+      "URL": "http://creativecommons.org/licenses/by-nc/4.0/"
+     }
+    ],
+    "published-print": {
+     "date-parts": [
+      [
+       2024,
+       9
+      ]
+     ]
+    },
+    "DOI": "10.1016/j.eurox.2024.100319",
+    "type": "journal-article",
+    "created": {
+     "date-parts": [
+      [
+       2024,
+       6,
+       22
+      ]
+     ],
+     "date-time": "2024-06-22T12:33:29Z",
+     "timestamp": 1719059609000
+    },
+    "title": [
+     "RETRACTED: Sexual dysfunction in migraine-affected women: A prospective cross-sectional controlled study"
+    ],
+    "author": [
+     {
+      "given": "Remah M.",
+      "family": "Kamel",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Baraatu A.",
+      "family": "Dantata",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Hadiza",
+      "family": "Halilu",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Hafsah M.",
+      "family": "Ahmed",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Khadijah H.",
+      "family": "Muzaffar",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Nishat T.",
+      "family": "Maria",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Hussain R.",
+      "family": "Alsadeq",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "updated-by": [
+     {
+      "DOI": "10.1016/j.eurox.2024.100319",
+      "type": "retraction",
+      "label": "Retraction",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2024,
+         9,
+         1
+        ]
+       ],
+       "date-time": "2024-09-01T00:00:00Z",
+       "timestamp": 1725148800000
+      }
+     },
+     {
+      "DOI": "10.1016/j.eurox.2026.100452",
+      "type": "erratum",
+      "label": "Erratum",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2026,
+         6,
+         1
+        ]
+       ],
+       "date-time": "2026-06-01T00:00:00Z",
+       "timestamp": 1780272000000
+      }
+     }
+    ],
+    "container-title": [
+     "European Journal of Obstetrics &amp; Gynecology and Reproductive Biology: X"
+    ],
+    "link": [
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2590161324000395?httpAccept=text/xml",
+      "content-type": "text/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2590161324000395?httpAccept=text/plain",
+      "content-type": "text/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2024,
+       9
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1016/j.eurox.2024.100319",
+    "ISSN": [
+     "2590-1613"
+    ],
+    "published": {
+     "date-parts": [
+      [
+       2024,
+       9
+      ]
+     ]
+    }
+   },
+   {
+    "update-to": [
+     {
+      "DOI": "10.1016/j.eurox.2024.100319",
+      "type": "erratum",
+      "label": "Erratum",
+      "source": "publisher",
+      "updated": {
+       "date-parts": [
+        [
+         2026,
+         6,
+         1
+        ]
+       ],
+       "date-time": "2026-06-01T00:00:00Z",
+       "timestamp": 1780272000000
+      }
+     }
+    ],
+    "license": [
+     {
+      "start": {
+       "date-parts": [
+        [
+         2026,
+         6,
+         1
+        ]
+       ],
+       "date-time": "2026-06-01T00:00:00Z",
+       "timestamp": 1780272000000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+     },
+     {
+      "start": {
+       "date-parts": [
+        [
+         2026,
+         6,
+         1
+        ]
+       ],
+       "date-time": "2026-06-01T00:00:00Z",
+       "timestamp": 1780272000000
+      },
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "URL": "https://www.elsevier.com/legal/tdmrep-license"
+     },
+     {
+      "start": {
+       "date-parts": [
+        [
+         2026,
+         3,
+         13
+        ]
+       ],
+       "date-time": "2026-03-13T00:00:00Z",
+       "timestamp": 1773360000000
+      },
+      "content-version": "vor",
+      "delay-in-days": 0,
+      "URL": "http://creativecommons.org/licenses/by-nc/4.0/"
+     }
+    ],
+    "published-print": {
+     "date-parts": [
+      [
+       2026,
+       6
+      ]
+     ]
+    },
+    "DOI": "10.1016/j.eurox.2026.100452",
+    "type": "journal-article",
+    "created": {
+     "date-parts": [
+      [
+       2026,
+       3,
+       18
+      ]
+     ],
+     "date-time": "2026-03-18T04:25:59Z",
+     "timestamp": 1773807959000
+    },
+    "title": [
+     "Retraction notice to \u201cSexual dysfunction in migraine-affected women: A prospective cross-sectional controlled study\u201d [Eur. J. Obstet. Gynecol. Reprod. Biol. X 23 (2024) 100319]"
+    ],
+    "author": [
+     {
+      "given": "Remah M.",
+      "family": "Kamel",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Baraatu A.",
+      "family": "Dantata",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Hadiza",
+      "family": "Halilu",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Hafsah M.",
+      "family": "Ahmed",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Khadijah H.",
+      "family": "Muzaffar",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Nishat T.",
+      "family": "Maria",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Hussain R.",
+      "family": "Alsadeq",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "European Journal of Obstetrics &amp; Gynecology and Reproductive Biology: X"
+    ],
+    "link": [
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2590161326000098?httpAccept=text/xml",
+      "content-type": "text/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S2590161326000098?httpAccept=text/plain",
+      "content-type": "text/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2026,
+       6
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1016/j.eurox.2026.100452",
+    "ISSN": [
+     "2590-1613"
+    ],
+    "published": {
+     "date-parts": [
+      [
+       2026,
+       6
+      ]
+     ]
+    }
+   }
+  ],
+  "total-results": 5
+ }
+}

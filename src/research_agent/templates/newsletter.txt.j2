@@ -1,0 +1,54 @@
+{{ cfg.title }}
+{{ '=' * (cfg.title | length) }}
+{% if cfg.subtitle %}{{ cfg.subtitle }}
+{% endif %}
+Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}, papers first found {{ window_text }}.
+{% if total == 0 %}
+
+No new papers matched this week.
+{% endif %}
+{% for sec in sections %}
+
+
+{{ sec.title | upper }} ({{ sec.count }})
+{{ '-' * ((sec.title | length) + 6) }}
+{% if sec.key == 'retractions' %}
+Papers that have been retracted or withdrawn. If we sent one earlier, the edition is named.
+{% endif %}
+{% if sec.key == 'preprints' %}
+Not yet peer reviewed. Treat the findings as provisional.
+{% endif %}
+{% for group, items in sec.groups %}
+{% if group %}
+
+[{{ group }}]
+{% endif %}
+{% for it in items %}
+
+{{ loop.index }}. {{ it.title }}
+   {{ [it.journal, ((it.date_label ~ ' ' ~ it.published) if it.published else ''), it.authors] | select | join(' | ') }}
+{% if it.badges or it.watched %}
+   {{ (it.badges + it.watched) | join('; ') }}
+{% endif %}
+{% if it.previously_sent_in %}
+   We sent this paper earlier (edition {{ it.previously_sent_in }}).{% if it.notice_url %} Retraction notice: {{ it.notice_url }}{% endif %}
+
+{% elif it.retracted and it.notice_url %}
+   Retraction notice: {{ it.notice_url }}
+{% endif %}
+   {{ it.summary }}
+{% if it.doi %}
+   DOI: {{ it.doi }}
+{% endif %}
+   {{ it.url }}
+{% for label, url in it.links %}
+   {{ label }}: {{ url }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+
+{% if held_back %}{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short and will be considered again next week.
+{% endif %}
+Selection: papers first found by our searches from {{ window_text }}. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from each paper's own abstract.{% endif %} Edition generated {{ built_text }}.

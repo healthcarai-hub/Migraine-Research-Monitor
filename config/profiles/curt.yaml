@@ -1,0 +1,420 @@
+# Profile: the first tenant. Journals, researchers and subjects chosen for Curt.
+# Loaded into the database by `research-agent seed`. Source: client workbook plus owner-confirmed researcher IDs (2026-10-30).
+id: curt
+name: Curt Migraine Monitoring
+field: migraine
+language: en
+subjects: all
+fulltext:
+  print_text_regardless_of_licence: true   # owner decision 2026-10-31: licences do not limit printing; every full text we hold is printable. false = use the two lines below
+  # print_licences: [cc-by, cc0]           # only when the switch above is false
+  # allow_entitled_in_print: false         # only when the switch above is false
+newsletter:
+  ranking:                         # points that decide which papers fill a capped section (0 switches a signal off)
+    weights:
+      watched_journal: 3
+      watched_researcher: 3
+      printable_full_text: 3       # full text in hand that the print edition may carry (any licence)
+      title_match: 2               # the field's word is in the title, not only the abstract
+      subject_breadth: 1           # per matching subject, up to 3
+      has_abstract: 1
+      core_journal: 1
+  title: Curt migraine research digest
+  recheck_retraction_weeks: 8      # papers sent in the last N weeks are re-checked for a retraction before each build
+  freshness:                       # owner decision 2026-10-31: papers published long before we found them do not appear in the week they surface
+    max_publication_age_days: 7    # days from publication to the day we first stored the paper; null = no limit. Unknown dates are never left out
+  caps:                            # how much one edition may carry; held-back papers are considered again next week (up to max_catchup_days)
+    per_section:                   # best-ranked first; a missing or null section has no cap. Retractions are never capped here by default.
+      direct: 30
+      mechanisms: 15
+      preprints: 10
+      trials: 10
+    priority_to_watched: true      # owner decision 2026-10-31: papers from a watched journal or researcher are chosen first when a cap bites
+    total: null                    # optional cap across all sections except retractions
+    max_html_kb: 95                # safety net: trim the lowest-ranked papers until the HTML is under this size (Gmail clips near 100 KB); null = off
+journals:
+- key: cephalalgia
+  name: Cephalalgia
+  track: A
+  tier: core
+  issns:
+  - 0333-1024
+  - 1468-2982
+  aliases: []
+- key: headache
+  name: 'Headache: The Journal of Head and Face Pain'
+  track: A
+  tier: core
+  issns:
+  - 0017-8748
+  - 1526-4610
+  aliases: []
+- key: j_headache_pain
+  name: The Journal of Headache and Pain
+  track: A
+  tier: core
+  issns:
+  - 1129-2369
+  - 1129-2377
+  aliases: []
+- key: neurology
+  name: Neurology
+  track: A
+  tier: core
+  issns:
+  - 0028-3878
+  - 1526-632X
+  aliases: []
+- key: lancet_neurology
+  name: The Lancet Neurology
+  track: A
+  tier: core
+  issns:
+  - 1474-4422
+  - 1474-4465
+  aliases: []
+- key: jama_neurology
+  name: JAMA Neurology
+  track: A
+  tier: core
+  issns:
+  - 2168-6149
+  - 2168-6157
+  aliases: []
+- key: frontiers_neurology
+  name: Frontiers in Neurology
+  track: AB
+  tier: targeted
+  issns:
+  - 1664-2295
+  aliases: []
+- key: brain_behav_immun
+  name: Brain, Behavior, and Immunity
+  track: B
+  tier: targeted
+  issns:
+  - 0889-1591
+  - 1090-2139
+  aliases: []
+- key: redox_biology
+  name: Redox Biology
+  track: B
+  tier: targeted
+  issns:
+  - 2213-2317
+  aliases: []
+- key: nutrients
+  name: Nutrients
+  track: B
+  tier: targeted
+  issns:
+  - 2072-6643
+  aliases: []
+researchers:
+- key: richard_b_lipton
+  name: Richard B. Lipton
+  track: A
+  pubmed_names:
+  - Lipton RB
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5000448269
+  orcid: 0000-0003-2652-2897
+  aliases: []
+- key: peter_j_goadsby
+  name: Peter J. Goadsby
+  track: A
+  pubmed_names:
+  - Goadsby PJ
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5004525209
+  orcid: 0000-0003-3260-5904
+  aliases: []
+- key: messoud_ashina
+  name: Messoud Ashina
+  track: A
+  pubmed_names:
+  - Ashina M
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5023775224
+  orcid: 0000-0003-0951-5804
+  aliases: []
+- key: michel_d_ferrari
+  name: Michel D. Ferrari
+  track: A
+  pubmed_names:
+  - Ferrari MD
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5039941295
+  orcid: 0000-0001-9691-9449
+  aliases: []
+- key: stephen_d_silberstein
+  name: Stephen D. Silberstein
+  track: A
+  pubmed_names:
+  - Silberstein SD
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5060976552
+  - A5108076630
+  orcid: 0000-0001-9467-5567
+  aliases: []
+- key: david_w_dodick
+  name: David W. Dodick
+  track: A
+  pubmed_names:
+  - Dodick DW
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5057290642
+  orcid: 0000-0002-9486-6790
+  aliases: []
+- key: todd_j_schwedt
+  name: Todd J. Schwedt
+  track: A
+  pubmed_names:
+  - Schwedt TJ
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5019480561
+  orcid: 0000-0002-7780-7086
+  aliases: []
+- key: patricia_pozo_rosich
+  name: Patricia Pozo-Rosich
+  track: A
+  pubmed_names:
+  - Pozo-Rosich P
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5041516784
+  orcid: 0000-0003-0796-4702
+  aliases: []
+- key: cristina_tassorelli
+  name: Cristina Tassorelli
+  track: A
+  pubmed_names:
+  - Tassorelli C
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5053749762
+  orcid: 0000-0003-1513-2113
+  aliases: []
+- key: jessica_ailani
+  name: Jessica Ailani
+  track: A
+  pubmed_names:
+  - Ailani J
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5057037500
+  orcid: 0000-0001-8106-4927
+  aliases: []
+- key: dawn_c_buse
+  name: Dawn C. Buse
+  track: A
+  pubmed_names:
+  - Buse DC
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5024044218
+  orcid: 0000-0002-3784-6144
+  aliases: []
+- key: amy_a_gelfand
+  name: Amy A. Gelfand
+  track: A
+  pubmed_names:
+  - Gelfand AA
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5076177073
+  orcid: 0000-0002-0911-7905
+  aliases: []
+- key: christina_l_szperka
+  name: Christina L. Szperka
+  track: A
+  pubmed_names:
+  - Szperka CL
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5065625930
+  orcid: 0000-0003-4786-8889
+  aliases: []
+- key: shuu_jiun_wang
+  name: Shuu-Jiun Wang
+  track: A
+  pubmed_names:
+  - Wang SJ
+  pubmed_name_ambiguous: true
+  openalex_ids:
+  - A5028390017
+  orcid: 0000-0001-5179-5358
+  aliases: []
+- key: nazia_karsan
+  name: Nazia Karsan
+  track: A
+  pubmed_names:
+  - Karsan N
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5014589327
+  orcid: 0000-0002-6946-5637
+  aliases: []
+- key: andrew_charles
+  name: Andrew Charles
+  track: AB
+  pubmed_names:
+  - Charles A
+  pubmed_name_ambiguous: true
+  openalex_ids:
+  - A5058179140
+  orcid: 0000-0003-3379-054X
+  aliases: []
+- key: rami_burstein
+  name: Rami Burstein
+  track: AB
+  pubmed_names:
+  - Burstein R
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5016966448
+  orcid: 0000-0003-3763-8916
+  aliases: []
+- key: andrew_f_russo
+  name: Andrew F. Russo
+  track: AB
+  pubmed_names:
+  - Russo AF
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5071785183
+  orcid: 0000-0002-8156-5649
+  aliases: []
+- key: amynah_a_pradhan
+  name: Amynah A. Pradhan
+  track: AB
+  pubmed_names:
+  - Pradhan AA
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5065566445
+  orcid: 0000-0001-9691-2976
+  aliases: []
+- key: gregory_dussor
+  name: Gregory Dussor
+  track: AB
+  pubmed_names:
+  - Dussor G
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5056024832
+  orcid: 0000-0002-1193-9238
+  aliases:
+  - Greg Dussor
+- key: debbie_l_hay
+  name: Debbie L. Hay
+  track: B
+  pubmed_names:
+  - Hay DL
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5020334174
+  orcid: 0000-0002-9558-5122
+  aliases: []
+- key: michael_l_oshinsky
+  name: Michael L. Oshinsky
+  track: AB
+  pubmed_names:
+  - Oshinsky ML
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5029958480
+  orcid: 0000-0002-0976-1047
+  aliases: []
+- key: else_tolner
+  name: Else Tolner
+  track: B
+  pubmed_names:
+  - Tolner EA
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5090031681
+  orcid: 0000-0002-6501-9971
+  aliases: []
+- key: arn_m_j_m_van_den_maagdenberg
+  name: Arn M. J. M. van den Maagdenberg
+  track: B
+  pubmed_names:
+  - van den Maagdenberg AM
+  - van den Maagdenberg A
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5012664216
+  orcid: 0000-0002-9310-5535
+  aliases: []
+- key: k_c_brennan
+  name: K. C. Brennan
+  track: AB
+  pubmed_names:
+  - Brennan KC
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5009414463
+  orcid: 0000-0003-4193-5841
+  aliases:
+  - K.C. Brennan
+- key: andrea_harriott
+  name: Andrea Harriott
+  track: AB
+  pubmed_names:
+  - Harriott AM
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5057175211
+  orcid: 0000-0003-0417-7586
+  aliases: []
+- key: anne_macgregor
+  name: Anne MacGregor
+  track: AB
+  pubmed_names:
+  - MacGregor EA
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5020644806
+  orcid: 0000-0002-4116-9828
+  aliases:
+  - E. Anne MacGregor
+  - Anne Macgregor
+- key: jan_hoffmann
+  name: Jan Hoffmann
+  track: AB
+  pubmed_names:
+  - Hoffmann J
+  pubmed_name_ambiguous: true
+  openalex_ids:
+  - A5008504650
+  orcid: 0000-0002-2103-9081
+  aliases: []
+- key: simon_akerman
+  name: Simon Akerman
+  track: AB
+  pubmed_names:
+  - Akerman S
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5041491240
+  orcid: 0000-0002-6577-6825
+  aliases: []
+- key: hakan_ashina
+  name: Håkan Ashina
+  track: A
+  pubmed_names:
+  - Ashina H
+  pubmed_name_ambiguous: false
+  openalex_ids:
+  - A5085289733
+  orcid: 0000-0002-6268-727X
+  aliases:
+  - Hakan Ashina

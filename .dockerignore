@@ -1,0 +1,20 @@
+# never put secrets or local data in the image
+.env
+.env.*
+!.env.example
+data/
+outputs/
+*.sqlite
+*.sqlite3
+.git/
+.github/
+.venv/
+.vscode/
+__pycache__/
+.pytest_cache/
+.coverage
+# not needed at run time
+tests/
+scripts/
+*.md
+*.pdf

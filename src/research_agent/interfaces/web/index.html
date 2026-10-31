@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curt migraine research</title>
+<style>
+:root { --bg:#f7f7f5; --card:#fff; --ink:#1d2327; --muted:#5b6670; --line:#d9dde0; --accent:#1f5f8b; --accent-ink:#fff; --ok:#1d6b43; --warn:#9a5b00; --bad:#a32424; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#15191c; --card:#1e2428; --ink:#e8ecef; --muted:#a2adb5; --line:#333d44; --accent:#6fb1dd; --accent-ink:#0b1217; --ok:#6fcf9a; --warn:#e3b05a; --bad:#f08a8a; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header, main { max-width: 56rem; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 16px; }
+h1 { font-size: 1.35rem; margin: 0 0 .5rem; }
+label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:2px; }
+input, select, button { font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 10px; min-height:40px; }
+input, select { width:100%; }
+button { cursor:pointer; }
+button:disabled { opacity:.5; cursor:default; }
+button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+button.danger { color:var(--bad); }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+a { color:var(--accent); }
+.row { display:flex; gap:8px; flex-wrap:wrap; align-items:end; }
+.row > * { flex:1 1 9rem; }
+.row > button { flex:0 0 auto; }
+.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap:10px; }
+.tabs { display:flex; gap:6px; margin:12px 0; border-bottom:1px solid var(--line); }
+.tabs button { border:0; border-bottom:3px solid transparent; border-radius:0; background:none; }
+.tabs button[aria-selected="true"] { border-bottom-color:var(--accent); font-weight:600; }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px; }
+.paper { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; margin:10px 0; }
+.paper h3 { font-size:1rem; margin:0 0 4px; }
+.meta { color:var(--muted); font-size:.88rem; }
+.badge { display:inline-block; font-size:.75rem; border:1px solid var(--line); border-radius:99px; padding:0 8px; margin:4px 4px 0 0; }
+.badge.ft { color:var(--ok); border-color:var(--ok); }
+.badge.retracted { color:var(--bad); border-color:var(--bad); }
+.badge.followed { color:var(--accent); border-color:var(--accent); }
+.badge.pre { color:var(--warn); border-color:var(--warn); }
+.fulltext { white-space:pre-wrap; max-height:24rem; overflow:auto; border-top:1px solid var(--line); margin-top:8px; padding-top:8px; font-size:.9rem; }
+fieldset { border:1px solid var(--line); border-radius:8px; margin:0 0 12px; padding:8px 12px; background:var(--card); }
+legend { font-weight:600; padding:0 6px; }
+.check { display:flex; gap:8px; align-items:center; padding:4px 0; min-height:36px; }
+.check input { width:auto; min-height:0; }
+.check label { margin:0; color:inherit; font-size:1rem; }
+.check .tag { color:var(--muted); font-size:.8rem; }
+#msg { min-height:1.5em; margin:8px 0; }
+#msg.error { color:var(--bad); } #msg.ok { color:var(--ok); }
+.pager { display:flex; gap:8px; align-items:center; justify-content:space-between; margin:12px 0 32px; }
+.hidden { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Curt migraine research</h1>
+  <form id="tokenform" class="row" autocomplete="off">
+    <div><label for="token">Access token</label><input id="token" type="password" autocomplete="off" placeholder="paste your token"></div>
+    <button class="primary" type="submit">Use token</button>
+  </form>
+  <div id="msg" role="status" aria-live="polite"></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-search" aria-selected="true" aria-controls="panel-search">Search</button>
+    <button role="tab" id="tab-editions" aria-selected="false" aria-controls="panel-editions">Editions</button>
+    <button role="tab" id="tab-settings" aria-selected="false" aria-controls="panel-settings">Newsletter settings</button>
+  </div>
+</header>
+<main>
+  <section id="panel-search" role="tabpanel" aria-labelledby="tab-search">
+    <form id="searchform" class="panel">
+      <div class="grid">
+        <div><label for="q">Words in title or abstract</label><input id="q" type="search"></div>
+        <div><label for="author">Author (comma for several)</label><input id="author" type="text" placeholder="goadsby p, lipton"></div>
+        <div><label for="journal">Journal (comma for several)</label><input id="journal" type="text" list="journals" placeholder="cephalalgia, headache"><datalist id="journals"></datalist></div>
+        <div><label for="researcher">Followed researcher</label><select id="researcher"><option value="">Anyone</option></select></div>
+        <div><label for="from">Published from</label><input id="from" type="date"></div>
+        <div><label for="to">Published to</label><input id="to" type="date"></div>
+        <div><label for="fulltext">Full text</label><select id="fulltext"><option value="">Any</option><option value="true">Held</option><option value="false">Not held</option></select></div>
+        <div><label for="sort">Sort by</label>
+          <select id="sort"><option value="newest">Newest stored</option><option value="published">Publication date</option><option value="relevance">Relevance</option><option value="fulltext">Full text first</option></select></div>
+        <div><label for="direction">Order</label><select id="direction"><option value="desc">Descending</option><option value="asc">Ascending</option></select></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="primary" type="submit">Search</button><button type="button" id="clear">Clear</button></div>
+    </form>
+    <div id="count" class="meta" role="status"></div>
+    <div id="results"></div>
+    <div class="pager hidden" id="pager"><button type="button" id="prev">Previous</button><span id="page"></span><button type="button" id="next">Next</button></div>
+  </section>
+  <section id="panel-editions" role="tabpanel" aria-labelledby="tab-editions" class="hidden">
+    <p class="meta">The weekly newsletter editions that have been built. Each is kept as it was built; nothing here sends anything.</p>
+    <div id="editions"></div>
+  </section>
+  <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" class="hidden">
+    <p class="meta" id="applies"></p>
+    <div id="groups"></div>
+    <div class="row"><button class="primary" id="save" type="button">Save changes</button><button id="resetcfg" class="danger" type="button">Switch everything back on</button></div>
+    <p class="meta">Switches change which papers the next newsletter picks. They do not change what is collected or what the search shows. Changing them needs an admin token.</p>
+  </section>
+</main>
+<script src="/app/app.js"></script>
+</body>
+</html>

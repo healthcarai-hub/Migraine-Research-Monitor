@@ -1,0 +1,485 @@
+{
+ "hitCount": 41,
+ "resultList": {
+  "result": [
+   {
+    "id": "42955297",
+    "source": "MED",
+    "pmid": "42955297",
+    "doi": "10.1007/s00210-026-06018-w",
+    "title": "Physiologically based pharmacokinetic modeling to predict sumatriptan pharmacokinetics across OCT1 functional groups. ",
+    "authorString": "Ji Z, Dai T, Xu Y, Wang Z, Zhang Q, Zheng L, Hu W.",
+    "authorList": {
+     "author": [
+      {
+       "fullName": "Ji Z",
+       "lastName": "Ji",
+       "firstName": "Zifan",
+       "initials": "Z",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China."
+         },
+         {
+          "affiliation": "School of Pharmaceutical Sciences, Anhui Medical University, Hefei, 230032, China."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Dai T",
+       "lastName": "Dai",
+       "firstName": "Tingting",
+       "initials": "T",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China."
+         },
+         {
+          "affiliation": "School of Pharmaceutical Sciences, Anhui Medical University, Hefei, 230032, China."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Xu Y",
+       "lastName": "Xu",
+       "firstName": "Yixinyue",
+       "initials": "Y",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "School of Pharmaceutical Sciences, Anhui Medical University, Hefei, 230032, China."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Wang Z",
+       "lastName": "Wang",
+       "firstName": "Zilong",
+       "initials": "Z",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China."
+         },
+         {
+          "affiliation": "School of Pharmaceutical Sciences, Anhui Medical University, Hefei, 230032, China."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Zhang Q",
+       "lastName": "Zhang",
+       "firstName": "Qian",
+       "initials": "Q",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Zheng L",
+       "lastName": "Zheng",
+       "firstName": "Liang",
+       "initials": "L",
+       "authorId": {
+        "type": "ORCID",
+        "value": "0000-0002-4971-451X"
+       },
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China. zhengl@ahmu.edu.cn."
+         }
+        ]
+       }
+      },
+      {
+       "fullName": "Hu W",
+       "lastName": "Hu",
+       "firstName": "Wei",
+       "initials": "W",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China. huwei@ahmu.edu.cn."
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "authorIdList": {
+     "authorId": [
+      {
+       "type": "ORCID",
+       "value": "0000-0002-4971-451X"
+      }
+     ]
+    },
+    "journalInfo": {
+     "journalIssueId": 4275648,
+     "dateOfPublication": "2026 Oct",
+     "monthOfPublication": 10,
+     "yearOfPublication": 2026,
+     "journal": {
+      "medlineAbbreviation": "Naunyn Schmiedebergs Arch Pharmacol",
+      "title": "Naunyn-Schmiedeberg's archives of pharmacology",
+      "essn": "1432-1912",
+      "issn": "0028-1298",
+      "nlmid": "0326264",
+      "isoabbreviation": "Naunyn Schmiedebergs Arch Pharmacol"
+     },
+     "printPublicationDate": "2026-10-01"
+    },
+    "pubYear": "2026",
+    "abstractText": "Sumatriptan is a 5-hydroxytryptamine 1B/1D receptor agonist for acute migraine. Reduced organic cation transporter 1 (OCT1) function is associated with increased sumatriptan exposure, but its quantitative contribution to pharmacokinetic variability remains unclear. The aim of the study is to develop a whole-body physiologically based pharmacokinetic (PBPK) model describing sumatriptan PK across OCT1 functional groups and explore an exposure-matched candidate dose. A 50-mg mixed-genotype base model was developed from three clinical studies and extrapolated to 25 and 100\u00a0mg without reestimating drug-specific parameters. OCT1 functional differences were represented by changes in the effective OCT1-mediated hepatic uptake capacity (Vmax). Individuals with 0 active OCT1 alleles were compared with those with 1 or 2 active alleles. Oral doses of 20, 25, and 30\u00a0mg were explored in the 0-active-allele group using a predefined exposure-matching range of 0.80-1.25 for Cmax and AUC0-9\u00a0h. Across 50-mg studies, geometric mean fold errors were 1.25 for Cmax, 1.07 for AUC0-12\u00a0h, and 1.12 for Tmax. Across 25- and 100-mg studies, predicted-to-observed ratios ranged from 0.65 to 1.50. After 50\u00a0mg, predicted Cmax and AUC0-9\u00a0h ratios for the 0-active-allele group relative to the 1-or-2-active-allele group were 1.81 and 1.82, compared with observed ratios of 1.77 and 2.20. Both 25 and 30\u00a0mg in the 0-active-allele group met the predefined exposure-matching criterion relative to 50\u00a0mg in the 1-or-2-active-allele group, whereas 20\u00a0mg did not.The PBPK model quantified OCT1-related variability in sumatriptan disposition and supported 25\u00a0mg as a clinically feasible exploratory candidate for prospective evaluation in the 0-active-allele group.",
+    "affiliation": "Department of Clinical Pharmacology, The Second Affiliated Hospital of Anhui Medical University, Hefei, 230601, China.",
+    "publicationStatus": "aheadofprint",
+    "language": "eng",
+    "pubModel": "Print-Electronic",
+    "pubTypeList": {
+     "pubType": [
+      "IM",
+      "Journal Article"
+     ]
+    },
+    "fullTextUrlList": {
+     "fullTextUrl": [
+      {
+       "availability": "Subscription required",
+       "availabilityCode": "S",
+       "documentStyle": "doi",
+       "site": "DOI",
+       "url": "https://doi.org/10.1007/s00210-026-06018-w"
+      }
+     ]
+    },
+    "isOpenAccess": "N",
+    "inEPMC": "N",
+    "inPMC": "N",
+    "citedByCount": 0,
+    "hasReferences": "Y",
+    "hasTextMinedTerms": "N",
+    "hasDbCrossReferences": "N",
+    "hasPDF": "N",
+    "hasBook": "N",
+    "hasSuppl": "N",
+    "hasLabsLinks": "N",
+    "hasData": "N",
+    "authMan": "N",
+    "epmcAuthMan": "N",
+    "nihAuthMan": "N",
+    "hasTMAccessionNumbers": "N",
+    "dateOfCreation": "2026-10-29",
+    "dateOfRevision": "2026-10-29",
+    "electronicPublicationDate": "2026-10-29",
+    "firstPublicationDate": "2026-10-29",
+    "firstIndexDate": "2026-10-30",
+    "hasEvaluations": "N"
+   },
+   {
+    "id": "42955189",
+    "source": "MED",
+    "pmid": "42955189",
+    "doi": "10.1007/s11916-026-01574-5",
+    "title": "The Epigenomics of Migraine. ",
+    "authorString": "Liaw YC.",
+    "authorList": {
+     "author": [
+      {
+       "fullName": "Liaw YC",
+       "lastName": "Liaw",
+       "firstName": "Yi-Chia",
+       "initials": "YC",
+       "authorAffiliationDetailsList": {
+        "authorAffiliation": [
+         {
+          "affiliation": "Department of Internal Medicine, National Yang-Ming Chiao-Tung University Hospital, Yi-Lan, Taiwan. ycliaw1201@gmail.com."
+         },
+         {
+          "affiliation": "Institute of Clinical Medicine, School of Medicine, National Yang-Ming Chiao-Tung University, Taipei, Taiwan. ycliaw1201@gmail.com."
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "journalInfo": {
+     "issue": "1",
+     "volume": "30",
+     "journalIssueId": 4291675,
+     "dateOfPublication": "2026 Oct",
+     "monthOfPublication": 10,
+     "yearOfPublication": 2026,
+     "journal": {
+      "medlineAbbreviation": "Curr Pain Headache Rep",
+      "title": "Current pain and headache reports",
+      "essn": "1534-3081",
+      "issn": "1531-3433",
+      "nlmid": "100970666",
+      "isoabbreviation": "Curr Pain Headache Rep"
+     },
+     "printPublicationDate": "2026-10-01"
+    },
+    "pubYear": "2026",
+    "pageInfo": "135",
+    "abstractText": "To review current evidence on epigenetic mechanisms in migraine, offering insights into diagnosis, disease classification, and future therapeutic management. Recent research has focused on three primary epigenetic mechanisms: DNA methylation, non-coding RNAs, and histone modifications. Altered methylation patterns have been identified in CALCA and RAMP1, both critical components of the CGRP signaling pathway. Furthermore, recent research on non-coding RNA data has enabled the development of composite risk scores to distinguish endophenotypes and support clinical diagnosis. Lastly, the therapeutic efficacy of valproic acid may be mediated via its endogenous histone deacetylase-inhibiting effect and chromatin remodeling. As our understanding of epigenetic modulation in migraine expands, these molecular insights can be integrated with genomic profiles to advance precision medicine, adding value to the interaction between genetic and environmental factors.",
+    "affiliation": "Department of Internal Medicine, National Yang-Ming Chiao-Tung University Hospital, Yi-Lan, Taiwan. ycliaw1201@gmail.com.",
+    "publicationStatus": "epublish",
+    "language": "eng",
+    "pubModel": "Electronic",
+    "pubTypeList": {
+     "pubType": [
+      "IM",
+      "Review",
+      "Journal Article"
+     ]
+    },
+    "meshHeadingList": {
+     "meshHeading": [
+      {
+       "majorTopic_YN": "N",
+       "descriptorName": "Humans"
+      },
+      {
+       "majorTopic_YN": "N",
+       "descriptorName": "DNA Methylation",
+       "meshQualifierList": {
+        "meshQualifier": [
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "GE",
+          "qualifierName": "genetics"
+         }
+        ]
+       }
+      },
+      {
+       "majorTopic_YN": "Y",
+       "descriptorName": "Epigenesis, Genetic",
+       "meshQualifierList": {
+        "meshQualifier": [
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "GE",
+          "qualifierName": "genetics"
+         }
+        ]
+       }
+      },
+      {
+       "majorTopic_YN": "Y",
+       "descriptorName": "Migraine Disorders",
+       "meshQualifierList": {
+        "meshQualifier": [
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "DI",
+          "qualifierName": "diagnosis"
+         },
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "DT",
+          "qualifierName": "drug therapy"
+         },
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "GE",
+          "qualifierName": "genetics"
+         }
+        ]
+       }
+      },
+      {
+       "majorTopic_YN": "Y",
+       "descriptorName": "Epigenomics",
+       "meshQualifierList": {
+        "meshQualifier": [
+         {
+          "majorTopic_YN": "N",
+          "abbreviation": "MT",
+          "qualifierName": "methods"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "fullTextUrlList": {
+     "fullTextUrl": [
+      {
+       "availability": "Subscription required",
+       "availabilityCode": "S",
+       "documentStyle": "doi",
+       "site": "DOI",
+       "url": "https://doi.org/10.1007/s11916-026-01574-5"
+      }
+     ]
+    },
+    "isOpenAccess": "N",
+    "inEPMC": "N",
+    "inPMC": "N",
+    "citedByCount": 0,
+    "hasReferences": "Y",
+    "hasTextMinedTerms": "N",
+    "hasDbCrossReferences": "N",
+    "hasPDF": "N",
+    "hasBook": "N",
+    "hasSuppl": "N",
+    "hasLabsLinks": "N",
+    "hasData": "N",
+    "authMan": "N",
+    "epmcAuthMan": "N",
+    "nihAuthMan": "N",
+    "hasTMAccessionNumbers": "N",
+    "dateOfCompletion": "2026-10-29",
+    "dateOfCreation": "2026-10-29",
+    "dateOfRevision": "2026-10-29",
+    "electronicPublicationDate": "2026-10-29",
+    "firstPublicationDate": "2026-10-29",
+    "firstIndexDate": "2026-10-30",
+    "hasEvaluations": "N"
+   },
+   {
+    "id": "PPR1353234",
+    "source": "PPR",
+    "doi": "10.64898/2026.10.28.26365092",
+    "title": "Detection of Spreading Depolarization with Noninvasive Electroencephalography",
+    "authorString": "Chamanzar A, Zabihi M, Major S, Sivakumar S, Elmer J, Shutter L, Patel AB, Stapleton CJ, Dreier JP, Grover P, Amorim E, Chung DY, Rosenthal ES.",
+    "authorList": {
+     "author": [
+      {
+       "fullName": "Chamanzar A",
+       "lastName": "Chamanzar",
+       "firstName": "Alireza",
+       "initials": "A"
+      },
+      {
+       "fullName": "Zabihi M",
+       "lastName": "Zabihi",
+       "firstName": "Morteza",
+       "initials": "M"
+      },
+      {
+       "fullName": "Major S",
+       "lastName": "Major",
+       "firstName": "Sebastian",
+       "initials": "S"
+      },
+      {
+       "fullName": "Sivakumar S",
+       "lastName": "Sivakumar",
+       "firstName": "Shravan",
+       "initials": "S"
+      },
+      {
+       "fullName": "Elmer J",
+       "lastName": "Elmer",
+       "firstName": "Jonathan",
+       "initials": "J"
+      },
+      {
+       "fullName": "Shutter L",
+       "lastName": "Shutter",
+       "firstName": "Lori",
+       "initials": "L"
+      },
+      {
+       "fullName": "Patel AB",
+       "lastName": "Patel",
+       "firstName": "Aman",
+       "initials": "AB"
+      },
+      {
+       "fullName": "Stapleton CJ",
+       "lastName": "Stapleton",
+       "firstName": "Christopher",
+       "initials": "CJ"
+      },
+      {
+       "fullName": "Dreier JP",
+       "lastName": "Dreier",
+       "firstName": "Jens",
+       "initials": "JP"
+      },
+      {
+       "fullName": "Grover P",
+       "lastName": "Grover",
+       "firstName": "Pulkit",
+       "initials": "P"
+      },
+      {
+       "fullName": "Amorim E",
+       "lastName": "Amorim",
+       "firstName": "Edilberto",
+       "initials": "E"
+      },
+      {
+       "fullName": "Chung DY",
+       "lastName": "Chung",
+       "firstName": "David",
+       "initials": "DY"
+      },
+      {
+       "fullName": "Rosenthal ES",
+       "lastName": "Rosenthal",
+       "firstName": "Eric",
+       "initials": "ES"
+      }
+     ]
+    },
+    "pubYear": "2026",
+    "abstractText": "<h4>Background: </h4> and Purpose: Spreading depolarizations (SDs) are waves of near-complete breakdown of the transmembrane ion gradients that underlie migraine aura and occur in patients with moderate-to-severe traumatic, ischemic or hemorrhagic brain injury. SDs are involved in primary and secondary brain injury. They are associated with poor neurological outcome and represent a modifiable therapeutic target. However, despite decades of investigation, SD detection still requires invasive subdural electrocorticography (ECoG) using an implanted subdural electrode strip, restricting monitoring to a small subset of neurosurgical patients. <h4>Methods:</h4> We developed WAVEFRONT, a noninvasive scalp electroencephalography (EEG) biomarker of SD based on spatiotemporal propagation characteristics of delta-band EEG activity. The biomarker was trained and validated using concurrent, multi-day scalp EEG and invasive subdural electrocorticography recordings from patients with traumatic brain injury (TBI), subarachnoid hemorrhage (SAH), or malignant hemispheric stroke (MHS) across three institutions. We assessed out-of-sample performance across institutions, diagnosis, and surgical approaches, as well as calibration, temporal synchrony, and spatial specificity relative to gold-standard SDs annotated on ECoG. Clinical utility was further evaluated in 607 patients comatose after cardiac arrest from the multicenter International Cardiac Arrest REsearch (I-CARE) consortium, a population in whom invasive monitoring is not performed. Outcome analyses excluded patients who died (Cerebral Performance Category [CPC] 5) because death may reflect decisions to withdraw life-sustaining treatment in addition to neurological injury. <h4>Results:</h4> A total of 1,119 gold-standard SDs were annotated in 32 patients (TBI, n=17; SAH, n=12; MHS, n=3; range 0-187 SDs per patient). Across exhaustive cross-validation and institution-, diagnosis-, and surgical approach-based hold-out analyses, WAVEFRONT models trained on one set of patients consistently maintained high performance when evaluated in previously unseen out-of-group cohorts. At the optimal operating point, WAVEFRONT achieved a mean cross-validated true positive rate of 97.3+/-1% with a false positive rate of 6.0+/-0.5%, calculated over 2-min sliding windows with 30-s overlaps. The cumulative duration of WAVEFRONT detections within 30-hour windows strongly correlated with the number of SDs measured by invasive ECoG (R^2=0.7411). Scalp-detected depressions were spatially consistent with the location of the invasive recording strip, and visual inspection demonstrated close temporal correspondence with invasive detections, including during SD clusters. External validation in the independent I-CARE cohort using WAVEFRONT trained on the invasive-monitoring cohort demonstrated significantly greater SD burden on day 3 of post-arrest EEG monitoring among patients with poor neurological outcome (CPC 3-4, n=29) than those with good outcome (CPC 1-2, n=225; p=0.007). <h4>Conclusions:</h4> Eight decades after Leao's description of SD in 1944, we propose and validate a noninvasive scalp EEG biomarker of SD. Consistent performance across institution-, diagnosis-, and surgical approach-based hold-out analyses, together with burden calibration, spatial specificity, and temporal synchrony with ECoG detections, supports the validity of the WAVEFRONT framework. The association of biomarker burden with neurologic outcome after cardiac arrest suggests that noninvasive monitoring may enable investigation of spreading depolarizations in populations where invasive monitoring is not feasible. Future studies should evaluate prospective performance, treatment responsiveness, and disease-specific associations of the SD biomarker with clinical outcome.",
+    "pubTypeList": {
+     "pubType": [
+      "Preprint"
+     ]
+    },
+    "bookOrReportDetails": {
+     "publisher": "medRxiv",
+     "yearOfPublication": 2026
+    },
+    "fullTextUrlList": {
+     "fullTextUrl": [
+      {
+       "availability": "Free",
+       "availabilityCode": "F",
+       "documentStyle": "doi",
+       "site": "DOI",
+       "url": "https://doi.org/10.64898/2026.10.28.26365092"
+      }
+     ]
+    },
+    "isOpenAccess": "N",
+    "inEPMC": "N",
+    "inPMC": "N",
+    "citedByCount": 0,
+    "hasReferences": "N",
+    "hasTextMinedTerms": "N",
+    "hasDbCrossReferences": "N",
+    "hasPDF": "N",
+    "hasBook": "N",
+    "hasSuppl": "N",
+    "hasLabsLinks": "N",
+    "hasData": "N",
+    "authMan": "N",
+    "epmcAuthMan": "N",
+    "nihAuthMan": "N",
+    "hasTMAccessionNumbers": "N",
+    "dateOfCreation": "2026-10-30",
+    "firstPublicationDate": "2026-10-29",
+    "firstIndexDate": "2026-10-30",
+    "hasEvaluations": "N"
+   }
+  ]
+ }
+}

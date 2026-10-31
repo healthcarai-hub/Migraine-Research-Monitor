@@ -1,0 +1,124 @@
+# Field definition: everything migraine-specific lives here, not in code.
+# Loaded into the database by `research-agent seed`. Source: client workbook plus owner-confirmed researcher IDs (2026-10-30).
+id: migraine
+name: Migraine
+language: en
+gate:
+  terms:
+  - text: migrain
+    match: prefix
+    plain: migraine
+tracks:
+  A: Direct migraine research
+  B: Related mechanisms (must still mention the gate term unless an approved bridge term admits the paper)
+bridge:
+  approved: false
+  terms: []
+subjects:
+- code: '1'
+  name: Migraine phenotype
+  track: A
+  terms:
+  - migraine
+  - chronic migraine
+  - episodic migraine
+  - migraine with aura
+  generic_terms:
+  - migraine
+- code: '2'
+  name: Trigeminovascular & neuropeptides
+  track: A
+  terms:
+  - CGRP
+  - PACAP
+  - trigeminovascular
+  - meningeal nociception
+- code: '3'
+  name: Cortical excitability
+  track: A
+  terms:
+  - cortical spreading depression
+  - cortical spreading depolarization
+  - CSD
+  - aura
+- code: '4'
+  name: Clinical therapeutics
+  track: A
+  terms:
+  - prevention
+  - prophylaxis
+  - randomized trial
+  - preventive treatment
+  - placebo
+- code: '5'
+  name: Epidemiology & comorbidities
+  track: A
+  terms:
+  - migraine burden
+  - disability
+  - medication overuse
+  - sleep
+  - mood
+- code: '6'
+  name: Mitochondria & bioenergetics
+  track: B
+  terms:
+  - mitochondrial dysfunction
+  - ATP
+  - OXPHOS
+  - NAD
+  - metabolic resilience
+- code: '7'
+  name: Redox & inflammation
+  track: B
+  terms:
+  - oxidative stress
+  - redox
+  - glutathione
+  - microglia
+  - neuroinflammation
+- code: '8'
+  name: Nutrients & botanicals
+  track: B
+  terms:
+  - riboflavin
+  - magnesium
+  - CoQ10
+  - feverfew
+  - parthenolide
+  - B vitamins
+- code: '9'
+  name: Hormonal regulation
+  track: B
+  terms:
+  - estrogen
+  - estradiol
+  - menstrual migraine
+  - menopause
+  - endocrine
+- code: '10'
+  name: Microbiome & gut-brain
+  track: B
+  terms:
+  - microbiome
+  - microbiota
+  - SCFA
+  - kynurenine
+  - gut-brain axis
+- code: '11'
+  name: Metabolism & vascular
+  track: B
+  terms:
+  - insulin resistance
+  - eNOS
+  - endothelial dysfunction
+  - glucose
+- code: '12'
+  name: Genetics & channels
+  track: B
+  terms:
+  - CACNA1A
+  - ATP1A2
+  - SCN1A
+  - ion channels
+  - GWAS

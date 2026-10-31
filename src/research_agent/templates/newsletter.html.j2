@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ subject }}</title>
+<style>
+  body { margin:0; padding:0; background:#f4f4f2; }
+  .wrap { max-width:720px; margin:0 auto; background:#ffffff; padding:24px 28px; font-family:Georgia,'Times New Roman',serif; font-size:{{ cfg.font_px }}px; line-height:1.55; color:#1a1a1a; }
+  h1 { font-size:1.55em; line-height:1.25; margin:0 0 4px 0; }
+  h2 { font-size:1.3em; margin:36px 0 6px 0; padding-top:14px; border-top:3px solid #1a1a1a; }
+  h3.group { font-size:1.05em; margin:24px 0 4px 0; color:#333333; font-family:Arial,Helvetica,sans-serif; text-transform:uppercase; letter-spacing:.04em; }
+  .sub { color:#444444; margin:0 0 14px 0; }
+  .item { margin:18px 0 22px 0; padding:0 0 18px 0; border-bottom:1px solid #d6d6d2; }
+  .item h4 { font-size:1.08em; line-height:1.3; margin:0 0 4px 0; }
+  .item a { color:#0b3d91; }
+  .meta { font-family:Arial,Helvetica,sans-serif; font-size:.82em; color:#444444; margin:0 0 6px 0; }
+  .badge { display:inline-block; font-family:Arial,Helvetica,sans-serif; font-size:.74em; border:1px solid #1a1a1a; padding:1px 6px; margin:0 6px 4px 0; }
+  .badge.alert { background:#1a1a1a; color:#ffffff; }
+  .links { font-family:Arial,Helvetica,sans-serif; font-size:.84em; margin:6px 0 0 0; }
+  .retracted { border-left:6px solid #1a1a1a; padding-left:14px; }
+  .toc li { margin:2px 0; }
+  .foot { font-family:Arial,Helvetica,sans-serif; font-size:.78em; color:#555555; margin-top:34px; border-top:1px solid #cccccc; padding-top:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>{{ cfg.title }}</h1>
+<p class="sub">{% if cfg.subtitle %}{{ cfg.subtitle }}<br>{% endif %}Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}, papers first found {{ window_text }}.</p>
+{% if total == 0 %}
+<p>No new papers matched this week.</p>
+{% else %}
+<ul class="toc">
+{% for sec in sections %}
+  <li><a href="#{{ sec.key }}">{{ sec.title }}</a> ({{ sec.count }})</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% for sec in sections %}
+<h2 id="{{ sec.key }}">{{ sec.title }}</h2>
+{% if sec.key == 'retractions' %}<p class="sub">Papers that have been retracted or withdrawn. If we sent one earlier, the edition is named.</p>{% endif %}
+{% if sec.key == 'preprints' %}<p class="sub">Not yet peer reviewed. Treat the findings as provisional.</p>{% endif %}
+{% for group, items in sec.groups %}
+{% if group %}<h3 class="group">{{ group }}</h3>{% endif %}
+{% for it in items %}
+<div class="item{{ ' retracted' if it.retracted else '' }}">
+  <h4><a href="{{ it.url }}">{{ it.title }}</a></h4>
+  <p class="meta">{{ [it.journal, ((it.date_label ~ ' ' ~ it.published) if it.published else ''), it.authors] | select | join(' &middot; ' | safe) }}</p>
+  {% if it.badges or it.watched %}<p>{% for b in it.badges %}<span class="badge{{ ' alert' if b == 'RETRACTED' else '' }}">{{ b }}</span>{% endfor %}{% for w in it.watched %}<span class="badge">{{ w }}</span>{% endfor %}</p>{% endif %}
+  {% if it.previously_sent_in %}<p><strong>We sent this paper earlier</strong> (edition {{ it.previously_sent_in }}).{% if it.notice_url %} <a href="{{ it.notice_url }}">Read the retraction notice</a>.{% endif %}</p>
+  {% elif it.retracted and it.notice_url %}<p><a href="{{ it.notice_url }}">Read the retraction notice</a>.</p>{% endif %}
+  <p>{{ it.summary }}</p>
+  <p class="links">{% if it.doi %}DOI: <a href="{{ it.url }}">{{ it.doi }}</a>{% else %}<a href="{{ it.url }}">Open the record</a>{% endif %}{% for label, url in it.links %} &middot; <a href="{{ url }}">{{ label }}</a>{% endfor %}</p>
+</div>
+{% endfor %}
+{% endfor %}
+{% endfor %}
+<div class="foot">
+  {% if held_back %}{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short and will be considered again next week.<br>{% endif %}
+  Selection: papers first found by our searches from {{ window_text }}, in {{ sources_text }}, that mention the field in the title or abstract. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from the paper's own abstract.{% endif %} Edition generated {{ built_text }}.
+</div>
+</div>
+</body>
+</html>

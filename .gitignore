@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+*.sqlite
+*.sqlite3
+data/
+.DS_Store
+.coverage
+outputs/
+.vscode/

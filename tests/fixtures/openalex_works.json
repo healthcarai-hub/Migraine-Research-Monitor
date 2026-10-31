@@ -1,0 +1,1933 @@
+{
+ "meta": {
+  "count": 33,
+  "db_response_time_ms": 11,
+  "page": 1,
+  "per_page": 2,
+  "groups_count": null,
+  "x_query": {
+   "oql": "get works from 2026-10-28 through 2026-10-30 with migraine in the title or abstract",
+   "x_new_oql": "get works from 2026-10-28 through 2026-10-30 with migraine in the title or abstract",
+   "oqo": {
+    "get_rows": "works",
+    "filter_rows": [
+     {
+      "column_id": "from_publication_date",
+      "value": "2026-10-28"
+     },
+     {
+      "column_id": "title_and_abstract.search",
+      "value": "migraine",
+      "operator": "has"
+     },
+     {
+      "column_id": "to_publication_date",
+      "value": "2026-10-30"
+     }
+    ]
+   },
+   "url": "/works?filter=from_publication_date:2026-10-28,title_and_abstract.search:migraine,to_publication_date:2026-10-30&per_page=2",
+   "order": "best matches first",
+   "order_default": true
+  },
+  "cost_usd": 0.001
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W7224528810",
+   "doi": "https://doi.org/10.1007/s11916-026-01574-5",
+   "title": "The Epigenomics of Migraine",
+   "abstract_inverted_index": {
+    "Abstract": [
+     0
+    ],
+    "Purpose": [
+     1
+    ],
+    "of": [
+     2,
+     54,
+     70,
+     85,
+     104
+    ],
+    "Review": [
+     3
+    ],
+    "To": [
+     4
+    ],
+    "review": [
+     5
+    ],
+    "current": [
+     6
+    ],
+    "evidence": [
+     7
+    ],
+    "on": [
+     8,
+     29,
+     62
+    ],
+    "epigenetic": [
+     9,
+     32,
+     105
+    ],
+    "mechanisms": [
+     10
+    ],
+    "in": [
+     11,
+     47,
+     107
+    ],
+    "migraine,": [
+     12
+    ],
+    "offering": [
+     13
+    ],
+    "insights": [
+     14,
+     112
+    ],
+    "into": [
+     15
+    ],
+    "diagnosis,": [
+     16
+    ],
+    "disease": [
+     17
+    ],
+    "classification,": [
+     18
+    ],
+    "and": [
+     19,
+     38,
+     49,
+     77,
+     97,
+     130
+    ],
+    "future": [
+     20
+    ],
+    "therapeutic": [
+     21,
+     83
+    ],
+    "management.": [
+     22
+    ],
+    "Recent": [
+     23,
+     25
+    ],
+    "Findings": [
+     24
+    ],
+    "research": [
+     26,
+     61
+    ],
+    "has": [
+     27,
+     66
+    ],
+    "focused": [
+     28
+    ],
+    "three": [
+     30
+    ],
+    "primary": [
+     31
+    ],
+    "mechanisms:": [
+     33
+    ],
+    "DNA": [
+     34
+    ],
+    "methylation,": [
+     35
+    ],
+    "non-coding": [
+     36,
+     63
+    ],
+    "RNAs,": [
+     37
+    ],
+    "histone": [
+     39,
+     94
+    ],
+    "modifications.": [
+     40
+    ],
+    "Altered": [
+     41
+    ],
+    "methylation": [
+     42
+    ],
+    "patterns": [
+     43
+    ],
+    "have": [
+     44
+    ],
+    "been": [
+     45
+    ],
+    "identified": [
+     46
+    ],
+    "CALCA": [
+     48
+    ],
+    "RAMP1,": [
+     50
+    ],
+    "both": [
+     51
+    ],
+    "critical": [
+     52
+    ],
+    "components": [
+     53
+    ],
+    "the": [
+     55,
+     68,
+     82,
+     126
+    ],
+    "CGRP": [
+     56
+    ],
+    "signaling": [
+     57
+    ],
+    "pathway.": [
+     58
+    ],
+    "Furthermore,": [
+     59
+    ],
+    "recent": [
+     60
+    ],
+    "RNA": [
+     64
+    ],
+    "data": [
+     65
+    ],
+    "enabled": [
+     67
+    ],
+    "development": [
+     69
+    ],
+    "composite": [
+     71
+    ],
+    "risk": [
+     72
+    ],
+    "scores": [
+     73
+    ],
+    "to": [
+     74,
+     119,
+     125
+    ],
+    "distinguish": [
+     75
+    ],
+    "endophenotypes": [
+     76
+    ],
+    "support": [
+     78
+    ],
+    "clinical": [
+     79
+    ],
+    "diagnosis.": [
+     80
+    ],
+    "Lastly,": [
+     81
+    ],
+    "efficacy": [
+     84
+    ],
+    "valproic": [
+     86
+    ],
+    "acid": [
+     87
+    ],
+    "may": [
+     88
+    ],
+    "be": [
+     89,
+     114
+    ],
+    "mediated": [
+     90
+    ],
+    "via": [
+     91
+    ],
+    "its": [
+     92
+    ],
+    "endogenous": [
+     93
+    ],
+    "deacetylase-inhibiting": [
+     95
+    ],
+    "effect": [
+     96
+    ],
+    "chromatin": [
+     98
+    ],
+    "remodeling.": [
+     99
+    ],
+    "Summary": [
+     100
+    ],
+    "As": [
+     101
+    ],
+    "our": [
+     102
+    ],
+    "understanding": [
+     103
+    ],
+    "modulation": [
+     106
+    ],
+    "migraine": [
+     108
+    ],
+    "expands,": [
+     109
+    ],
+    "these": [
+     110
+    ],
+    "molecular": [
+     111
+    ],
+    "can": [
+     113
+    ],
+    "integrated": [
+     115
+    ],
+    "with": [
+     116
+    ],
+    "genomic": [
+     117
+    ],
+    "profiles": [
+     118
+    ],
+    "advance": [
+     120
+    ],
+    "precision": [
+     121
+    ],
+    "medicine,": [
+     122
+    ],
+    "adding": [
+     123
+    ],
+    "value": [
+     124
+    ],
+    "interaction": [
+     127
+    ],
+    "between": [
+     128
+    ],
+    "genetic": [
+     129
+    ],
+    "environmental": [
+     131
+    ],
+    "factors.": [
+     132
+    ]
+   },
+   "publication_date": "2026-10-29",
+   "created_date": "2026-10-30T00:00:00",
+   "type": "article",
+   "language": "en",
+   "ids": {
+    "openalex": "https://openalex.org/W7224528810",
+    "doi": "https://doi.org/10.1007/s11916-026-01574-5"
+   },
+   "primary_location": {
+    "id": "doi:10.1007/s11916-026-01574-5",
+    "doi": "https://doi.org/10.1007/s11916-026-01574-5",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1007/s11916-026-01574-5",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S157499488",
+     "display_name": "Current Pain and Headache Reports",
+     "issn_l": "1531-3433",
+     "issn": [
+      "1531-3433",
+      "1534-3081"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "cwts-core",
+      "dongbi-d",
+      "doyens",
+      "jufo-1",
+      "medline",
+      "norway-1",
+      "poland-70",
+      "russia-white-list-1",
+      "vabb-shw"
+     ],
+     "host_organization": "https://openalex.org/P4310319900",
+     "host_organization_name": "Springer Science+Business Media",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310319900",
+      "https://openalex.org/P4310319965"
+     ],
+     "host_organization_lineage_names": [
+      "Springer Science+Business Media",
+      "Springer Nature"
+     ],
+     "type": "journal"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Current Pain and Headache Reports",
+    "raw_type": "journal-article"
+   },
+   "best_oa_location": {
+    "id": "doi:10.1007/s11916-026-01574-5",
+    "doi": "https://doi.org/10.1007/s11916-026-01574-5",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1007/s11916-026-01574-5",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S157499488",
+     "display_name": "Current Pain and Headache Reports",
+     "issn_l": "1531-3433",
+     "issn": [
+      "1531-3433",
+      "1534-3081"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "cwts-core",
+      "dongbi-d",
+      "doyens",
+      "jufo-1",
+      "medline",
+      "norway-1",
+      "poland-70",
+      "russia-white-list-1",
+      "vabb-shw"
+     ],
+     "host_organization": "https://openalex.org/P4310319900",
+     "host_organization_name": "Springer Science+Business Media",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310319900",
+      "https://openalex.org/P4310319965"
+     ],
+     "host_organization_lineage_names": [
+      "Springer Science+Business Media",
+      "Springer Nature"
+     ],
+     "type": "journal"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Current Pain and Headache Reports",
+    "raw_type": "journal-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "hybrid",
+    "oa_url": "https://doi.org/10.1007/s11916-026-01574-5",
+    "any_repository_has_fulltext": false
+   },
+   "is_retracted": false,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5042068269",
+      "display_name": "Yi-Chia Liaw",
+      "orcid": "https://orcid.org/0000-0002-9093-7045",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-9093-7045"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I148366613",
+       "display_name": "National Yang Ming Chiao Tung University",
+       "ror": "https://ror.org/00se2k293",
+       "country_code": "TW",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I148366613"
+       ]
+      }
+     ],
+     "countries": [
+      "TW"
+     ],
+     "is_corresponding": true,
+     "raw_author_name": "Yi-Chia Liaw",
+     "raw_affiliation_strings": [
+      "Department of Internal Medicine, National Yang-Ming Chiao-Tung University Hospital, Yi-Lan, Taiwan",
+      "Institute of Clinical Medicine, School of Medicine, National Yang-Ming Chiao-Tung University, Taipei, Taiwan"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Department of Internal Medicine, National Yang-Ming Chiao-Tung University Hospital, Yi-Lan, Taiwan",
+       "institution_ids": [
+        "https://openalex.org/I148366613"
+       ]
+      },
+      {
+       "raw_affiliation_string": "Institute of Clinical Medicine, School of Medicine, National Yang-Ming Chiao-Tung University, Taipei, Taiwan",
+       "institution_ids": [
+        "https://openalex.org/I148366613"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "https://openalex.org/W7224523534",
+   "doi": "https://doi.org/10.5281/zenodo.23761686",
+   "title": "Dataset for [Circadian Regulation of Migraine Susceptibility]",
+   "abstract_inverted_index": {
+    "This": [
+     0,
+     74
+    ],
+    "repository": [
+     1
+    ],
+    "contains": [
+     2
+    ],
+    "the": [
+     3,
+     7,
+     11,
+     80
+    ],
+    "raw": [
+     4
+    ],
+    "data": [
+     5,
+     90
+    ],
+    "supporting": [
+     6
+    ],
+    "findings": [
+     8
+    ],
+    "presented": [
+     9
+    ],
+    "in": [
+     10,
+     85
+    ],
+    "following": [
+     12
+    ],
+    "manuscript:": [
+     13
+    ],
+    "Manuscript": [
+     14,
+     71
+    ],
+    "Title:": [
+     15
+    ],
+    "Circadain": [
+     16
+    ],
+    "Regulation": [
+     17
+    ],
+    "of": [
+     18,
+     82
+    ],
+    "Migraine": [
+     19
+    ],
+    "Susceptibility": [
+     20
+    ],
+    "Authors:": [
+     21
+    ],
+    "Lauren": [
+     22
+    ],
+    "C.": [
+     23
+    ],
+    "Strother,": [
+     24
+    ],
+    "Beatriz": [
+     25
+    ],
+    "G.": [
+     26
+    ],
+    "Perez-Nievas,": [
+     27
+    ],
+    "Hannah": [
+     28
+    ],
+    "Rae,": [
+     29
+    ],
+    "Simon": [
+     30
+    ],
+    "Roux,": [
+     31
+    ],
+    "Sophie": [
+     32
+    ],
+    "Rappich,": [
+     33
+    ],
+    "Francois": [
+     34
+    ],
+    "Cadiou,": [
+     35
+    ],
+    "Douglas": [
+     36
+    ],
+    "M.": [
+     37
+    ],
+    "Lopes,": [
+     38
+    ],
+    "Raphaelle": [
+     39
+    ],
+    "Winsky-Sommerer,": [
+     40
+    ],
+    "Alessio": [
+     41
+    ],
+    "Delogu,": [
+     42
+    ],
+    "Frank": [
+     43
+    ],
+    "Hirth,": [
+     44
+    ],
+    "Wendy": [
+     45
+    ],
+    "Noble,": [
+     46
+    ],
+    "Stephen": [
+     47
+    ],
+    "B.": [
+     48
+    ],
+    "McMahon,": [
+     49
+    ],
+    "Peter": [
+     50
+    ],
+    "J.": [
+     51,
+     56
+    ],
+    "Goadsby,": [
+     52
+    ],
+    "Ying-Hui": [
+     53
+    ],
+    "Fu,": [
+     54
+    ],
+    "Louis": [
+     55
+    ],
+    "Pt\u00e1\u010dek,": [
+     57
+    ],
+    "Stuart": [
+     58
+    ],
+    "N.": [
+     59
+    ],
+    "Peirson,": [
+     60
+    ],
+    "and": [
+     61,
+     103
+    ],
+    "Philip": [
+     62
+    ],
+    "R.": [
+     63
+    ],
+    "Holland": [
+     64
+    ],
+    "Journal": [
+     65
+    ],
+    "/": [
+     66
+    ],
+    "Preprint:": [
+     67
+    ],
+    "Submitted": [
+     68
+    ],
+    "for": [
+     69
+    ],
+    "Publication": [
+     70
+    ],
+    "DOI:": [
+     72
+    ],
+    "Pending": [
+     73
+    ],
+    "dataset": [
+     75
+    ],
+    "was": [
+     76,
+     91
+    ],
+    "generated": [
+     77,
+     92
+    ],
+    "to": [
+     78
+    ],
+    "investigate": [
+     79
+    ],
+    "role": [
+     81
+    ],
+    "circadian": [
+     83
+    ],
+    "rhytms": [
+     84
+    ],
+    "migraine": [
+     86
+    ],
+    "attack": [
+     87
+    ],
+    "susceptibility.": [
+     88
+    ],
+    "The": [
+     89
+    ],
+    "from": [
+     93
+    ],
+    "mainly": [
+     94
+    ],
+    "behavioral": [
+     95
+    ],
+    "sensory": [
+     96
+    ],
+    "testing,": [
+     97
+    ],
+    "circadain": [
+     98
+    ],
+    "recordings,": [
+     99
+    ],
+    "western": [
+     100
+    ],
+    "blott's,": [
+     101
+    ],
+    "ELISA's": [
+     102
+    ],
+    "immunohistochemistry.": [
+     104
+    ]
+   },
+   "publication_date": "2026-10-29",
+   "created_date": "2026-10-30T00:00:00",
+   "type": "dataset",
+   "language": "en",
+   "ids": {
+    "openalex": "https://openalex.org/W7224523534",
+    "doi": "https://doi.org/10.5281/zenodo.23761686"
+   },
+   "primary_location": {
+    "id": "doi:10.5281/zenodo.23761686",
+    "doi": "https://doi.org/10.5281/zenodo.23761686",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.5281/zenodo.23761686",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4306400562",
+     "display_name": "Zenodo (CERN European Organization for Nuclear Research)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I67311998",
+     "host_organization_name": "European Organization for Nuclear Research",
+     "host_organization_lineage": [
+      "https://openalex.org/I67311998"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": null,
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "Dataset"
+   },
+   "best_oa_location": {
+    "id": "doi:10.5281/zenodo.23761686",
+    "doi": "https://doi.org/10.5281/zenodo.23761686",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.5281/zenodo.23761686",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4306400562",
+     "display_name": "Zenodo (CERN European Organization for Nuclear Research)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I67311998",
+     "host_organization_name": "European Organization for Nuclear Research",
+     "host_organization_lineage": [
+      "https://openalex.org/I67311998"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": null,
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "Dataset"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://doi.org/10.5281/zenodo.23761686",
+    "any_repository_has_fulltext": true
+   },
+   "is_retracted": false,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5085638268",
+      "display_name": "Philip R. Holland",
+      "orcid": "https://orcid.org/0000-0003-3345-4853",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-3345-4853"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I183935753",
+       "display_name": "King's College London",
+       "ror": "https://ror.org/0220mzb33",
+       "country_code": "GB",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I124357947",
+        "https://openalex.org/I183935753"
+       ]
+      }
+     ],
+     "countries": [
+      "GB"
+     ],
+     "is_corresponding": true,
+     "raw_author_name": "Holland, Philip Robert",
+     "raw_affiliation_strings": [
+      "King's College London"
+     ],
+     "raw_orcid": "https://orcid.org/0000-0003-3345-4853",
+     "affiliations": [
+      {
+       "raw_affiliation_string": "King's College London",
+       "institution_ids": [
+        "https://openalex.org/I183935753"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "https://openalex.org/W1674600634",
+   "doi": "https://doi.org/10.1002/14651858.cd003225.pub2",
+   "title": "Propranolol for migraine prophylaxis",
+   "abstract_inverted_index": {
+    "BACKGROUND:": [
+     0
+    ],
+    "Propranolol": [
+     1,
+     339
+    ],
+    "is": [
+     2,
+     20,
+     24,
+     265,
+     316,
+     321,
+     337
+    ],
+    "one": [
+     3
+    ],
+    "of": [
+     4,
+     40,
+     63,
+     73,
+     87,
+     96,
+     143,
+     149,
+     188,
+     216,
+     219,
+     235,
+     250,
+     258,
+     286,
+     331,
+     350
+    ],
+    "the": [
+     5,
+     36,
+     59,
+     141,
+     150,
+     182,
+     195,
+     217,
+     239,
+     242,
+     256,
+     327
+    ],
+    "most": [
+     6,
+     301
+    ],
+    "commonly": [
+     7
+    ],
+    "prescribed": [
+     8
+    ],
+    "drugs": [
+     9,
+     34,
+     288,
+     352
+    ],
+    "for": [
+     10,
+     35,
+     167,
+     354
+    ],
+    "migraine": [
+     11,
+     105,
+     355
+    ],
+    "prophylaxis.": [
+     12,
+     356
+    ],
+    "OBJECTIVES:": [
+     13
+    ],
+    "We": [
+     14,
+     80
+    ],
+    "aimed": [
+     15
+    ],
+    "to": [
+     16,
+     55,
+     140,
+     255,
+     303,
+     341
+    ],
+    "determine": [
+     17
+    ],
+    "whether": [
+     18,
+     267
+    ],
+    "there": [
+     19,
+     315
+    ],
+    "evidence": [
+     21,
+     318
+    ],
+    "that": [
+     22,
+     319
+    ],
+    "propranolol": [
+     23,
+     97,
+     251,
+     320
+    ],
+    "more": [
+     25,
+     322
+    ],
+    "effective": [
+     26,
+     31,
+     323,
+     344
+    ],
+    "than": [
+     27,
+     324
+    ],
+    "placebo": [
+     28,
+     99,
+     206,
+     325
+    ],
+    "and": [
+     29,
+     58,
+     69,
+     75,
+     83,
+     121,
+     136,
+     146,
+     176,
+     207,
+     230,
+     233,
+     283,
+     345
+    ],
+    "as": [
+     30,
+     32,
+     160,
+     343,
+     347
+    ],
+    "other": [
+     33,
+     211,
+     281,
+     287,
+     351
+    ],
+    "interval": [
+     37,
+     329
+    ],
+    "(prophylactic)": [
+     38
+    ],
+    "treatment": [
+     39,
+     330
+    ],
+    "patients": [
+     41
+    ],
+    "with": [
+     42,
+     98,
+     191,
+     205,
+     210,
+     260,
+     278
+    ],
+    "migraine.": [
+     43,
+     332
+    ],
+    "SEARCH": [
+     44
+    ],
+    "STRATEGY:": [
+     45
+    ],
+    "Potentially": [
+     46
+    ],
+    "eligible": [
+     47
+    ],
+    "studies": [
+     48,
+     259
+    ],
+    "were": [
+     49,
+     156,
+     165,
+     173,
+     226
+    ],
+    "identified": [
+     50,
+     76
+    ],
+    "by": [
+     51,
+     70,
+     177
+    ],
+    "searching": [
+     52
+    ],
+    "MEDLINE/PubMed": [
+     53
+    ],
+    "(1966": [
+     54
+    ],
+    "May": [
+     56
+    ],
+    "2003)": [
+     57
+    ],
+    "Cochrane": [
+     60
+    ],
+    "Central": [
+     61
+    ],
+    "Register": [
+     62
+    ],
+    "Controlled": [
+     64
+    ],
+    "Trials": [
+     65
+    ],
+    "(Issue": [
+     66
+    ],
+    "2,": [
+     67
+    ],
+    "2003),": [
+     68
+    ],
+    "screening": [
+     71
+    ],
+    "bibliographies": [
+     72
+    ],
+    "reviews": [
+     74
+    ],
+    "articles.": [
+     77
+    ],
+    "SELECTION": [
+     78
+    ],
+    "CRITERIA:": [
+     79
+    ],
+    "included": [
+     81,
+     202
+    ],
+    "randomised": [
+     82
+    ],
+    "quasi-randomised": [
+     84
+    ],
+    "clinical": [
+     85,
+     94
+    ],
+    "trials": [
+     86,
+     190,
+     201,
+     220,
+     245,
+     302,
+     310
+    ],
+    "at": [
+     88
+    ],
+    "least": [
+     89
+    ],
+    "4": [
+     90
+    ],
+    "weeks": [
+     91
+    ],
+    "duration": [
+     92
+    ],
+    "comparing": [
+     93
+    ],
+    "effects": [
+     95,
+     249,
+     269,
+     336
+    ],
+    "or": [
+     100
+    ],
+    "another": [
+     101
+    ],
+    "drug": [
+     102
+    ],
+    "in": [
+     103,
+     238,
+     300,
+     326
+    ],
+    "adult": [
+     104
+    ],
+    "sufferers.": [
+     106
+    ],
+    "DATA": [
+     107
+    ],
+    "COLLECTION": [
+     108
+    ],
+    "AND": [
+     109
+    ],
+    "ANALYSIS:": [
+     110
+    ],
+    "Two": [
+     111
+    ],
+    "reviewers": [
+     112
+    ],
+    "extracted": [
+     113
+    ],
+    "information": [
+     114
+    ],
+    "on": [
+     115,
+     334
+    ],
+    "patients,": [
+     116
+    ],
+    "methods,": [
+     117
+    ],
+    "interventions,": [
+     118
+    ],
+    "outcomes": [
+     119
+    ],
+    "measured,": [
+     120
+    ],
+    "results": [
+     122,
+     172
+    ],
+    "using": [
+     123,
+     131
+    ],
+    "a": [
+     124,
+     178,
+     284,
+     348
+    ],
+    "pre-tested": [
+     125
+    ],
+    "form.": [
+     126
+    ],
+    "Study": [
+     127
+    ],
+    "quality": [
+     128,
+     215
+    ],
+    "was": [
+     129,
+     221
+    ],
+    "assessed": [
+     130
+    ],
+    "two": [
+     132
+    ],
+    "checklists": [
+     133
+    ],
+    "(Jadad": [
+     134
+    ],
+    "scale": [
+     135
+    ],
+    "Delphi": [
+     137
+    ],
+    "list).": [
+     138
+    ],
+    "Due": [
+     139,
+     254
+    ],
+    "heterogeneity": [
+     142
+    ],
+    "outcome": [
+     144
+    ],
+    "measures": [
+     145
+    ],
+    "insufficient": [
+     147,
+     231,
+     299
+    ],
+    "reporting": [
+     148,
+     232
+    ],
+    "data,": [
+     151
+    ],
+    "only": [
+     152
+    ],
+    "selective": [
+     153
+    ],
+    "quantitative": [
+     154
+    ],
+    "meta-analyses": [
+     155
+    ],
+    "performed.": [
+     157
+    ],
+    "As": [
+     158
+    ],
+    "far": [
+     159
+    ],
+    "possible,": [
+     161
+    ],
+    "effect": [
+     162
+    ],
+    "size": [
+     163,
+     296
+    ],
+    "estimates": [
+     164
+    ],
+    "calculated": [
+     166
+    ],
+    "single": [
+     168
+    ],
+    "trials.": [
+     169
+    ],
+    "In": [
+     170
+    ],
+    "addition,": [
+     171
+    ],
+    "summarised": [
+     174
+    ],
+    "descriptively": [
+     175
+    ],
+    "vote": [
+     179
+    ],
+    "count": [
+     180
+    ],
+    "among": [
+     181
+    ],
+    "reviewers.": [
+     183
+    ],
+    "MAIN": [
+     184
+    ],
+    "RESULTS:": [
+     185
+    ],
+    "A": [
+     186
+    ],
+    "total": [
+     187
+    ],
+    "58": [
+     189,
+     199
+    ],
+    "5072": [
+     192
+    ],
+    "participants": [
+     193
+    ],
+    "met": [
+     194
+    ],
+    "inclusion": [
+     196
+    ],
+    "criteria.": [
+     197
+    ],
+    "The": [
+     198,
+     213,
+     223,
+     275
+    ],
+    "selected": [
+     200
+    ],
+    "26": [
+     203,
+     243
+    ],
+    "comparisons": [
+     204,
+     209,
+     277
+    ],
+    "47": [
+     208,
+     276
+    ],
+    "drugs.": [
+     212
+    ],
+    "methodological": [
+     214,
+     313
+    ],
+    "majority": [
+     218
+    ],
+    "unsatisfactory.": [
+     222
+    ],
+    "principal": [
+     224
+    ],
+    "shortcomings": [
+     225
+    ],
+    "high": [
+     227
+    ],
+    "dropout": [
+     228
+    ],
+    "rates": [
+     229
+    ],
+    "handling": [
+     234
+    ],
+    "this": [
+     236
+    ],
+    "problem": [
+     237
+    ],
+    "analysis.": [
+     240
+    ],
+    "Overall,": [
+     241
+    ],
+    "placebo-controlled": [
+     244
+    ],
+    "showed": [
+     246
+    ],
+    "clear": [
+     247,
+     317
+    ],
+    "short-term": [
+     248,
+     328
+    ],
+    "over": [
+     252
+    ],
+    "placebo.": [
+     253
+    ],
+    "lack": [
+     257
+    ],
+    "long-term": [
+     261,
+     335
+    ],
+    "follow": [
+     262
+    ],
+    "up,": [
+     263
+    ],
+    "it": [
+     264
+    ],
+    "unclear": [
+     266
+    ],
+    "these": [
+     268
+    ],
+    "are": [
+     270
+    ],
+    "stable": [
+     271
+    ],
+    "after": [
+     272
+    ],
+    "stopping": [
+     273
+    ],
+    "propranolol.": [
+     274
+    ],
+    "calcium": [
+     279
+    ],
+    "antagonists,": [
+     280
+    ],
+    "beta-blockers,": [
+     282
+    ],
+    "variety": [
+     285,
+     349
+    ],
+    "did": [
+     289
+    ],
+    "not": [
+     290
+    ],
+    "yield": [
+     291
+    ],
+    "any": [
+     292
+    ],
+    "clear-cut": [
+     293
+    ],
+    "differences.": [
+     294
+    ],
+    "Sample": [
+     295
+    ],
+    "was,": [
+     297
+    ],
+    "however,": [
+     298
+    ],
+    "establish": [
+     304
+    ],
+    "equivalence.": [
+     305
+    ],
+    "REVIEWERS'": [
+     306
+    ],
+    "CONCLUSIONS:": [
+     307
+    ],
+    "Although": [
+     308
+    ],
+    "many": [
+     309
+    ],
+    "have": [
+     311
+    ],
+    "relevant": [
+     312
+    ],
+    "shortcomings,": [
+     314
+    ],
+    "Evidence": [
+     333
+    ],
+    "lacking.": [
+     338
+    ],
+    "seems": [
+     340
+    ],
+    "be": [
+     342
+    ],
+    "safe": [
+     346
+    ],
+    "used": [
+     353
+    ]
+   },
+   "publication_date": "2004-04-19",
+   "created_date": "2016-06-24T00:00:00",
+   "type": "reference-entry",
+   "language": "en",
+   "ids": {
+    "openalex": "https://openalex.org/W1674600634",
+    "doi": "https://doi.org/10.1002/14651858.cd003225.pub2",
+    "mag": "1674600634",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/15106196"
+   },
+   "primary_location": {
+    "id": "doi:10.1002/14651858.cd003225.pub2",
+    "doi": "https://doi.org/10.1002/14651858.cd003225.pub2",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1002/14651858.cd003225.pub2",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4210172715",
+     "display_name": "Cochrane Database of Systematic Reviews",
+     "issn_l": "1361-6137",
+     "issn": [
+      "1361-6137",
+      "1464-780X",
+      "1465-184X",
+      "1465-1858",
+      "1469-493X"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "anvur-scientific",
+      "cwts-core",
+      "dongbi-a",
+      "doyens",
+      "jufo-1",
+      "jufo-2",
+      "ki-jl-2",
+      "medline",
+      "norway-1",
+      "norway-2",
+      "poland-140",
+      "russia-white-list-1",
+      "vabb-shw"
+     ],
+     "host_organization": "https://openalex.org/P4310320990",
+     "host_organization_name": "Elsevier BV",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320990"
+     ],
+     "host_organization_lineage_names": [
+      "Elsevier BV"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Cochrane Database of Systematic Reviews",
+    "raw_type": "reference-entry"
+   },
+   "best_oa_location": null,
+   "open_access": {
+    "is_oa": false,
+    "oa_status": "closed",
+    "oa_url": null,
+    "any_repository_has_fulltext": false
+   },
+   "is_retracted": true,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5014564622",
+      "display_name": "Klaus Linde",
+      "orcid": "https://orcid.org/0000-0002-2902-970X",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-2902-970X"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I62916508",
+       "display_name": "Technical University of Munich",
+       "ror": "https://ror.org/02kkvpp62",
+       "country_code": "DE",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I62916508"
+       ]
+      }
+     ],
+     "countries": [
+      "DE"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Klaus Linde",
+     "raw_affiliation_strings": [
+      "Centre for Complementary Medicine Research, Department of Internal Medicine II, Technische Universit\u00e4t, Kaiserstr. 9, M\u00fcnchen, Germany, 80801",
+      "Centre for Complementary Medicine Research, Department of Internal Medicine II, Technical University Munich, Munich, Germany"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Centre for Complementary Medicine Research, Department of Internal Medicine II, Technische Universit\u00e4t, Kaiserstr. 9, M\u00fcnchen, Germany, 80801",
+       "institution_ids": [
+        "https://openalex.org/I62916508"
+       ]
+      },
+      {
+       "raw_affiliation_string": "Centre for Complementary Medicine Research, Department of Internal Medicine II, Technical University Munich, Munich, Germany",
+       "institution_ids": [
+        "https://openalex.org/I62916508"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5110168595",
+      "display_name": "Karin Rossnagel",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I39343248",
+       "display_name": "Humboldt-Universit\u00e4t zu Berlin",
+       "ror": "https://ror.org/01hcx6992",
+       "country_code": "DE",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I39343248"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I7877124",
+       "display_name": "Charit\u00e9 \u2013 Universit\u00e4tsmedizin Berlin",
+       "ror": "https://ror.org/001w7jn25",
+       "country_code": "DE",
+       "type": "healthcare",
+       "lineage": [
+        "https://openalex.org/I7877124"
+       ]
+      }
+     ],
+     "countries": [
+      "DE"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Karin Rossnagel",
+     "raw_affiliation_strings": [
+      "Charit\u00e9 University Hospital",
+      "Institute of Social Medicine & Epidemiology, Charit\u00e9 University Hospital, Humboldt University, Berlin, Germany, 10098"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Charit\u00e9 University Hospital",
+       "institution_ids": [
+        "https://openalex.org/I7877124"
+       ]
+      },
+      {
+       "raw_affiliation_string": "Institute of Social Medicine & Epidemiology, Charit\u00e9 University Hospital, Humboldt University, Berlin, Germany, 10098",
+       "institution_ids": [
+        "https://openalex.org/I39343248",
+        "https://openalex.org/I7877124"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
