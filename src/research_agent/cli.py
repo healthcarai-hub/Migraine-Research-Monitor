@@ -91,7 +91,7 @@ def cmd_gmail(args, settings: Settings) -> int:
     from .infrastructure.publishers import GMAIL_COMPOSE_SCOPE, build_gmail_service
     from .settings import PROJECT_ROOT
     if not (settings.google_client_id and settings.google_client_secret):
-        print("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env first (an OAuth client of type Desktop app; see README, section Gmail drafts).")
+        print("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env first (an OAuth client of type Desktop app; see docs/REFERENCE.md, section Gmail drafts).")
         return 2
     try:
         from google_auth_oauthlib.flow import InstalledAppFlow

@@ -15,6 +15,7 @@ A field-configurable research-monitoring agent whose first profile is **Curt (mi
 | Hosting: Railway (API and two cron jobs) and Supabase (database) | **Live**; first scheduled runs still to be watched |
 | Printable PDF edition | **Not started: waiting for the client's template** |
 | Multi-user sign-up and other fields (v2.0) | Deferred on purpose |
+| Search inside the full text and search by meaning (v2.0) | Parked for later; see section 8 |
 
 Quality: 536 offline tests and 1 live test pass. Every run, search and decision below was checked against the real services; nothing was bought and no secret is written in any log.
 
@@ -49,6 +50,7 @@ How this lines up with the original build order in the design plan: its phases 0
 | Failure alerts in Railway | To check | Not verified on the owner's plan. |
 | Gmail OAuth app set to "In production" | To check | Otherwise Google expires the token after about 7 days and the weekly draft fails. |
 | Multi-user sign-up, other fields, per-user sources | Deferred (v2.0) | The design keeps this possible. |
+| Full-text keyword search and meaning-based (vector) search | Deferred (v2.0) | Plan and order in section 8. |
 
 ## 4. How it runs day to day
 
@@ -93,9 +95,31 @@ An edition is **dated Friday** but holds everything stored up to the Thursday bu
 * A few generic subject terms were not probed, and the rate limits of Europe PMC, bioRxiv/medRxiv and ClinicalTrials.gov were not found (marked unverified in the logs).
 * `Pipeline_design_plan.md` still opens with "Plan only: nothing is built"; its sections 13 to 16 hold the current build status.
 
-## 8. Files
+## 8. Ideas parked for v2.0
 
-* `README.md`: how to install, run and use everything.
+**Where search stands today.** The words box is plain keyword matching: every word must appear in a paper's title or abstract (a case-insensitive partial match), and relevance is a simple points score (3 for a word in the title, 1 for one in the abstract, plus a bonus for monitored sources and for held full text). It does not search inside the full text and does not understand meaning (so "headache" does not find "cephalalgia"). All the chip filters, dates and the full text checkbox are exact filters on stored fields.
+
+**1. Full-text keyword search (first step).**
+* Looks inside the stored full text, so a term found only in the methods, results or discussion also matches; results can show the matching sentence with the words highlighted.
+* Built on the database's own text search, which also matches word forms ("migraine" and "migraines"), allows quoted phrases and ranks by how often the words occur; title counts most, then abstract, then body.
+* A checkbox "Also search the full text", off by default, so the current precise behaviour stays.
+* Limits: covers only papers where we hold full text (about half; 29% in one scratch copy); still no meaning; broad words match many introductions and reference lists, so phrases and ranking matter.
+* Size: the stored text is about 45 KB a paper (3 MB for 67 papers in a scratch copy) and a text-search index adds about the same again. Check it against the Supabase plan's size limit. The index needs no new column, so the live API cannot break between deploy and index.
+
+**2. Meaning-based (vector) search, as an addition and not a replacement.**
+* Strong at synonyms, plain-language questions and "papers like this one"; weak at exact terms (drug and gene names, identifiers), less predictable, and needs a score cut-off to keep noise out. Best used together with keyword search, with the two rankings merged into one list.
+* Start with one vector per paper from the title and abstract: small, covers every paper (also those with no full text). Keep the vectors in their own table (not new columns) so the live API cannot break.
+* Passage-level vectors of the full text only if that is not enough: about 20 to 30 passages per paper, likely over a gigabyte a year with an index at today's volume, and noisy (references, boilerplate) unless passages are chosen carefully.
+* An embedding model is needed (a hosted service or a local model; biomedical models such as NCBI's MedCPT exist). Not tested on this data; prices not checked.
+* Before committing: an offline comparison on a scratch copy (embed the abstracts with a small local model and compare keyword and meaning-based results for real queries such as "headache" and "magnesium prevention"). It needs a new Python package, so the owner's approval first.
+
+**Suggested order:** full-text keyword search, then title-and-abstract vectors, then merge the two rankings, then full-text passages only if needed.
+
+**Also parked:** multi-user sign-up, other fields and per-user sources (see the design plan, section 12).
+
+## 9. Files
+
+* `README.md`: the friendly overview for developers: what the agent is, flow diagrams of how it works, how to run it. `docs/REFERENCE.md` is the detailed reference (every setting, the full API, newsletter rules, Gmail setup) and `docs/images/` holds the README screenshots.
 * `DEPLOYMENT.md`: Railway and Supabase setup, schedules, first checks, day to day.
 * `Pipeline_design_plan.md`: the design, with build status in sections 13 to 16.
 * `Progress.md` (this file) and `Progress_history.md` (the detailed log).
