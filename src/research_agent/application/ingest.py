@@ -143,7 +143,7 @@ class IngestPipeline:
                     rejected += 1
                     continue
                 outcome = repo.merge_record(rec)
-                repo.add_hit(outcome.paper, run, spec_row, spec, rec)
+                repo.add_hit(outcome.paper, run, spec_row, spec, rec, fresh=outcome.created)
                 touched[outcome.paper.id] = outcome.paper
                 n_new += outcome.created
             status = self._spec_status(repo, spec_row, res, run.id)
@@ -159,16 +159,22 @@ class IngestPipeline:
                 summary.errors.append(f"{spec.source}/{spec.path}/{spec.label[:40]}: {res.error[:160]}")
             if status == "suspect_zero":
                 summary.suspect.append(f"{spec.source}/{spec.path}/{spec.label[:40]}")
+            repo.s.commit()      # progress is kept even if the job is stopped part-way; later steps redo matching for these papers
         summary.by_source = {k: dict(v) for k, v in per_source.items()}
         repo.s.flush()
         self._match_all(repo, pmatch, profile.id, touched.values(), summary)
 
     def _match_all(self, repo: Repository, pmatch: ProfileMatcher, profile_id: str, papers, summary: RunSummary) -> None:
+        papers = list(papers)
+        ids = [p.id for p in papers]
+        metas, existing = repo.hit_meta_many(ids), repo.matches_for(profile_id, ids)     # two queries for all papers, not two per paper
         for paper in papers:
-            vals = pmatch.evaluate(paper, repo.hit_meta(paper.id))
-            _, created = repo.upsert_match(profile_id, paper.id, **vals)
+            vals = pmatch.evaluate(paper, metas.get(paper.id, []))
+            row, created = repo.apply_match(existing.get(paper.id), profile_id, paper.id, **vals)
+            existing[paper.id] = row
             summary.new_matches += created
         repo.s.flush()
+        repo.s.commit()
 
     def _spec_status(self, repo: Repository, spec_row: m.SearchSpecRow, res: SourceResult, run_id: int) -> str:
         status = res.status
@@ -184,32 +190,36 @@ class IngestPipeline:
         pmatch = ProfileMatcher(profile, field_cfg, matcher)
         stats: Counter = Counter()
         run_paper_ids = [pid for (pid,) in repo.s.execute(select(m.PaperHit.paper_id).where(m.PaperHit.run_id == run.id).distinct())]
-        papers = [repo.s.get(m.Paper, pid) for pid in run_paper_ids]
+        by_id = repo.papers_by_id(run_paper_ids)
+        papers = [by_id[pid] for pid in run_paper_ids if pid in by_id]
+        by_doi = {p.doi: p for p in papers if p.doi}
+        matches = repo.matches_for(profile.id, run_paper_ids)                 # everything below reads these, instead of querying once per paper and step
+        status_of = lambda p: matches[p.id].gate_status if p.id in matches else None
         # 1. papers whose gate could not be decided (no abstract): ask other sources for the abstract
-        unknown = [p for p in papers if p.doi and any(mt.gate_status == "unknown" for mt in self._matches(repo, profile.id, p.id))]
+        unknown = [p for p in papers if p.doi and status_of(p) == "unknown"]
         if unknown:
-            self._apply_lookups(repo, ["openalex", "europepmc"], [p.doi for p in unknown], stats, "abstract", only_missing_abstract=True)
+            self._apply_lookups(repo, ["openalex", "europepmc"], [p.doi for p in unknown], stats, "abstract", by_doi, only_missing_abstract=True)
         # 2. retraction state + licence + free links for papers not yet checked
-        unchecked = [p for p in papers if p.doi and not repo.s.scalar(select(m.RetractionCheck.id).where(m.RetractionCheck.paper_id == p.id).limit(1))
-                     and any(mt.gate_status != "failed" for mt in self._matches(repo, profile.id, p.id))]
+        checked = repo.paper_ids_with_checks(run_paper_ids)
+        unchecked = [p for p in papers if p.doi and p.id not in checked and status_of(p) not in (None, "failed")]
         if unchecked:
-            self._apply_lookups(repo, ["crossref", "openalex"], [p.doi for p in unchecked], stats, "retraction")
+            self._apply_lookups(repo, ["crossref", "openalex"], [p.doi for p in unchecked], stats, "retraction", by_doi)
         # 3. identifiers and free-copy links for gate-passed papers: a PubMed Central ID is what lets the full-text stage use the cleanest route
-        no_ids = [p for p in papers if p.doi and not p.pmcid and p.kind != "trial" and any(mt.gate_status == "passed" for mt in self._matches(repo, profile.id, p.id))]
+        no_ids = [p for p in papers if p.doi and not p.pmcid and p.kind != "trial" and status_of(p) == "passed"]
         if no_ids:
-            self._apply_lookups(repo, ["europepmc"], [p.doi for p in no_ids], stats, "ids")
+            self._apply_lookups(repo, ["europepmc"], [p.doi for p in no_ids], stats, "ids", by_doi)
         repo.s.flush()
         self._match_all(repo, pmatch, profile.id, papers, RunSummary(run.id, "x", summary.window))  # re-evaluate with enriched data
         summary.enrichment = dict(stats)
         # papers that stayed gate-unknown after enrichment are left for review (not in digests)
-        summary.enrichment["still_unknown_gate"] = sum(
-            1 for p in papers for mt in self._matches(repo, profile.id, p.id) if mt.gate_status == "unknown")
+        summary.enrichment["still_unknown_gate"] = sum(1 for p in papers if status_of(p) == "unknown")
 
     @staticmethod
     def _matches(repo: Repository, profile_id: str, paper_id: int) -> list[m.ProfileMatch]:
         return list(repo.s.scalars(select(m.ProfileMatch).where(m.ProfileMatch.profile_id == profile_id, m.ProfileMatch.paper_id == paper_id)))
 
-    def _apply_lookups(self, repo: Repository, names: list[str], dois: list[str], stats: Counter, purpose: str, *, only_missing_abstract: bool = False) -> None:
+    def _apply_lookups(self, repo: Repository, names: list[str], dois: list[str], stats: Counter, purpose: str, papers_by_doi: dict[str, m.Paper], *,
+                       only_missing_abstract: bool = False) -> None:
         for name in names:
             enricher = self.enrichers.get(name)
             if enricher is None:
@@ -221,7 +231,7 @@ class IngestPipeline:
             by_doi = {r.doi: r for r in recs if r.doi}
             for doi in dois:
                 rec = by_doi.get(doi)
-                paper = repo.s.scalar(select(m.Paper).where(m.Paper.doi == doi))
+                paper = papers_by_doi.get(doi)
                 if rec is None or paper is None:
                     continue
                 if only_missing_abstract and paper.abstract:

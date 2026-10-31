@@ -254,3 +254,44 @@ def test_sources_run_in_parallel_threads_without_sharing_a_session(factory, curt
     p, _ = pipeline(factory, **{n: Fake(n, fn) for n in ("pubmed", "europepmc", "crossref", "openalex", "ctgov")})
     only_topic(p, curt)
     assert len(seen) >= 1  # adapters never touch the database; all DB work happens in the calling thread
+
+
+# ---------------------------------------------------------------- database round trips (each costs real time against a remote database)
+def statements_for(factory, curt, n_papers):
+    from sqlalchemy import event
+    engine = factory.kw["bind"]
+    seen = []
+    listener = lambda conn, cur, stmt, *a: seen.append(stmt)
+    papers = [rec("pubmed", str(i), doi=f"10.1/p{i}", pmid=str(i), title=f"Migraine study number {i} with a sufficiently long title", abstract="Migraine abstract one two three.") for i in range(1, n_papers + 1)]
+    looked_up = lambda dois: ([rec("crossref", d, doi=d, abstract="Migraine abstract one two three.") for d in dois], None)
+    p, _ = pipeline(factory, pubmed=Fake("pubmed", lambda sp, w: papers if sp.path == "topic" else []), crossref=Fake("crossref", lookup=looked_up),
+                    openalex=Fake("openalex", lookup=looked_up), europepmc=Fake("europepmc", lookup=looked_up))
+    event.listen(engine, "before_cursor_execute", listener)
+    try:
+        only_topic(p, curt)
+    finally:
+        event.remove(engine, "before_cursor_execute", listener)
+    return len(seen)
+
+
+def test_the_cost_of_one_more_paper_stays_small(curt):
+    """A remote database makes every statement slow, so the per-paper cost must not creep back up (a live run made about 40 per paper before the lookups were batched, and about 20 after)."""
+    from research_agent.infrastructure.db.models import Base
+    from research_agent.infrastructure.db.session import make_engine, make_session_factory
+    def run(n):
+        engine = make_engine("sqlite://")
+        Base.metadata.create_all(engine)
+        return statements_for(make_session_factory(engine), curt, n)
+    small, large = run(20), run(60)
+    per_paper = (large - small) / 40
+    assert per_paper <= 22, f"{per_paper:.1f} statements per extra paper"
+
+
+def test_progress_is_committed_during_the_run_not_only_at_the_end(factory, curt):
+    from sqlalchemy import event
+    commits = []
+    event.listen(factory.kw["bind"], "commit", lambda conn: commits.append(1))
+    papers = [rec("pubmed", str(i), doi=f"10.1/p{i}", pmid=str(i), title=f"Migraine study number {i} with a sufficiently long title", abstract="Migraine abstract one.") for i in range(1, 6)]
+    p, _ = pipeline(factory, pubmed=Fake("pubmed", lambda sp, w: papers if sp.path == "topic" else []))
+    only_topic(p, curt)
+    assert len(commits) >= 5                                   # at least once per search, so an interrupted job keeps what it has done

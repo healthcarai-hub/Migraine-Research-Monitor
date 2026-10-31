@@ -170,15 +170,15 @@ class Repository:
                     return cand
         return None
 
-    def merge_record(self, rec: PaperRecord, now: datetime | None = None) -> MergeOutcome:
-        paper = self.find_paper(rec)
+    def merge_record(self, rec: PaperRecord, now: datetime | None = None, known: m.Paper | None = None) -> MergeOutcome:
+        paper = known if known is not None else self.find_paper(rec)      # `known`: the caller has just found it, so it is not looked up twice
         created = paper is None
         now = now or datetime.now(timezone.utc)
         if paper is None:
             paper = m.Paper(first_seen_at=now)
             self.s.add(paper)
         for attr, val in (("doi", rec.doi), ("pmid", rec.pmid), ("pmcid", rec.pmcid), ("nct_id", rec.nct_id)):
-            if val and not getattr(paper, attr) and not self._id_taken(attr, val, paper):
+            if val and not getattr(paper, attr) and (created or not self._id_taken(attr, val, paper)):     # a new paper cannot clash: find_paper checked every identifier
                 setattr(paper, attr, val)
         if rec.title and (not paper.title or (rec.source in ("pubmed", "europepmc") and len(rec.title) >= len(paper.title))):
             paper.title = rec.title
@@ -214,7 +214,7 @@ class Repository:
         paper.licences = _union(paper.licences, rec.licences)
         paper.last_seen_at = now
         self.s.flush()
-        self._merge_links(paper, rec)
+        self._merge_links(paper, rec, fresh=created)
         return MergeOutcome(paper, created)
 
     def _id_taken(self, attr: str, val: str, paper: m.Paper) -> bool:
@@ -230,15 +230,15 @@ class Repository:
         # a preprint row becomes an article once any source reports it as published; an article never reverts
         return "article" if (paper.kind == "article" or not rec.is_preprint) else "preprint"
 
-    def _merge_links(self, paper: m.Paper, rec: PaperRecord) -> None:
-        have = {l.url for l in self.s.scalars(select(m.PaperLink).where(m.PaperLink.paper_id == paper.id))}
+    def _merge_links(self, paper: m.Paper, rec: PaperRecord, fresh: bool = False) -> None:
+        have = set() if fresh else {l.url for l in self.s.scalars(select(m.PaperLink).where(m.PaperLink.paper_id == paper.id))}     # a new paper has no links yet
         for link in rec.links:
             if link.url and link.url not in have and len(link.url) <= 1000:
                 self.s.add(m.PaperLink(paper_id=paper.id, kind=link.kind, url=link.url, source=link.source, is_free=link.is_free, licence=link.licence))
                 have.add(link.url)
 
-    def add_hit(self, paper: m.Paper, run: m.Run, spec_row: m.SearchSpecRow | None, spec: SearchSpec, rec: PaperRecord) -> bool:
-        exists = self.s.scalar(select(m.PaperHit.id).where(
+    def add_hit(self, paper: m.Paper, run: m.Run, spec_row: m.SearchSpecRow | None, spec: SearchSpec, rec: PaperRecord, fresh: bool = False) -> bool:
+        exists = None if fresh else self.s.scalar(select(m.PaperHit.id).where(     # a paper created a moment ago has no hits to clash with
             m.PaperHit.paper_id == paper.id, m.PaperHit.run_id == run.id, m.PaperHit.spec_id == (spec_row.id if spec_row else None),
             m.PaperHit.source_record_id == rec.source_id[:120]))
         if exists:
@@ -268,6 +268,40 @@ class Repository:
             for k, v in vals.items():
                 setattr(row, k, v)
         return row, created
+
+    # ------------------------------------------------------------ bulk reads (one query for many papers: each round trip to a remote database costs real time)
+    def _chunks(self, ids: list[int], size: int = 500):
+        for i in range(0, len(ids), size):
+            yield ids[i:i + size]
+
+    def papers_by_id(self, ids: list[int]) -> dict[int, m.Paper]:
+        return {p.id: p for chunk in self._chunks(ids) for p in self.s.scalars(select(m.Paper).where(m.Paper.id.in_(chunk)))}
+
+    def matches_for(self, profile_id: str, paper_ids: list[int]) -> dict[int, m.ProfileMatch]:
+        return {mt.paper_id: mt for chunk in self._chunks(paper_ids)
+                for mt in self.s.scalars(select(m.ProfileMatch).where(m.ProfileMatch.profile_id == profile_id, m.ProfileMatch.paper_id.in_(chunk)))}
+
+    def hit_meta_many(self, paper_ids: list[int]) -> dict[int, list[tuple[m.PaperHit, dict]]]:
+        out: dict[int, list[tuple[m.PaperHit, dict]]] = {}
+        for chunk in self._chunks(paper_ids):
+            rows = self.s.execute(select(m.PaperHit, m.SearchSpecRow.meta).join(m.SearchSpecRow, m.SearchSpecRow.id == m.PaperHit.spec_id, isouter=True)
+                                  .where(m.PaperHit.paper_id.in_(chunk))).all()
+            for h, meta in rows:
+                out.setdefault(h.paper_id, []).append((h, meta or {}))
+        return out
+
+    def paper_ids_with_checks(self, paper_ids: list[int]) -> set[int]:
+        return {pid for chunk in self._chunks(paper_ids) for pid in self.s.scalars(select(m.RetractionCheck.paper_id).where(m.RetractionCheck.paper_id.in_(chunk)).distinct())}
+
+    def apply_match(self, existing: m.ProfileMatch | None, profile_id: str, paper_id: int, **vals) -> tuple[m.ProfileMatch, bool]:
+        """upsert_match when the caller already knows whether the row exists (it loaded them all in one query)."""
+        if existing is None:
+            row = m.ProfileMatch(profile_id=profile_id, paper_id=paper_id, **vals)
+            self.s.add(row)
+            return row, True
+        for k, v in vals.items():
+            setattr(existing, k, v)
+        return existing, False
 
     def add_retraction_check(self, paper_id: int, source: str, result: str, detail: dict | None = None) -> None:
         self.s.add(m.RetractionCheck(paper_id=paper_id, source=source, result=result, detail=detail or {}))
@@ -368,7 +402,7 @@ class Repository:
         found = self.find_paper(rec)
         if found is None or found.id != paper.id:
             return False
-        self.merge_record(rec, now)
+        self.merge_record(rec, now, known=found)
         return True
 
     def refresh_candidates(self, profile_id: str, *, exclude_types: list[str], not_refreshed_since: datetime, entered_since: date) -> list[m.Paper]:

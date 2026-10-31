@@ -56,7 +56,9 @@ Create a project and add the repository three times (New > GitHub Repo). Railway
 * Variables: the same four as above, plus `SPRINGER_API_KEY` (optional), `LLM_API_KEY`, `LLM_MODEL` (Groq; without them the edition uses abstract extracts), optionally `LLM_BASE_URL` and `LLM_REASONING_EFFORT` (for example `low` for `openai/gpt-oss-20b`), and optionally `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` (with them the job also creates a Gmail **draft**; it never sends). `JOB_FULLTEXT_LIMIT` (default 500) is optional.
 * Railway's Shared Variables can hold the values the two job services have in common, so they are entered once.
 
-Railway cron rules to know (from its docs): schedules are UTC and at least 5 minutes apart; the start time can drift by a few minutes; the command must exit when done (both jobs do); a run that is still going when the next is due makes Railway skip that one; Railway never stops a hung run itself, so the jobs stop themselves after 25 minutes (daily) and 150 minutes (weekly).
+**Region (important):** set every service's region (Settings > Deploy) to the one nearest Supabase, which for this project is in Stockholm: choose Railway's EU region (Amsterdam). A collection makes thousands of small database calls, and each one pays the round-trip time. Far away (about 200 ms a call) a run takes roughly 15 minutes; nearby (about 20 to 30 ms) it takes a couple of minutes.
+
+Railway cron rules to know (from its docs): schedules are UTC and at least 5 minutes apart; the start time can drift by a few minutes; the command must exit when done (both jobs do); a run that is still going when the next is due makes Railway skip that one; Railway never stops a hung run itself, so the jobs stop themselves after 45 minutes (daily) and 150 minutes (weekly).
 
 ## 4. First checks
 1. Open `https://<your-domain>/health` (shows `ok`) and `/ready` (shows `ready`, so the database role works).

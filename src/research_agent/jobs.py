@@ -15,7 +15,7 @@ from typing import Callable
 
 from .settings import Settings
 
-DAILY_TIMEOUT_MINUTES = 25
+DAILY_TIMEOUT_MINUTES = 45
 WEEKLY_TIMEOUT_MINUTES = 150
 FRESHNESS_HOURS = 36
 
