@@ -1,4 +1,4 @@
-# research-agent
+# migraine-research-agent
 
 Daily collection pipeline and database for research monitoring. Field-specific behaviour (what counts as relevant, which journals,
 researchers and subjects to watch) lives in `config/`, not in code. The first profile is **Curt migraine** (10 journals, 30 researchers,
