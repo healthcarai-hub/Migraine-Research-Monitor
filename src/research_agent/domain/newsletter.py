@@ -106,13 +106,14 @@ SUBJECT_BREADTH_CAP = 3
 
 
 def score(*, watched_journal: bool, watched_researcher: bool, specific_subjects: int, has_abstract: bool, printable_full_text: bool, core_journal: bool,
-          title_match: bool = False, weights: dict[str, int] | None = None) -> int:
+          title_match: bool = False, weights: dict[str, int] | None = None, carried_over: bool = False, carryover_penalty: int = 0) -> int:
     """Deterministic ordering inside a section. Weights are a profile setting (`newsletter.ranking`); the defaults put watched sources and papers whose
-    full text we hold first, then papers with the field's word in the title, then breadth of topic match and readability."""
+    full text we hold first, then papers with the field's word in the title, then breadth of topic match and readability. A paper carried over from the
+    previous edition (held back there) loses `carryover_penalty` points, so only strong old papers beat new ones."""
     w = {**DEFAULT_WEIGHTS, **(weights or {})}
     return (w["watched_journal"] * watched_journal + w["watched_researcher"] * watched_researcher + w["printable_full_text"] * printable_full_text
             + w["title_match"] * title_match + w["subject_breadth"] * min(specific_subjects, SUBJECT_BREADTH_CAP) + w["has_abstract"] * has_abstract
-            + w["core_journal"] * core_journal)
+            + w["core_journal"] * core_journal - carryover_penalty * carried_over)
 
 
 @dataclass
@@ -139,6 +140,7 @@ class ItemView:
     date_label: str = "Published"       # trials are "Registered"
     summary_source: str = "extractive"  # llm | extractive
     fulltext_status: str = "unknown"    # full_text | abstract_and_links_only | unknown (kept for the print edition later)
+    carried_over: bool = False          # first stored before this edition's normal window: it was held back by an earlier edition
     first_seen: str = ""
 
 

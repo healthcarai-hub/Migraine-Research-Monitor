@@ -131,12 +131,16 @@ class NewsletterService:
             for it, why in held:
                 held_by[why] = held_by.get(why, 0) + 1
             if held:
-                notes.append(f"{len(held)} matching paper(s) held back to keep the edition short and will be considered next time: " + ", ".join(f"{n} by {w}" for w, n in sorted(held_by.items())))
+                notes.append(f"{len(held)} matching paper(s) held back to keep the edition short: " + ", ".join(f"{n} by {w}" for w, n in sorted(held_by.items()))
+                             + ". Each may return in the next edition only, ranked lower; after that it stays in the database and the app")
+            carried = sum(1 for i in kept_items if i.carried_over)
+            if carried:
+                notes.append(f"{carried} paper(s) carried over from the previous edition's held-back list, ranked {cfg.carryover_penalty} point(s) lower than new ones")
             if size > GMAIL_CLIP_BYTES:
                 notes.append(f"HTML is {size // 1024} KB: Gmail clips messages over about 100 KB, so readers may need 'View entire message'. Lower newsletter.caps.")
             items = kept_items
             issue = m.Issue(profile_id=profile.id, issue_key=key, window_start=start, window_end=cutoff, subject=subject, html=rendered.html, text=rendered.text,
-                            stats={"html_bytes": size, "counts": counts, "summaries": {"llm": sum(i.summary_source == "llm" for i in items), "extractive": sum(i.summary_source != "llm" for i in items)}, "candidates": len(cands), "retraction_alerts": len(alerts), "held_back": held_by, "left_out_as_stale": self._last_stale, "left_out_by_selection": self._last_deselected, "selection": sel.summary(), "notes": notes, "empty": not any(counts.values())})
+                            stats={"html_bytes": size, "counts": counts, "summaries": {"llm": sum(i.summary_source == "llm" for i in items), "extractive": sum(i.summary_source != "llm" for i in items)}, "candidates": len(cands), "retraction_alerts": len(alerts), "held_back": held_by, "left_out_as_stale": self._last_stale, "left_out_by_selection": self._last_deselected, "carried_over": sum(1 for i in kept_items if i.carried_over), "selection": sel.summary(), "notes": notes, "empty": not any(counts.values())})
             s.add(issue)
             s.flush()
             pos = 0
@@ -147,7 +151,7 @@ class NewsletterService:
                         s.add(m.IssueItem(issue_id=issue.id, profile_id=profile.id, paper_id=it.paper_id, role="retraction" if sec.key == "retractions" else "digest",
                                           section=sec.key, position=pos, snapshot={"title": it.title, "journal": it.journal, "doi": it.doi, "track": it.track, "group": it.group,
                                                                                     "fulltext": it.fulltext_status, "summary": it.summary, "summary_source": it.summary_source, "score": it.score,
-                                                                                    "previously_sent_in": it.previously_sent_in, "first_seen": it.first_seen}))
+                                                                                    "previously_sent_in": it.previously_sent_in, "first_seen": it.first_seen, "carried_over": it.carried_over}))
             s.flush()
             return IssueResult(issue.id, key, issue.status, True, subject, counts, start, cutoff, notes)
 
@@ -178,7 +182,8 @@ class NewsletterService:
         alerts = repo.retraction_alerts(profile.id, start=start, end=cutoff, exclude_types=excluded, ignore_issue_id=ignore)
         ids = [p.id for p, _ in cands] + [p.id for p, _, _ in alerts]
         ft, notices = repo.fulltext_rows(ids), repo.notices_for(ids)
-        items = [self._view(p, mt, profile, field_cfg, ft.get(p.id), None, cfg, summaries.get(p.id), selection=sel) for p, mt in cands]
+        carried_before = cutoff - timedelta(days=cfg.lookback_days)       # first stored before this = held back by an earlier edition
+        items = [self._view(p, mt, profile, field_cfg, ft.get(p.id), None, cfg, summaries.get(p.id), selection=sel, carried_before=carried_before) for p, mt in cands]
         items += [self._view(p, mt, profile, field_cfg, ft.get(p.id), (notices.get(p.id), earlier), cfg, summaries.get(p.id), retraction=True, selection=sel) for p, mt, earlier in alerts]
         return items, cands, alerts
 
@@ -202,8 +207,10 @@ class NewsletterService:
         return self.summaries.ensure(reqs)
 
     def _view(self, p: m.Paper, mt: m.ProfileMatch, profile: ProfileConfig, field_cfg: FieldConfig, ft: m.PaperFulltext | None,
-              notice, cfg, model_summary: SummaryResult | None = None, retraction: bool = False, selection: Selection | None = None) -> ItemView:
+              notice, cfg, model_summary: SummaryResult | None = None, retraction: bool = False, selection: Selection | None = None, carried_before: datetime | None = None) -> ItemView:
         selection = selection or Selection()
+        seen = p.first_seen_at if p.first_seen_at.tzinfo else p.first_seen_at.replace(tzinfo=timezone.utc)
+        late = bool(carried_before is not None and not retraction and seen <= carried_before)
         specific = [s for s in (mt.subjects or []) if s.get("specific", True)]
         order = {s.code: i for i, s in enumerate(field_cfg.subjects)}
         specific.sort(key=lambda s: order.get(s["code"], 99))
@@ -246,6 +253,8 @@ class NewsletterService:
             badges.append("No abstract: summary from the introduction")
         elif p.abstract_source.startswith("pdf_"):
             badges.append("Abstract recovered from the PDF")
+        if late:
+            badges.append("Held over from last week")
         if mt.exploratory:
             badges.append("Exploratory")
         notice_paper, earlier = notice if retraction and notice else (None, None)
@@ -268,9 +277,9 @@ class NewsletterService:
             url=primary, doi=p.doi, summary=summary.text or "No abstract available.", summary_source=summary.source,
             section=section, group=group, kind=p.kind, track=track, badges=badges, links=links, watched=watched, retracted=bool(retraction or p.is_retracted),
             notice_url=(f"https://doi.org/{notice_paper.doi}" if notice_paper is not None and notice_paper.doi else (notice_paper.url if notice_paper is not None else None)),
-            previously_sent_in=earlier, fulltext_status=(ft.status if ft else "unknown"), first_seen=(p.first_seen_at.date().isoformat() if p.first_seen_at else ""),
+            previously_sent_in=earlier, fulltext_status=(ft.status if ft else "unknown"), carried_over=late, first_seen=(p.first_seen_at.date().isoformat() if p.first_seen_at else ""),
             date_label="Registered" if p.kind == "trial" else "Published",
-            score=score(title_match=bool(self._gate(field_cfg).gate_matches(p.title or "")), watched_journal=watched_j, watched_researcher=watched_r, specific_subjects=len(specific), has_abstract=bool(p.abstract), printable_full_text=printable_text, core_journal=core, weights=cfg.ranking.weights))
+            score=score(title_match=bool(self._gate(field_cfg).gate_matches(p.title or "")), watched_journal=watched_j, watched_researcher=watched_r, specific_subjects=len(specific), has_abstract=bool(p.abstract), printable_full_text=printable_text, core_journal=core, weights=cfg.ranking.weights, carried_over=late, carryover_penalty=cfg.carryover_penalty))
 
     def _sections(self, items: list[ItemView], profile: ProfileConfig, field_cfg: FieldConfig, cfg) -> list[SectionView]:
         subject_order = {s.name: i for i, s in enumerate(field_cfg.subjects)}

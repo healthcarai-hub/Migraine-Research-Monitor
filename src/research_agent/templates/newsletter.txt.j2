@@ -3,9 +3,21 @@
 {% if cfg.subtitle %}{{ cfg.subtitle }}
 {% endif %}
 Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}, papers first found {{ window_text }}.
+{% if cfg.greeting or cfg.introduction %}
+
+{% if cfg.greeting %}{{ cfg.greeting }}
+{% endif %}
+{% if cfg.introduction %}{{ cfg.introduction }}
+{% endif %}
+{% endif %}
 {% if total == 0 %}
 
 No new papers matched this week.
+{% else %}
+{% if cfg.results_lead %}
+
+{{ cfg.results_lead }}
+{% endif %}
 {% endif %}
 {% for sec in sections %}
 
@@ -47,8 +59,27 @@ Not yet peer reviewed. Treat the findings as provisional.
 {% endfor %}
 {% endfor %}
 {% endfor %}
+{% if cfg.closing %}
 
 
-{% if held_back %}{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short and will be considered again next week.
+{{ cfg.closing }}
+{% endif %}
+{% if cfg.signature %}
+
+{{ cfg.signature.name }}
+{% if cfg.signature.title %}{{ cfg.signature.title }}
+{% endif %}
+{% if cfg.signature.email %}{{ cfg.signature.email }}
+{% endif %}
+{% if cfg.signature.phone %}{{ cfg.signature.phone }}
+{% endif %}
+{% if cfg.signature.disclaimer %}{{ cfg.signature.disclaimer }}
+{% endif %}
+{% endif %}
+
+
+{% if held_back %}{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short. {{ 'It' if held_back == 1 else 'Each' }} may appear in next week's edition, ranked lower, and not after that.
 {% endif %}
 Selection: papers first found by our searches from {{ window_text }}. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from each paper's own abstract.{% endif %} Edition generated {{ built_text }}.
+{% if cfg.footer %}{{ cfg.footer }}
+{% endif %}

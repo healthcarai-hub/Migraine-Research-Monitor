@@ -22,6 +22,12 @@ SESSION_POOL = "postgresql+psycopg://curt_api_read.abcdefgh:pw@aws-0-eu-west-1.p
 TX_POOL = "postgresql+psycopg://curt_api_read.abcdefgh:pw@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
 
 
+@pytest.fixture(autouse=True)
+def _no_real_dotenv(monkeypatch):
+    """Settings.from_env() also reads the project's real .env; these tests must depend only on what they set themselves."""
+    monkeypatch.setattr("research_agent.settings.load_dotenv", lambda *a, **k: None)
+
+
 # ---------------------------------------------------------------- database options
 def test_sqlite_options_are_unchanged():
     assert engine_options("sqlite:///x.sqlite", True) == {"future": True, "connect_args": {"check_same_thread": False}}

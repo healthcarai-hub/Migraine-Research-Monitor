@@ -20,10 +20,23 @@ newsletter:
       has_abstract: 1
       core_journal: 1
   title: Curt migraine research digest
+  subtitle: Weekly migraine research briefing                 # the small line above the title in the header band
+  accent_color: "#1f5f8b"                                      # header band, links and rules in the HTML edition (#rrggbb)
+  greeting: "Hello Curt,"                                      # wording in the style of the earlier newsletter agent (not copied from it); edit freely
+  introduction: "Here is this week's round-up of new migraine research: what our monitoring agent found over the past week, grouped by topic. Papers whose full text we hold are marked."
+  results_lead: "This week's papers:"
+  closing: "That's everything for this week. Wishing you a restful weekend."
+  signature:                                                   # name and title only; add email: and phone: here if you want them printed (they would then be in git)
+    name: Nicole Melamed
+    title: PA
+    disclaimer: "Healthcar Research Team. This message is confidential and intended only for its recipient."
+  footer: "Prepared for Curt by the Healthcar Research Team."
   recheck_retraction_weeks: 8      # papers sent in the last N weeks are re-checked for a retraction before each build
   freshness:                       # owner decision 2026-10-31: papers published long before we found them do not appear in the week they surface
     max_publication_age_days: 7    # days from publication to the day we first stored the paper; null = no limit. Unknown dates are never left out
-  caps:                            # how much one edition may carry; held-back papers are considered again next week (up to max_catchup_days)
+  max_catchup_days: 14             # owner decision 2026-10-31: a later edition looks back this week plus one more, so a paper held back by a cap may return in the NEXT edition only
+  carryover_penalty: 3             # ... and then ranks this many points lower than a new paper, so only old papers with strong signals (full text, a followed source) get in
+  caps:                            # how much one edition may carry; a paper held back returns once, in the next edition, ranked lower
     per_section:                   # best-ranked first; a missing or null section has no cap. Retractions are never capped here by default.
       direct: 30
       mechanisms: 15

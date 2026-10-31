@@ -1,6 +1,7 @@
 """Typed field and profile configuration, loaded from YAML. This is where everything field-specific lives."""
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -109,7 +110,7 @@ class FullTextConfig(BaseModel):
 
 
 class CapsConfig(BaseModel):
-    """How much one edition may carry. Items held back are not marked as sent: they are considered again next week (for `max_catchup_days`)."""
+    """How much one edition may carry. Items held back are not marked as sent: they may come back once, in the next edition, ranked lower (`newsletter.carryover_penalty`)."""
     per_section: dict[str, int | None] = Field(default_factory=lambda: {"direct": 30, "mechanisms": 15, "preprints": 10, "trials": 10})  # missing or null = no cap
     total: int | None = None            # optional cap across all sections except retractions
     priority_to_watched: bool = True    # papers from a watched journal or researcher are chosen first when a cap bites (owner decision 2026-10-31)
@@ -160,13 +161,30 @@ class RankingConfig(BaseModel):
         return {**DEFAULT_WEIGHTS, **v}
 
 
+class SignatureConfig(BaseModel):
+    """Who the edition is from, shown under the closing line. Everything except the name is optional."""
+    name: str
+    title: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    disclaimer: str | None = None
+
+
 class NewsletterConfig(BaseModel):
     """Digital edition settings. Print-edition settings are deliberately absent: the print template has not been supplied yet."""
     title: str = "Research digest"
     subtitle: str = ""
     recipients: list[str] = Field(default_factory=list)
-    lookback_days: int = 7            # normal window length
-    max_catchup_days: int = 28        # after a missed week the window stretches back to the last edition, but never past this
+    accent_color: str = "#1f5f8b"     # header band, links and section rules in the HTML edition; a #rrggbb colour
+    greeting: str = "Hello,"
+    introduction: str = "Here is this week's round-up of new research, grouped by topic. Papers whose full text we hold are marked."
+    results_lead: str = "This week's papers:"
+    closing: str = "That is everything for this week. Have a good weekend."
+    signature: SignatureConfig | None = None
+    footer: str = ""                  # a line at the very end of the edition, e.g. who prepared it
+    lookback_days: int = 7            # normal window length: papers first stored in the last 7 days
+    max_catchup_days: int = 14        # how far back a later edition looks: this week plus one more, so a paper held back once may return in the next edition and then drops out
+    carryover_penalty: int = 3        # points taken off the ranking score of a paper first stored before the normal window (a carried-over paper), so only old papers with strong signals get in
     freshness: FreshnessConfig = FreshnessConfig()
     ranking: RankingConfig = RankingConfig()
     caps: CapsConfig = CapsConfig()
@@ -179,6 +197,16 @@ class NewsletterConfig(BaseModel):
     section_titles: dict[str, str] = Field(default_factory=lambda: {
         "retractions": "Retractions and withdrawals", "direct": "Direct research", "mechanisms": "Related mechanisms (exploratory)",
         "preprints": "Preprints (not peer reviewed)", "trials": "Clinical trials registered"})
+
+    @model_validator(mode="after")
+    def _window_and_penalty(self) -> "NewsletterConfig":
+        if self.max_catchup_days < self.lookback_days:
+            raise ValueError("max_catchup_days must be at least lookback_days")
+        if self.carryover_penalty < 0:
+            raise ValueError("carryover_penalty must be 0 or more")
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", self.accent_color):
+            raise ValueError("accent_color must look like #1f5f8b")
+        return self
 
 
 class ProfileConfig(BaseModel):

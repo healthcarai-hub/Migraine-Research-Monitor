@@ -11,6 +11,12 @@ from research_agent.infrastructure.envfile import set_env_values
 TOKEN = "1//refresh-token-that-must-never-be-printed"
 
 
+@pytest.fixture(autouse=True)
+def _no_real_dotenv(monkeypatch):
+    """Settings.from_env() also reads the project's real .env; these tests must depend only on what they set themselves."""
+    monkeypatch.setattr("research_agent.settings.load_dotenv", lambda *a, **k: None)
+
+
 class FakeFlow:
     seen = {}
 

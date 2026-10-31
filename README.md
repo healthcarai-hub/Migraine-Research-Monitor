@@ -78,9 +78,10 @@ with its items. Rules:
   answer is checked: not empty, not too long, no links, and **every number in it must appear in the abstract**; one retry, then the edition falls back to an
   extract of the abstract. Good summaries are cached per paper (a rebuild makes no model calls); failures are not. The edition's footer says when summaries
   are model-written, and each stored item records which kind it got. With no model configured, or `--no-llm`, extracts are used.
-* The first edition covers `lookback_days` (7); later ones reach back to the last edition but never past `max_catchup_days` (28), so a missed week or a section cap loses nothing.
+* The first edition covers `lookback_days` (7); later ones reach back `max_catchup_days` (14: this week plus one more). A paper held back by a cap, or left out by a newsletter switch, may therefore return in the **next edition only**, ranked `carryover_penalty` (3) points lower than a new paper, so only old papers with strong signals (held full text, a followed source) get in. After that it stays in the database and the app. A single missed week is still covered.
 * `build` is idempotent per week; `--rebuild` replaces an unpublished edition; published or sent editions are never rebuilt.
 * `publish --to file` writes `newsletter.html/.txt/.eml` under `outputs/`; `--to gmail` creates a Gmail **draft** once per issue. The program never sends mail. (Google's `gmail.compose` permission would technically allow sending, because Google has no draft-only permission; the code only ever creates drafts, and the permission cannot read the mailbox.) `mark-sent` records that a person sent it.
+* **Layout and wording.** The HTML is built for Gmail drafts: a single dense 760 px column made of tables with every style written inline (Gmail's compose window, where a draft is opened and edited, drops `<style>` blocks, which is what broke the first design). It has a slim coloured header band, a greeting and introduction, a one-strip "this week at a glance", section headers, one row per paper (title, journal and date line, small coloured label pills, summary, links) separated by thin lines, then the closing line, a signature and a footer. It is deliberately compact: small type and no boxed cards, so more papers fit on a desktop screen. The wording is in the profile (`newsletter.greeting`, `introduction`, `results_lead`, `closing`, `signature`, `footer`, `subtitle`, `accent_color`); blank fields are left out. A paper held over from the previous edition wears a "Held over from last week" pill. An edition already built keeps the layout it was built with: to see a layout change in an unpublished edition run `newsletter build --rebuild` (a published edition is never rebuilt).
 * **Edition size is capped, and the caps are settings** in the profile (`newsletter.caps` in `config/profiles/curt.yaml`): `per_section` (default 30 direct, 15 mechanisms, 10 preprints, 10 trials; a missing or null section is uncapped), `priority_to_watched` (default true: papers from a watched journal or researcher are chosen before any other when a cap bites, and are the last to be trimmed by the size limit), `total` (optional), and `max_html_kb` (95: if the HTML is still larger, the lowest-ranked papers are trimmed until it fits, because Gmail clips messages near 100 KB). Retractions are never trimmed. Papers held back are not marked as sent: they are considered again next week for up to `max_catchup_days` (28), after which they age out. The footer says how many were held back; the build output and the issue's stats say why.
 * The printable PDF edition is **not built**: its template has not been supplied yet. Each stored issue item already records the paper's full-text status for it.
 
@@ -125,7 +126,7 @@ the newsletter**. It never searches the sources and never changes a paper: its d
 database or the search (and the stored "watched" labels stay as they are). A paper is kept while at least one of its routes in is still on: one of its matched topics, a followed
 journal, or a followed researcher (a paper with none of these is not affected). With any source switched off, a paper must also have been found by at least one source that is
 on (switching ClinicalTrials.gov off therefore removes the trials section). A journal or researcher switched off also loses its "watched" label and priority. Retraction alerts
-are never filtered. Papers left out stay unsent, so switching something back on lets a later edition (within the 28-day catch-up) carry them. You cannot switch off every source,
+are never filtered. Papers left out stay unsent, so switching something back on lets the next edition (this week plus one more) carry them, ranked lower as a late paper. You cannot switch off every source,
 or every topic, journal and researcher together. Each edition records what was off (`left_out_by_selection`, `selection`), and its footer names only the sources that were on.
 Body example: `PATCH /v1/newsletter/config` with `{"journals": {"cephalalgia": false}, "sources": {"openalex": false}}`; a bad key or an unsafe result changes nothing.
 
@@ -176,7 +177,7 @@ src/research_agent/
   infrastructure/         http client, database (models, repository, migrations helper), one adapter per source
   bootstrap.py cli.py     wiring and command line
 migrations/               Alembic (Postgres gets row level security enabled for Supabase's REST API)
-tests/                    420 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
+tests/                    435 offline tests (real API responses in tests/fixtures); `pytest -m live` hits the real services
 ```
 
 ## Adding another profile or field

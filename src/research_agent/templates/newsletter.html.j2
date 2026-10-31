@@ -1,64 +1,101 @@
+{#- Every style is inline and the layout is tables: Gmail's compose window (where a draft is opened and edited) drops <style> blocks and CSS classes. A single dense column, 760 px wide. -#}
+{% set accent = cfg.accent_color %}
+{% set font = "Arial,Helvetica,sans-serif" %}
+{% set ink = "#1f2937" %}
+{% set muted = "#5b6678" %}
+{% set rule = "#e5eaf0" %}
+{% set sec_colors = {"retractions": "#b42318", "preprints": "#92400e", "trials": "#0f766e"} %}
+{% macro pill(label) %}{% set t = tone(label) %}<span class="badge" style="display:inline-block;margin:0 5px 4px 0;padding:1px 8px;border-radius:999px;background:{{ t[0] }};color:{{ t[1] }};font-family:{{ font }};font-size:11px;line-height:17px;font-weight:700;">{{ label }}</span>{% endmacro %}
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>{{ subject }}</title>
-<style>
-  body { margin:0; padding:0; background:#f4f4f2; }
-  .wrap { max-width:720px; margin:0 auto; background:#ffffff; padding:24px 28px; font-family:Georgia,'Times New Roman',serif; font-size:{{ cfg.font_px }}px; line-height:1.55; color:#1a1a1a; }
-  h1 { font-size:1.55em; line-height:1.25; margin:0 0 4px 0; }
-  h2 { font-size:1.3em; margin:36px 0 6px 0; padding-top:14px; border-top:3px solid #1a1a1a; }
-  h3.group { font-size:1.05em; margin:24px 0 4px 0; color:#333333; font-family:Arial,Helvetica,sans-serif; text-transform:uppercase; letter-spacing:.04em; }
-  .sub { color:#444444; margin:0 0 14px 0; }
-  .item { margin:18px 0 22px 0; padding:0 0 18px 0; border-bottom:1px solid #d6d6d2; }
-  .item h4 { font-size:1.08em; line-height:1.3; margin:0 0 4px 0; }
-  .item a { color:#0b3d91; }
-  .meta { font-family:Arial,Helvetica,sans-serif; font-size:.82em; color:#444444; margin:0 0 6px 0; }
-  .badge { display:inline-block; font-family:Arial,Helvetica,sans-serif; font-size:.74em; border:1px solid #1a1a1a; padding:1px 6px; margin:0 6px 4px 0; }
-  .badge.alert { background:#1a1a1a; color:#ffffff; }
-  .links { font-family:Arial,Helvetica,sans-serif; font-size:.84em; margin:6px 0 0 0; }
-  .retracted { border-left:6px solid #1a1a1a; padding-left:14px; }
-  .toc li { margin:2px 0; }
-  .foot { font-family:Arial,Helvetica,sans-serif; font-size:.78em; color:#555555; margin-top:34px; border-top:1px solid #cccccc; padding-top:12px; }
-</style>
 </head>
-<body>
-<div class="wrap">
-<h1>{{ cfg.title }}</h1>
-<p class="sub">{% if cfg.subtitle %}{{ cfg.subtitle }}<br>{% endif %}Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}, papers first found {{ window_text }}.</p>
+<body style="margin:0;padding:0;background:#eef2f6;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{{ total }} paper{{ '' if total == 1 else 's' }} this week{% if stats.full_text %}, {{ stats.full_text }} with full text{% endif %}.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eef2f6;">
+<tr><td align="center" style="padding:16px 8px;">
+<table role="presentation" width="760" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:760px;background:#ffffff;border:1px solid {{ rule }};border-radius:8px;overflow:hidden;">
+
+<tr><td style="background:{{ accent }};padding:18px 24px;font-family:{{ font }};color:#ffffff;">
+<div style="font-size:11px;line-height:16px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:#ffffff;opacity:.9;">{{ cfg.subtitle or 'Weekly research briefing' }}</div>
+<h1 style="margin:4px 0 3px;font-size:22px;line-height:28px;font-weight:700;color:#ffffff;font-family:{{ font }};">{{ cfg.title }}</h1>
+<div style="font-size:13px;line-height:19px;color:#ffffff;opacity:.92;">Week ending {{ week_end_text }} &middot; {{ total }} paper{{ '' if total == 1 else 's' }}</div>
+</td></tr>
+
+<tr><td style="padding:18px 24px 4px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};">
+{% if cfg.greeting %}<p style="margin:0 0 8px;font-weight:700;">{{ cfg.greeting }}</p>{% endif %}
+{% if cfg.introduction %}<p style="margin:0;">{{ cfg.introduction }}</p>{% endif %}
+</td></tr>
+
 {% if total == 0 %}
-<p>No new papers matched this week.</p>
+<tr><td style="padding:14px 24px 24px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ muted }};">No new papers matched this week.</td></tr>
 {% else %}
-<ul class="toc">
-{% for sec in sections %}
-  <li><a href="#{{ sec.key }}">{{ sec.title }}</a> ({{ sec.count }})</li>
-{% endfor %}
-</ul>
+<tr><td style="padding:12px 24px 4px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f8fc;border-left:3px solid {{ accent }};">
+<tr><td style="padding:9px 14px;font-family:{{ font }};font-size:13px;line-height:20px;color:{{ muted }};">
+<span style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:{{ accent }};">This week at a glance</span><br>
+{% for sec in sections %}<strong style="color:{{ sec_colors.get(sec.key, accent) }};">{{ sec.count }}</strong> {{ sec.title }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+{% if stats.full_text or stats.followed %}<br>{% if stats.full_text %}<strong style="color:{{ ink }};">{{ stats.full_text }}</strong> with the full text held{% endif %}{% if stats.full_text and stats.followed %} &middot; {% endif %}{% if stats.followed %}<strong style="color:{{ ink }};">{{ stats.followed }}</strong> from followed journals or researchers{% endif %}{% endif %}
+</td></tr>
+</table>
+</td></tr>
+{% if cfg.results_lead %}<tr><td style="padding:12px 24px 0;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};font-weight:700;">{{ cfg.results_lead }}</td></tr>{% endif %}
 {% endif %}
+
 {% for sec in sections %}
-<h2 id="{{ sec.key }}">{{ sec.title }}</h2>
-{% if sec.key == 'retractions' %}<p class="sub">Papers that have been retracted or withdrawn. If we sent one earlier, the edition is named.</p>{% endif %}
-{% if sec.key == 'preprints' %}<p class="sub">Not yet peer reviewed. Treat the findings as provisional.</p>{% endif %}
+{% set sc = sec_colors.get(sec.key, accent) %}
+<tr><td style="padding:20px 24px 2px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-bottom:2px solid {{ sc }};"><tr>
+<td style="padding:0 0 6px;font-family:{{ font }};font-size:17px;line-height:24px;font-weight:700;color:{{ ink }};">{{ sec.title }}</td>
+<td align="right" style="padding:0 0 6px;font-family:{{ font }};font-size:12px;line-height:24px;color:{{ sc }};font-weight:700;white-space:nowrap;">{{ sec.count }} paper{{ '' if sec.count == 1 else 's' }}</td>
+</tr></table>
+{% if sec.key == 'retractions' %}<p style="margin:6px 0 0;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">Papers that have been retracted or withdrawn. If we sent one earlier, the edition is named.</p>{% endif %}
+{% if sec.key == 'preprints' %}<p style="margin:6px 0 0;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">Not yet peer reviewed. Treat the findings as provisional.</p>{% endif %}
+</td></tr>
 {% for group, items in sec.groups %}
-{% if group %}<h3 class="group">{{ group }}</h3>{% endif %}
+{% if group %}
+<tr><td style="padding:12px 24px 0;font-family:{{ font }};font-size:11px;line-height:16px;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:{{ muted }};">{{ group }}</td></tr>
+{% endif %}
 {% for it in items %}
-<div class="item{{ ' retracted' if it.retracted else '' }}">
-  <h4><a href="{{ it.url }}">{{ it.title }}</a></h4>
-  <p class="meta">{{ [it.journal, ((it.date_label ~ ' ' ~ it.published) if it.published else ''), it.authors] | select | join(' &middot; ' | safe) }}</p>
-  {% if it.badges or it.watched %}<p>{% for b in it.badges %}<span class="badge{{ ' alert' if b == 'RETRACTED' else '' }}">{{ b }}</span>{% endfor %}{% for w in it.watched %}<span class="badge">{{ w }}</span>{% endfor %}</p>{% endif %}
-  {% if it.previously_sent_in %}<p><strong>We sent this paper earlier</strong> (edition {{ it.previously_sent_in }}).{% if it.notice_url %} <a href="{{ it.notice_url }}">Read the retraction notice</a>.{% endif %}</p>
-  {% elif it.retracted and it.notice_url %}<p><a href="{{ it.notice_url }}">Read the retraction notice</a>.</p>{% endif %}
-  <p>{{ it.summary }}</p>
-  <p class="links">{% if it.doi %}DOI: <a href="{{ it.url }}">{{ it.doi }}</a>{% else %}<a href="{{ it.url }}">Open the record</a>{% endif %}{% for label, url in it.links %} &middot; <a href="{{ url }}">{{ label }}</a>{% endfor %}</p>
-</div>
+<tr><td style="padding:12px 24px;font-family:{{ font }};border-bottom:1px solid {{ rule }};{% if it.retracted %}border-left:4px solid #b42318;{% endif %}">
+<a href="{{ it.url }}" style="color:{{ accent }};font-size:15px;line-height:21px;font-weight:700;text-decoration:none;">{{ it.title }}</a>
+{% set meta = [it.journal, ((it.date_label ~ ' ' ~ it.published) if it.published else ''), it.authors] | select | list %}
+{% if meta %}<div style="margin-top:3px;font-size:12.5px;line-height:18px;color:{{ muted }};">{{ meta | join(' &middot; ' | safe) }}</div>{% endif %}
+{% if it.badges or it.watched %}<div style="margin-top:7px;">{% for b in it.badges %}{{ pill(b) }}{% endfor %}{% for w in it.watched %}{{ pill(w) }}{% endfor %}</div>{% endif %}
+{% if it.previously_sent_in %}<div style="margin-top:3px;font-size:13.5px;line-height:20px;color:#b42318;"><strong>We sent this paper earlier</strong> (edition {{ it.previously_sent_in }}).{% if it.notice_url %} <a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.{% endif %}</div>
+{% elif it.retracted and it.notice_url %}<div style="margin-top:3px;font-size:13.5px;line-height:20px;"><a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.</div>{% endif %}
+<div style="margin-top:6px;font-size:14px;line-height:21px;color:{{ ink }};">{{ it.summary }}</div>
+<div style="margin-top:6px;font-size:12.5px;line-height:18px;color:{{ muted }};">{% if it.doi %}DOI: <a href="{{ it.url }}" style="color:{{ accent }};">{{ it.doi }}</a>{% else %}<a href="{{ it.url }}" style="color:{{ accent }};">Open the record</a>{% endif %}{% for label, url in it.links %} &middot; <a href="{{ url }}" style="color:{{ accent }};">{{ label }}</a>{% endfor %}</div>
+</td></tr>
 {% endfor %}
 {% endfor %}
 {% endfor %}
-<div class="foot">
-  {% if held_back %}{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short and will be considered again next week.<br>{% endif %}
-  Selection: papers first found by our searches from {{ window_text }}, in {{ sources_text }}, that mention the field in the title or abstract. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from the paper's own abstract.{% endif %} Edition generated {{ built_text }}.
-</div>
-</div>
+
+{% if cfg.closing %}
+<tr><td style="padding:22px 24px 12px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};"><p style="margin:0;">{{ cfg.closing }}</p></td></tr>
+{% endif %}
+{% if cfg.signature %}
+<tr><td style="padding:0 24px 20px;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">
+<div style="font-size:13.5px;font-weight:700;color:{{ ink }};">{{ cfg.signature.name }}</div>
+{% if cfg.signature.title %}<div style="margin:0;">{{ cfg.signature.title }}</div>{% endif %}
+{% if cfg.signature.email %}<div style="margin:0;"><a href="mailto:{{ cfg.signature.email }}" style="color:{{ accent }};text-decoration:none;">{{ cfg.signature.email }}</a></div>{% endif %}
+{% if cfg.signature.phone %}<div style="margin:0;">{{ cfg.signature.phone }}</div>{% endif %}
+{% if cfg.signature.disclaimer %}<div style="margin-top:8px;font-size:11px;line-height:16px;color:#8791a3;">{{ cfg.signature.disclaimer }}</div>{% endif %}
+</td></tr>
+{% endif %}
+
+<tr><td style="padding:14px 24px 16px;background:#f7f9fc;border-top:3px solid {{ accent }};font-family:{{ font }};font-size:11.5px;line-height:17px;color:{{ muted }};">
+{% if held_back %}<p style="margin:0 0 6px;">{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short. {{ 'It' if held_back == 1 else 'Each' }} may appear in next week's edition, ranked lower, and not after that.</p>{% endif %}
+<p style="margin:0;">Selection: papers first found by our searches from {{ window_text }}, in {{ sources_text }}, that mention the field in the title or abstract. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from the paper's own abstract.{% endif %} Edition generated {{ built_text }}.</p>
+{% if cfg.footer %}<p style="margin:6px 0 0;">{{ cfg.footer }}</p>{% endif %}
+</td></tr>
+
+</table>
+</td></tr>
+</table>
 </body>
 </html>

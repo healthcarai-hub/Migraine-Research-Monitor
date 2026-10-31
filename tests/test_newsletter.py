@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from research_agent.application.newsletter import IssueExists, NewsletterService, cutoff_for
-from research_agent.domain.field_config import CapsConfig
+from research_agent.domain.field_config import CapsConfig, SignatureConfig
 from research_agent.domain.newsletter import authors_short, format_pub, score, summarise
 from research_agent.infrastructure.db import models as m
 from research_agent.infrastructure.db.repository import Repository
@@ -392,7 +392,8 @@ def test_blank_journal_leaves_no_stray_separator(factory, seeded):
     svc(factory).build(profile, field, WEEK_END)
     with session_scope(factory) as s:
         i = s.scalar(select(m.Issue))
-    assert "\n    |" not in i.text and "   | " not in i.text and '<p class="meta"></p>' in i.html
+    assert "\n    |" not in i.text and "   | " not in i.text
+    assert "&middot; &middot;" not in i.html and 'color:#5b6678;"></div>' not in i.html          # no empty line and no stray separator where journal, date and authors are all missing
 
 
 def test_large_editions_carry_a_gmail_clipping_warning(factory, seeded):
@@ -656,3 +657,210 @@ def test_the_size_limit_trims_non_watched_papers_before_watched_ones(factory, se
         add_fulltext(factory, n, rights="open", licence_key="cc-by")                            # these outscore the watched ones on points
     svc(factory).build(tight, field, WEEK_END)
     assert set(watched) <= {i[0] for i in item_ids(factory)}
+
+
+# ---------------------------------------------------------------- held-back papers return once, ranked lower, then drop out
+def with_config(profile, **newsletter):
+    return profile.model_copy(update={"newsletter": profile.newsletter.model_copy(update=newsletter)})
+
+
+def caps(n, **kw):
+    return {"caps": CapsConfig(per_section={"direct": n}, max_html_kb=None), **kw}
+
+
+def edition(factory, key):
+    with session_scope(factory) as s:
+        issue = s.scalar(select(m.Issue).where(m.Issue.issue_key == key))
+        return [(it.paper_id, it.snapshot.get("carried_over"), it.snapshot.get("score")) for it in issue.items], issue.stats
+
+
+WATCHED = [{"type": "journal", "key": "cephalalgia", "track": "A", "via": "issn", "confidence": "id"}]
+
+
+def test_the_defaults_give_one_extra_week_and_a_penalty_and_bad_values_are_refused(curt):
+    from pydantic import ValidationError
+    from research_agent.domain.field_config import NewsletterConfig
+    cfg = curt[0].newsletter
+    assert (cfg.lookback_days, cfg.max_catchup_days, cfg.carryover_penalty) == (7, 14, 3)
+    for bad in ({"max_catchup_days": 6}, {"carryover_penalty": -1}):
+        with pytest.raises(ValidationError):
+            NewsletterConfig(**bad)
+    assert NewsletterConfig(max_catchup_days=7, carryover_penalty=0).max_catchup_days == 7
+
+
+def test_the_penalty_only_applies_to_a_carried_over_paper():
+    kw = dict(watched_journal=False, watched_researcher=False, specific_subjects=1, has_abstract=True, printable_full_text=False, core_journal=False)
+    assert score(**kw, carried_over=False, carryover_penalty=3) == score(**kw) and score(**kw, carried_over=True, carryover_penalty=3) == score(**kw) - 3
+    assert score(**kw, carried_over=True, carryover_penalty=0) == score(**kw)
+
+
+def test_a_held_back_paper_returns_in_the_next_edition_only_and_ranks_below_an_equal_new_paper(factory, seeded):
+    profile, field = with_config(seeded[0], **caps(1)), seeded[1]
+    held = add(factory, profile, 1, days_ago=3)
+    winner = add(factory, profile, 2, days_ago=2, entities=WATCHED)                 # a followed journal wins the single slot
+    first = svc(factory).build(profile, field, WEEK_END)
+    items, stats = edition(factory, first.issue_key)
+    assert [i[0] for i in items] == [winner] and stats["carried_over"] == 0          # nothing is carried in the first edition
+    new_equal = add(factory, profile, 3, days_ago=-3)                               # stored after the first edition, same strength as `held`
+    roomy = with_config(seeded[0], **caps(5))
+    second = svc(factory, NOW + timedelta(days=7)).build(roomy, field, date(2026, 11, 6))
+    items, stats = edition(factory, second.issue_key)
+    order = [i[0] for i in items]
+    assert order == [new_equal, held]                                               # the late paper comes after the new one of equal strength
+    flags = {pid: carried for pid, carried, _ in items}
+    assert flags == {new_equal: False, held: True} and stats["carried_over"] == 1
+    scores = {pid: sc for pid, _, sc in items}
+    assert scores[new_equal] - scores[held] == 3
+    assert any("carried over from the previous edition" in n for n in second.notes)
+
+
+def test_a_paper_held_back_twice_is_gone_for_good(factory, seeded):
+    profile, field = with_config(seeded[0], **caps(1)), seeded[1]
+    gone = add(factory, profile, 1, days_ago=3)
+    add(factory, profile, 2, days_ago=2, entities=WATCHED)
+    svc(factory).build(profile, field, WEEK_END)                                    # edition 1: `gone` is held back
+    add(factory, profile, 3, days_ago=-3, entities=WATCHED)                         # a stronger new paper takes the only slot of edition 2
+    second = svc(factory, NOW + timedelta(days=7)).build(profile, field, date(2026, 11, 6))
+    assert gone not in [i[0] for i in edition(factory, second.issue_key)[0]]        # edition 2: held back again
+    roomy = with_config(seeded[0], **caps(50))
+    third = svc(factory, NOW + timedelta(days=14)).build(roomy, field, date(2026, 11, 13))
+    assert gone not in [i[0] for i in edition(factory, third.issue_key)[0]]         # edition 3: it no longer qualifies, even with plenty of room
+    with session_scope(factory) as s:
+        assert s.get(m.Paper, gone) is not None                                     # still in the database (and so in the app's search)
+
+
+def test_only_a_strong_old_paper_beats_a_new_one_and_the_penalty_decides_it(factory, seeded):
+    def run(penalty):
+        from research_agent.infrastructure.db.models import Base
+        from research_agent.infrastructure.db.session import make_engine, make_session_factory
+        engine = make_engine("sqlite://")
+        Base.metadata.create_all(engine)
+        f = make_session_factory(engine)
+        with session_scope(f) as s:
+            Repository(s).sync_config(*seeded)
+        profile = with_config(seeded[0], **caps(1, carryover_penalty=penalty))
+        strong_old = add(f, profile, 1, days_ago=3)
+        add(f, profile, 2, days_ago=2, entities=WATCHED)                            # takes edition 1's slot
+        with session_scope(f) as s:
+            s.add(m.PaperFulltext(paper_id=strong_old, status="full_text", rights="open", print_allowed=True, words=900, text="body"))
+        svc(f).build(profile, seeded[1], WEEK_END)
+        weak_new = add(f, profile, 3, days_ago=-3)
+        second = svc(f, NOW + timedelta(days=7)).build(profile, seeded[1], date(2026, 11, 6))
+        return strong_old, weak_new, [i[0] for i in edition(f, second.issue_key)[0]]
+    old, new, winners = run(penalty=2)
+    assert winners == [old]                                                          # held full text outweighs a small penalty
+    old, new, winners = run(penalty=5)
+    assert winners == [new]                                                          # a big penalty lets the new paper win the only slot
+    old, new, winners = run(penalty=0)
+    assert winners == [old]
+
+
+def test_retraction_alerts_are_never_penalised_or_flagged_as_carried(factory, seeded):
+    profile, field = seeded
+    pid = add(factory, profile, 1, days_ago=3)
+    svc(factory).build(profile, field, WEEK_END)                                     # edition 1 carries it
+    with session_scope(factory) as s:
+        s.get(m.Paper, pid).is_retracted = True                                      # retracted afterwards
+    second = svc(factory, NOW + timedelta(days=7)).build(profile, field, date(2026, 11, 6))
+    items, stats = edition(factory, second.issue_key)
+    assert [i[0] for i in items] == [pid] and items[0][1] is False and stats["carried_over"] == 0     # first stored 10 days before this cutoff, yet not "late"
+    with session_scope(factory) as s:
+        assert s.scalar(select(m.IssueItem.role).where(m.IssueItem.issue_id == s.scalar(select(m.Issue.id).where(m.Issue.issue_key == second.issue_key)))) == "retraction"
+
+
+# ---------------------------------------------------------------- layout and wording (the draft must look right in Gmail's compose window)
+def built(factory, profile, field, **kw):
+    add(factory, profile, 1, days_ago=2, entities=WATCHED, subjects=[("2", "Trigeminovascular & neuropeptides", "A")])
+    r = svc(factory).build(profile, field, WEEK_END, **kw)
+    with session_scope(factory) as s:
+        i = s.get(m.Issue, r.issue_id)
+        return i.html, i.text
+
+
+def test_the_html_is_styled_inline_in_tables_because_gmail_drops_style_blocks(factory, seeded):
+    import re
+    html, _ = built(factory, *seeded)
+    assert "<style" not in html and "<link" not in html and "@media" not in html
+    assert html.count("<table") == html.count("</table>") and html.count("<tr") == html.count("</tr>") and html.count("<td") == html.count("</td>")
+    assert "max-width:760px" in html and 'role="presentation"' in html
+    for tag in re.findall(r"<(?:h1|a|td|div|span|p)\b[^>]*>", html):                 # every visible element carries its own style
+        assert "style=" in tag, tag
+
+
+def test_greeting_introduction_lead_closing_signature_and_footer_appear_in_order(factory, seeded):
+    profile, field = seeded
+    cfg = profile.newsletter.model_copy(update={"greeting": "Hello Curt,", "introduction": "Here is the round-up.", "results_lead": "The papers:", "closing": "Enjoy the weekend.",
+                                                "footer": "Prepared by the team.", "signature": SignatureConfig(name="A. Sender", title="Assistant", email="a@x.org", disclaimer="Confidential.")})
+    html, text = built(factory, profile.model_copy(update={"newsletter": cfg}), field)
+    for doc in (html, text):
+        positions = [doc.index(x) for x in ("Hello Curt,", "Here is the round-up.", "The papers:", "Enjoy the weekend.", "A. Sender", "Assistant", "Confidential.", "Prepared by the team.")]
+        assert positions == sorted(positions)
+    assert "mailto:a@x.org" in html and "a@x.org" in text
+    assert html.index("Hello Curt,") < html.index("Direct research") < html.index("Enjoy the weekend.")
+
+
+def test_blank_wording_is_left_out_not_shown_as_empty_boxes(factory, seeded):
+    profile, field = seeded
+    cfg = profile.newsletter.model_copy(update={"greeting": "", "introduction": "", "results_lead": "", "closing": "", "signature": None, "footer": ""})
+    html, text = built(factory, profile.model_copy(update={"newsletter": cfg}), field)
+    assert "Hello" not in html and "weekend" not in html and "mailto" not in html and "Prepared" not in html
+    assert "This week's papers" not in html and "Direct research" in html
+
+
+def test_wording_is_escaped_in_html_and_left_plain_in_text(factory, seeded):
+    profile, field = seeded
+    cfg = profile.newsletter.model_copy(update={"greeting": "Hi <b>Curt</b> & co,", "closing": "See you <i>soon</i>"})
+    html, text = built(factory, profile.model_copy(update={"newsletter": cfg}), field)
+    assert "Hi &lt;b&gt;Curt&lt;/b&gt; &amp; co," in html and "<b>Curt</b>" not in html and "&lt;i&gt;soon&lt;/i&gt;" in html
+    assert "Hi <b>Curt</b> & co," in text
+
+
+def test_the_accent_colour_is_a_setting_that_reaches_the_header_and_links_and_is_validated(factory, seeded):
+    from pydantic import ValidationError
+    from research_agent.domain.field_config import NewsletterConfig
+    profile, field = seeded
+    html, _ = built(factory, profile.model_copy(update={"newsletter": profile.newsletter.model_copy(update={"accent_color": "#7a1fa2"})}), field)
+    assert html.count("#7a1fa2") >= 5 and "#1f5f8b" not in html
+    for bad in ("blue", "#12345", "#gggggg", "1f5f8b"):
+        with pytest.raises(ValidationError):
+            NewsletterConfig(accent_color=bad)
+
+
+def test_label_pills_are_coloured_by_what_they_say():
+    from research_agent.infrastructure.rendering import badge_tone
+    assert badge_tone("RETRACTED", "#123456")[1] == "#b42318" and badge_tone("Full text available", "#123456")[1] == "#166534"
+    assert badge_tone("Open access", "#123456")[1] == "#1d4ed8" and badge_tone("Preprint: not peer reviewed", "#123456")[1] == "#92400e"
+    assert badge_tone("Watched journal: Cephalalgia", "#123456")[1] == "#123456" and badge_tone("Exploratory", "#123456") == ("#f1f5f9", "#475569")
+
+
+def test_the_glance_row_counts_sections_full_text_and_followed_sources(factory, seeded):
+    import re
+    profile, field = seeded
+    pid = add(factory, profile, 1, days_ago=2, entities=WATCHED)
+    with session_scope(factory) as s:
+        s.add(m.PaperFulltext(paper_id=pid, status="full_text", rights="open", print_allowed=True, words=500, text="t"))
+    add(factory, profile, 2, days_ago=2)
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert "This week at a glance" in html and re.search(r">2</strong> Direct research", html) and re.search(r">1</strong> with the full text held", html) and re.search(r">1</strong> from followed journals or researchers", html)
+
+
+def test_a_late_paper_wears_a_held_over_label_and_a_new_one_does_not(factory, seeded):
+    profile, field = with_config(seeded[0], **caps(1)), seeded[1]
+    late = add(factory, profile, 1, days_ago=3)
+    add(factory, profile, 2, days_ago=2, entities=WATCHED)
+    svc(factory).build(profile, field, WEEK_END)
+    new = add(factory, profile, 3, days_ago=-3)
+    r = svc(factory, NOW + timedelta(days=7)).build(with_config(seeded[0], **caps(5)), field, date(2026, 11, 6))
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert html.count("Held over from last week") == 1
+    assert html.index(f"number {new} with") < html.index(f"number {late} with") < html.index("Held over from last week")      # the new paper first; the late one, and its label, after
+
+
+def test_the_curt_profile_has_its_own_wording_in_the_same_spirit_as_the_old_agent(curt):
+    cfg = curt[0].newsletter
+    assert cfg.greeting.startswith("Hello Curt") and cfg.signature and cfg.signature.name and cfg.footer
+    assert cfg.greeting != "Good morning Curt," and cfg.closing != "Have a great weekend." and cfg.results_lead != "Here are the latest publications:"     # similar, not the same
+    assert "email" not in (cfg.signature.model_dump(exclude_none=True)) and "phone" not in cfg.signature.model_dump(exclude_none=True)   # contact details are not committed unless chosen

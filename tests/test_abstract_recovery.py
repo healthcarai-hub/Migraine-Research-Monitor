@@ -205,7 +205,8 @@ def test_edition_labels_full_text_and_pdf_derived_abstracts(factory, curt):
         return text[i:i + 520]
     assert "Full text available" in block_for(full) and "Full text available" not in block_for(none) and "Full text available" not in block_for(blocked)
     assert "Abstract recovered from the PDF" in block_for(pdf_abs) and "No abstract: summary from the introduction" in block_for(intro)
-    assert 'class="badge">Full text available' in html
+    import re
+    assert re.search(r'class="badge"[^>]*>Full text available</span>', html)
 
 
 # ---------------------------------------------------------------- fixes from the real-PDF blind test
