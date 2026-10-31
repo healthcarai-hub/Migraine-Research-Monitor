@@ -76,7 +76,9 @@ label.l { display:block; font-size:12.5px; font-weight:600; color:var(--muted); 
 .chips.collapsed { max-height:34px; overflow:hidden; }
 .chip { display:inline-flex; align-items:center; min-height:32px; border-radius:999px; font-size:13.5px; font-weight:600; line-height:1.25; border:1px solid transparent; max-width:100%; text-align:left; }
 .chip svg { width:14px; height:14px; flex:none; }
-.chip .n { font-weight:600; font-size:11.5px; margin-left:8px; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,.65); color:inherit; }
+/* The count is a solid pill in the group's own strong colour with white text, so it reads the same in light and dark mode (it used to inherit the chip's text colour on a translucent white pill, which vanished in dark mode). */
+.chip .n { font-weight:700; font-size:12px; line-height:18px; min-width:24px; text-align:center; margin-left:8px; padding:1px 8px; border-radius:99px; background:var(--blue); color:#fff; font-variant-numeric:tabular-nums; }
+.j .n { background:var(--j-s); } .r .n { background:var(--r-s); } .t .n { background:var(--t-s); } .s .n { background:var(--s-s); }
 .chip.add, .chip.off { padding:6px 13px 6px 9px; gap:6px; }
 .chip.add svg, .chip.off svg { opacity:.75; }
 .chip.add:hover { filter:brightness(.95); box-shadow:0 0 0 2px rgba(29,78,137,.2); }
