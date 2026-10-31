@@ -32,12 +32,11 @@ newsletter:
   greeting: "Hello Curt,"                                      # wording in the style of the earlier newsletter agent (not copied from it); edit freely
   introduction: "Here is this week's round-up of new migraine research: what our monitoring agent found over the past week, grouped by topic. Papers whose full text we hold are marked."
   results_lead: "This week's papers:"
-  closing: "That's everything for this week. Wishing you a restful weekend."
-  signature:                                                   # name and title only; add email: and phone: here if you want them printed (they would then be in git)
-    name: Nicole Melamed
-    title: PA
-    disclaimer: "Healthcar Research Team. This message is confidential and intended only for its recipient."
-  footer: "Prepared for Curt by the Healthcar Research Team."
+  closing: "That's everything for this week. Wishing you a happy weekend."
+  signature:                                                   # the team name only (owner decision 2026-10-31); add title:, email: or phone: here if you ever want them printed (they would then be in git)
+    name: Healthcar AI Research Team
+    disclaimer: "This message is confidential and intended only for its recipient."
+  footer: "Prepared for Curt by the Healthcar AI Research Team."
   recheck_retraction_weeks: 8      # papers sent in the last N weeks are re-checked for a retraction before each build
   freshness:                       # owner decision 2026-10-31: papers published long before we found them do not appear in the week they surface
     max_publication_age_days: 7    # days from publication to the day we first stored the paper; null = no limit. Unknown dates are never left out

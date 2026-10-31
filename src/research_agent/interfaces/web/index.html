@@ -9,12 +9,12 @@
 :root {
   --navy:#0b2545; --blue:#1d4e89; --link:#1d4e89; --bg:#eef2f8; --card:#fff; --ink:#1b2a3b; --muted:#5f6f82; --line:#d9e1ec; --head:#eef2f8; --zebra:#f6f8fb;
   --ok:#166534; --okbg:#e6f4ea; --warn:#92400e; --warnbg:#fff4e0; --bad:#b42318; --badbg:#fde8e8; --focus:#1d4e89;
-  --j-t:#e6eef8; --j-i:#1d4e89; --j-s:#1d4e89; --r-t:#dff3f0; --r-i:#0f6b62; --r-s:#0f766e; --t-t:#ece9fb; --t-i:#4a3fb0; --t-s:#5b4bc4; --s-t:#fdf0dc; --s-i:#8a4b08; --s-s:#b45f06;
+  --stage:#dfe5ee; --j-t:#e6eef8; --j-i:#1d4e89; --j-s:#1d4e89; --r-t:#dff3f0; --r-i:#0f6b62; --r-s:#0f766e; --t-t:#ece9fb; --t-i:#4a3fb0; --t-s:#5b4bc4; --s-t:#fdf0dc; --s-i:#8a4b08; --s-s:#b45f06;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --blue:#2b5fa3; --link:#8fbdf0; --bg:#0f1720; --card:#17212b; --ink:#e8edf3; --muted:#9aa8b8; --line:#2b3846; --head:#1d2937; --zebra:#1b2733;
   --ok:#7fd1a0; --okbg:#143222; --warn:#f0c27d; --warnbg:#3a2a10; --bad:#f29a92; --badbg:#3a1a18; --focus:#8fbdf0;
-  --j-t:#1c2f4a; --j-i:#a9ccf3; --r-t:#12332f; --r-i:#7fd8cb; --t-t:#2a2650; --t-i:#c2bbf7; --s-t:#3d2a10; --s-i:#f2c98c;
+  --stage:#0a1119; --j-t:#1c2f4a; --j-i:#a9ccf3; --r-t:#12332f; --r-i:#7fd8cb; --t-t:#2a2650; --t-i:#c2bbf7; --s-t:#3d2a10; --s-i:#f2c98c;
 } }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
@@ -153,6 +153,33 @@ details { margin-top:10px; } summary { cursor:pointer; color:var(--link); font-w
 .savebar .go { display:flex; gap:10px; flex-wrap:wrap; }
 .after { margin-top:14px; }
 
+/* editions */
+.ed { background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+.ed.open { border-color:var(--blue); box-shadow:0 0 0 1px var(--blue); }
+.edtop { padding:18px 20px 14px; }
+.edtitle { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.edtitle h3 { margin:0; font-size:17px; line-height:24px; }
+.status { display:inline-flex; align-items:center; gap:6px; padding:2px 10px; border-radius:99px; font-size:11.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; background:var(--head); color:var(--link); }
+.status i { width:8px; height:8px; border-radius:50%; background:currentColor; }
+.status.built { background:var(--warnbg); color:var(--warn); } .status.published { background:var(--okbg); color:var(--ok); }
+.stats { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.stat { display:inline-flex; align-items:baseline; gap:6px; padding:4px 12px; border-radius:8px; font-size:12.5px; font-weight:600; background:var(--j-t); color:var(--j-i); }
+.stat b { font-size:15px; }
+.stat.red { background:var(--badbg); color:var(--bad); } .stat.amber { background:var(--warnbg); color:var(--warn); } .stat.teal { background:var(--r-t); color:var(--r-i); } .stat.grey { background:var(--head); color:var(--muted); }
+.edbar { display:flex; gap:8px; flex-wrap:wrap; padding:0 20px 18px; }
+.ed > .fulltext { margin:0 20px 18px; }
+.pv { border-top:1px solid var(--line); background:var(--zebra); }
+.pvbar { display:flex; align-items:center; gap:14px; padding:10px 20px; background:var(--card); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.pvbar .lbl { font-size:12px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); }
+.pvbar .sub { font-size:13.5px; font-weight:600; flex:1; min-width:200px; }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; height:32px; }
+.seg button { border:0; border-left:1px solid var(--line); background:var(--card); padding:0 14px; font-size:13px; font-weight:600; color:var(--muted); }
+.seg button:first-child { border-left:0; }
+.seg button[aria-pressed="true"] { background:var(--navy); color:#fff; }
+.stage { background:var(--stage); padding:24px 20px; display:flex; justify-content:center; }
+.stage iframe { border:0; background:#fff; border-radius:8px; box-shadow:0 6px 24px rgba(11,37,69,.18); width:760px; max-width:100%; height:820px; }
+.stage.phone iframe { width:390px; }
+
 @media (max-width: 760px) {
   .wrap { padding:0 14px; }
   .searchrow { flex-direction:column; }
@@ -222,7 +249,7 @@ details { margin-top:10px; } summary { cursor:pointer; color:var(--link); font-w
     <div class="pager hidden" id="pager"><button class="btn" type="button" id="prev">Previous</button><span id="page"></span><button class="btn" type="button" id="next">Next</button></div>
   </section>
   <section id="panel-editions" role="tabpanel" aria-labelledby="tab-editions" class="hidden">
-    <p class="note">The weekly newsletter editions that have been built. Each is kept as it was built; nothing here sends anything.</p>
+    <p class="note">The weekly newsletter editions that have been built, newest first. Each is kept exactly as it was built; nothing here sends anything.</p>
     <div id="editions"></div>
   </section>
   <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" class="hidden">

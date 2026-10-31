@@ -296,31 +296,83 @@ async function fetchBody(path) {
   return r;
 }
 
+// Count chips take the newsletter's section colours. The formatted edition is shown in a locked frame: scripts are switched off in it (the sandbox leaves that permission out), its links open in a new tab,
+// and it is the server's own rendered edition, never page content built here from strings.
+const SECTION_LABELS = { retractions: "Retractions", direct: "Direct research", mechanisms: "Related mechanisms", preprints: "Preprints", trials: "Clinical trials" };
+const SECTION_TONES = { retractions: "red", preprints: "amber", trials: "teal" };
+const STATUS_LABELS = { built: "Draft not created yet" };      // owner's wording for a built edition; the other statuses are shown as they are stored
+let openEdition = null;     // the one edition whose preview is showing
+
+function stat(n, label, tone) { return el("span", { class: "stat" + (tone ? " " + tone : "") }, el("b", {}, n), " " + label); }
+
 function editionCard(e) {
-  const counts = Object.entries(e.counts || {}).map(([k, v]) => v + " " + k).join(", ") || "empty";
-  const when = (e.window || []).map((d) => (d || "").slice(0, 10)).join(" to ");
-  const pills = [el("span", { class: "pill " + (e.status === "built" ? "warn" : "ft") }, e.status)];
+  const counts = e.counts || {};
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const stats = el("div", { class: "stats" }, stat(total, total === 1 ? "publication" : "publications"));
+  for (const k of Object.keys(SECTION_LABELS)) { if (counts[k]) stats.append(stat(counts[k], SECTION_LABELS[k], SECTION_TONES[k])); }
   const held = Object.values(e.held_back || {}).reduce((a, b) => a + b, 0);
-  if (held) pills.push(el("span", { class: "pill" }, held + " held back for later"));
-  if (e.left_out_as_stale) pills.push(el("span", { class: "pill" }, e.left_out_as_stale + " left out as already old"));
-  const c = el("article", { class: "paper" }, el("h3", {}, e.subject || e.key),
-    el("div", { class: "meta" }, [e.key, "papers stored " + when, counts].join(" · ")), el("div", {}, ...pills));
-  const box = el("div", { class: "fulltext hidden" });
-  const read = el("button", { type: "button", class: "btn" }, "Read here");
-  read.addEventListener("click", async () => {
-    box.classList.remove("hidden"); box.textContent = "Loading…";
-    try { box.textContent = await (await fetchBody("/v1/issues/" + encodeURIComponent(e.key) + "/text")).text(); } catch (x) { box.textContent = x.message; }
+  if (held) stats.append(stat(held, "held back for later", "grey"));
+  if (e.left_out_as_stale) stats.append(stat(e.left_out_as_stale, "left out as already old", "grey"));
+  const subject = e.subject || e.key;
+  const status = el("span", { class: "status " + (e.status || "") }, el("i"), STATUS_LABELS[e.status] || e.status);
+
+  const previewBtn = el("button", { type: "button", class: "btn primary" }, "Preview");
+  const textBtn = el("button", { type: "button", class: "btn" }, "Plain text");
+  const tabBtn = el("button", { type: "button", class: "btn" }, "Open in new tab");
+  const textBox = el("div", { class: "fulltext hidden" });
+  const stage = el("div", { class: "stage" });
+  const desk = el("button", { type: "button", "aria-pressed": "true" }, "Desktop");
+  const phone = el("button", { type: "button", "aria-pressed": "false" }, "Phone");
+  const closeBtn = el("button", { type: "button", class: "btn" }, "Close");
+  const panel = el("div", { class: "pv hidden" }, el("div", { class: "pvbar" }, el("span", { class: "lbl" }, "Formatted preview"), el("span", { class: "sub" }, subject),
+    el("span", { class: "seg" }, desk, phone), closeBtn), stage);
+  const card = el("article", { class: "ed" }, el("div", { class: "edtop" }, el("div", { class: "edtitle" }, el("h3", {}, subject), status), stats),
+    el("div", { class: "edbar" }, previewBtn, tabBtn, textBtn), textBox, panel);
+
+  const width = (isPhone) => { stage.classList.toggle("phone", isPhone); desk.setAttribute("aria-pressed", String(!isPhone)); phone.setAttribute("aria-pressed", String(isPhone)); };
+  desk.addEventListener("click", () => width(false));
+  phone.addEventListener("click", () => width(true));
+
+  const hideText = () => { textBox.classList.add("hidden"); textBtn.textContent = "Plain text"; };      // one view at a time on a card: the formatted preview or the plain text
+  let loaded = false;
+  async function show() {
+    if (openEdition && openEdition !== handle) openEdition.hide();
+    openEdition = handle;
+    hideText();
+    panel.classList.remove("hidden"); card.classList.add("open"); previewBtn.textContent = "Hide preview";
+    if (loaded) return;
+    loaded = true;
+    stage.replaceChildren(el("p", { class: "none" }, "Loading the edition…"));
+    try {
+      const html = await (await fetchBody("/v1/issues/" + encodeURIComponent(e.key) + "/html")).text();
+      const frame = el("iframe", { title: subject, sandbox: "allow-same-origin allow-popups allow-popups-to-escape-sandbox" });
+      frame.srcdoc = html.replace("<head>", '<head><base target="_blank">');
+      stage.replaceChildren(frame);
+    } catch (x) { loaded = false; stage.replaceChildren(el("p", { class: "none" }, x.message)); }
+  }
+  function hide() { panel.classList.add("hidden"); card.classList.remove("open"); previewBtn.textContent = "Preview"; if (openEdition === handle) openEdition = null; }
+  const handle = { show, hide };
+  previewBtn.addEventListener("click", () => (panel.classList.contains("hidden") ? show() : hide()));
+  closeBtn.addEventListener("click", hide);
+
+  let textLoaded = false;
+  textBtn.addEventListener("click", async () => {
+    const hidden = textBox.classList.toggle("hidden");
+    textBtn.textContent = hidden ? "Plain text" : "Hide plain text";
+    if (hidden) return;
+    if (!panel.classList.contains("hidden")) hide();
+    if (textLoaded) return;
+    textLoaded = true; textBox.textContent = "Loading…";
+    try { textBox.textContent = await (await fetchBody("/v1/issues/" + encodeURIComponent(e.key) + "/text")).text(); } catch (x) { textLoaded = false; textBox.textContent = x.message; }
   });
-  const open = el("button", { type: "button", class: "btn" }, "Open formatted");
-  open.addEventListener("click", async () => {
+  tabBtn.addEventListener("click", async () => {
     const w = window.open("", "_blank");               // opened first so the browser allows it, then pointed at the edition
     try {
       const blob = await (await fetchBody("/v1/issues/" + encodeURIComponent(e.key) + "/html")).blob();
       if (w) w.location = URL.createObjectURL(new Blob([blob], { type: "text/html" }));
     } catch (x) { if (w) w.close(); say(x.message, "error"); }
   });
-  c.append(el("div", { class: "actions" }, read, open), box);
-  return c;
+  return { card, handle };
 }
 
 async function loadEditions() {
@@ -329,8 +381,11 @@ async function loadEditions() {
   try {
     const list = await api("/v1/issues");
     const root = $("editions"); root.replaceChildren();
+    openEdition = null;
     if (!list.length) root.append(el("p", { class: "note" }, "No edition has been built yet."));
-    for (const e of list) root.append(editionCard(e));
+    const cards = list.map(editionCard);
+    for (const c of cards) root.append(c.card);
+    if (cards.length) cards[0].handle.show();          // the newest edition opens by itself
   } catch (e) { fail(e); }
 }
 

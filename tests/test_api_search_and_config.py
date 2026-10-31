@@ -352,3 +352,19 @@ def test_the_script_asks_for_every_chip_filter_and_the_chosen_period(env):
         assert param in js
     assert js.index('title: "Sources"') < js.index('title: "Journals"') < js.index('title: "Researchers"') < js.index('title: "Topics"')   # sources first
     assert "searchSeq" in js and "author" not in js.replace("authors", "")                                                          # an old answer never overwrites a newer one; no author box
+
+
+def test_the_editions_tab_shows_the_formatted_edition_in_a_locked_frame_without_the_key_and_dates_line(env):
+    c = env[0]()
+    js, html = c.get("/app/app.js").text, c.get("/app").text
+    assert "srcdoc" in js and 'sandbox: "allow-same-origin allow-popups allow-popups-to-escape-sandbox"' in js
+    assert "allow-scripts" not in js and "allow-scripts" not in html                              # nothing inside the shown edition can ever run as script
+    assert '<base target="_blank">' in js and "/html" in js and "/text" in js                     # links open elsewhere; the plain text stays as a second view
+    assert "papers stored" not in js and "edmeta" not in js and "edmeta" not in html               # the owner removed the line with the key, the dates and the build time
+    for label in ("Preview", "Hide preview", "Open in new tab", "Plain text", "Desktop", "Phone"):
+        assert label in js
+    assert "built: \"Draft not created yet\"" in js                                                # the owner renamed the Built tag
+    assert "hideText" in js                                                                        # a card shows the formatted preview or the plain text, never both
+    assert "cards[0].handle.show()" in js and "openEdition" in js                                  # the newest edition opens itself; only one preview is open at a time
+    csp = c.get("/app").headers["content-security-policy"]
+    assert "script-src 'self'" in csp and "frame-src" not in csp and "default-src 'none'" in csp   # the frame is the page's own srcdoc: no wider policy was needed
