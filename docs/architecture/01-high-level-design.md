@@ -106,7 +106,7 @@ flowchart TD
 10. **Draft.** A Gmail draft is created; a person reviews and sends it.
 11. **Serve.** The API and web app expose the collection and the editions.
 
-The low-level design of each step is in [chapter 2](02-low-level-design.md).
+The low-level design of each step is in [chapter 2](02-low-level-design.md); where the data comes from, how each source is queried and what the fallbacks are is in [chapter 7](07-data-sources-and-ingestion.md).
 
 ## 1.8 The weekly rhythm
 

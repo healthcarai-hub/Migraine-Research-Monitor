@@ -132,3 +132,5 @@
 * **Decision (owner).** A profile setting names the edition's weekday; the date is the next such day on or after the run, while the content is everything stored up to the build.
 * **Consequences.** The label matches when readers get it; Friday's collection goes into the next edition, and nothing is lost or sent twice.
 * **Alternatives.** Dating by the build day (reads as a day early); building on Friday morning (less time to review).
+
+**Next:** [7. Data sources and ingestion](07-data-sources-and-ingestion.md).

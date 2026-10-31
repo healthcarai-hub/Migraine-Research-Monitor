@@ -10,6 +10,7 @@ This folder explains **how the system is built and why**, written as a design st
 | 4 | [Data design](04-data-design.md) | What is stored, with which keys and constraints, and why? |
 | 5 | [Reliability, security and operations](05-reliability-security-operations.md) | What breaks, what is the threat model, and how is it built, tested and run? |
 | 6 | [Decision log](06-decision-log.md) | Why was it designed this way, and what was rejected? |
+| 7 | [Data sources and ingestion](07-data-sources-and-ingestion.md) | Where does the data come from, how is it retrieved, what are the fallbacks, and what did we observe? |
 
 ## Reading paths
 
@@ -18,7 +19,8 @@ This folder explains **how the system is built and why**, written as a design st
 | understand the whole system in five minutes | the README, then chapter 1 up to "How the data flows" |
 | find out why a paper did or did not reach a newsletter | chapter 2: sections on the gate, selection and ranking; then the decision log, D5 and D9 |
 | change the search | chapter 3, section 3.6; chapter 4, section 4.7 |
-| add a source or a full-text route | chapter 2, sections 2.3, 2.4 and 2.18 |
+| understand where the data comes from and what each source is good for | chapter 7 |
+| add a source or a full-text route | chapter 7 first, then chapter 2, sections 2.3, 2.4 and 2.18 |
 | change the database | chapter 4, sections 4.5 and 4.12; decision D14 |
 | be on call when a job fails | chapter 5, section 5.1 |
 | review security | chapter 3, section 3.4; chapter 4, section 4.13; chapter 5, section 5.5 |

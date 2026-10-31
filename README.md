@@ -86,6 +86,50 @@ Two scheduled jobs and one API service share a database and never call each othe
 * **Summaries are validated.** The model sees only the title and abstract, and every number in its summary must appear in the abstract; otherwise a plain extract is used.
 * The edition is **dated Friday** even though it is built on Thursday evening; its content is everything stored up to the build.
 
+## Data sources and ingestion
+
+No single index is complete: in a measured window each of the five sources found only **27 to 53 percent** of the distinct new papers. So the service asks all of them, the same way, every day, and merges the answers.
+
+| Source | What it gives us | How we ask | If it fails or is missing |
+|---|---|---|---|
+| **PubMed** | the core biomedical record: title, abstract, authors, ISSNs, publication types (which carry retraction flags), PubMed Central ID | `esearch` then `efetch`, by **entry date** | the run continues without it; the next run looks back three days |
+| **Europe PMC** | broad literature, **preprints**, abstracts, language, PubMed Central ID; later also full text | REST search by **first index date** | same; also the fallback source for abstracts |
+| **Crossref** | publisher metadata: DOIs, licences, text-mining links, retraction updates; reaches papers PubMed never indexes | `/works` and per-ISSN `/journals/{issn}/works`, by **created date** | an ISSN it does not know (404) is skipped, not an error |
+| **OpenAlex** | an open scholarly graph: abstracts, retraction flag, free-copy locations, confirmed author IDs | `/works` search; **publication date over a 14-day look-back** on the free plan | stops cleanly when its daily credits run low; switches itself to the free route if a premium filter is refused |
+| **ClinicalTrials.gov** | registered trials (labelled separately from publications) | API v2 by **first post date** | the run continues without it |
+
+```mermaid
+flowchart TD
+    spec["Search specs<br/>topic, journal, researcher, preprint, trial"] --> ask["Ask each source:<br/>what is new in your index<br/>in the last 3 days?"]
+    ask --> norm["Normalise into one record shape<br/>clean identifiers, keep unknown dates unknown"]
+    norm --> gate{"Mentions the field's word?"}
+    gate -- "no" --> drop["Set aside"]
+    gate -- "yes" --> merge["Merge duplicates<br/>DOI, then PMID, then title"]
+    merge --> enrich["Enrich by DOI<br/>abstract, retraction state, licence, free links"]
+    enrich --> ft["Fetch full text where a route exists"]
+    ft --> store[("Store with its provenance")]
+```
+
+**Fallbacks at a glance**
+
+* **Missing abstract:** ask OpenAlex, then Europe PMC, then recover it from the paper's own text, and otherwise list the paper last.
+* **Retraction check:** a paper is flagged if **any** of PubMed, Crossref or OpenAlex says so, because no single source is complete.
+* **Full text:** Europe PMC XML, then Springer Nature open access, then a free PDF, and finally the abstract with links.
+* **Sources we deliberately do not use:** Google Scholar (no API; scraping is not allowed), Cochrane (blocked; PubMed stands in), bioRxiv and medRxiv (no topic filter; Europe PMC finds the same preprints in one request), publisher RSS feeds (ISSN searches cover the same journals).
+
+**What we observed while building it**
+
+* **Entry dates, never publication dates.** In PubMed, 49 percent of new papers entered the index more than 3 days after their publication date and 39 percent have only a month or year, so a publication-date search found just 37 percent of what a search by entry date finds.
+* **Every source has gaps.** Crossref alone found 37 papers the others missed (34 of them not in PubMed at all); the first full run stored 233 papers, 158 from a single source.
+* **Silent failures exist.** A ClinicalTrials.gov date field returned zero results with no error, so a search that normally returns papers and returns none is flagged as a *suspect zero*.
+* **Retractions are split across sources:** of 18 retracted papers PubMed flags, Crossref found 10 and OpenAlex 12; the union is the rule.
+* **Small API quirks break whole searches** (for example PubMed always returns an empty `errorlist` object, which first looked like an error), so the adapters are tested against recorded real responses.
+* **OpenAlex is metered,** and its free key has no created-date filter, so it is a supplement with a credit guard.
+* **Publisher sites block scripts** (8 of 10 journal homepages returned HTTP 403), so articles come from the indexes by ISSN.
+* **Steady state is about 20 new papers a day,** and re-running a window adds nothing. About half of recent papers end up with full text.
+
+The details, the measurements and every fallback are in [chapter 7](docs/architecture/07-data-sources-and-ingestion.md).
+
 ## Architecture study
 
 The design is written up as a short series, each chapter beginning with an **In short** box.
@@ -98,6 +142,7 @@ The design is written up as a short series, each chapter beginning with an **In 
 | 4 | [Data design](docs/architecture/04-data-design.md) | the 24 tables, the constraints that carry business rules, indexes, migrations, row level security |
 | 5 | [Reliability, security and operations](docs/architecture/05-reliability-security-operations.md) | failure modes, idempotency, threat model, CI and deployment, testing strategy |
 | 6 | [Decision log](docs/architecture/06-decision-log.md) | sixteen decisions: why, the cost, and what was rejected |
+| 7 | [Data sources and ingestion](docs/architecture/07-data-sources-and-ingestion.md) | what each source gives, how it is queried, the fallbacks, and what we observed while building the pipeline |
 
 A [glossary and reading paths](docs/architecture/README.md) help you find the right chapter fast.
 
@@ -107,70 +152,21 @@ You need Python 3.12.
 
 ```bash
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e ".[dev]"
-cp .env.example .env                       # fill in what you have; every credential is optional
-.venv/bin/research-agent db upgrade        # create the database (SQLite by default; Postgres via DATABASE_URL)
-.venv/bin/research-agent seed              # load config/ into the database
+cp .env.example .env                       # every credential is optional
+.venv/bin/research-agent db upgrade && .venv/bin/research-agent seed
 .venv/bin/research-agent collect           # one daily run
-.venv/bin/research-agent newsletter build  # build this week's edition
-.venv/bin/research-agent api token         # make an access token (printed once)
-API_TOKENS=<that token> .venv/bin/research-agent api   # API and web app at http://127.0.0.1:8000/app
-.venv/bin/python -m pytest                 # run the tests
+.venv/bin/research-agent newsletter build  # this week's edition
+.venv/bin/python -m pytest                 # offline tests
 ```
 
-| Command | What it does |
-|---|---|
-| `research-agent plan` | list the searches a run would make |
-| `research-agent collect --date 2026-10-30` | replay a day; `--sources` and `--paths` narrow it |
-| `research-agent fulltext` | fetch full text (add `--dry-run` to see the routes) |
-| `research-agent newsletter build --week-ending YYYY-MM-DD` | build an edition; `--rebuild` replaces an unpublished one |
-| `research-agent newsletter publish <key> --to file` or `--to gmail` | write draft files, or create the Gmail draft |
-| `research-agent job daily` / `job weekly` | what the hosting cron runs |
-| `research-agent status` | recent runs |
-| `research-agent papers --days 7` | what the last week stored |
-| `research-agent providers` | which sources and full-text routes are on |
-| `research-agent gmail authorize` | one-time Gmail sign-in |
-
-### Configuration
-
-* **`config/fields/*.yaml`**: what a field means: the gate word, topics and the list of mechanism links.
-* **`config/profiles/*.yaml`**: one profile's journals, researchers, newsletter wording, colours, caps and ranking weights.
-* **`.env`**: credentials and hosting settings (names only; copy `.env.example`):
-
-| Group | Variables |
-|---|---|
-| Database | `DATABASE_URL`, `API_DATABASE_URL`, `API_ADMIN_DATABASE_URL` |
-| Sources | `CONTACT_EMAIL`, `NCBI_API_KEY`, `OPENALEX_API_KEY`, `SPRINGER_API_KEY`, `CROSSREF_PLUS_TOKEN` |
-| Summaries | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` |
-| Gmail | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `NEWSLETTER_RECIPIENTS` |
-| API | `API_TOKENS`, `API_ADMIN_TOKENS`, `API_RATE_LIMIT_PER_MINUTE`, `API_CLIENT_IP_HEADER`, `API_DOCS` |
-| Jobs | `JOB_OVERLAP_DAYS`, `JOB_FULLTEXT_LIMIT` |
-
-**Another field or profile:** copy `config/profiles/curt.yaml` and `config/fields/migraine.yaml`, change the gate word, journals, researchers and topics, then run `seed --profile <id>` and `collect --profile <id>`. Nothing in `src/` mentions migraine.
-
-**A quick API call:**
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" \
-  "https://<host>/v1/papers?journal=cephalalgia&source=pubmed&published_from=2026-10-01&sort=relevance"
-```
-
-Set `API_DOCS=true` to serve the OpenAPI docs at `/docs`; the full route list and its design are in [chapter 3](docs/architecture/03-api-design.md).
-
-## Deployment
-
-```mermaid
-flowchart LR
-    dev["Developer"] -->|"git push"| gh["GitHub<br/>CI runs the tests"]
-    gh -->|"deploys"| rw["Railway<br/>one Docker image,<br/>three services"]
-    rw --> sb[("Supabase Postgres<br/>three roles")]
-```
-
-The database is reached through three roles: the **owner** (the cron jobs), a **read-only** role (the API's data routes) and a **switches-only** role (the API's settings route), so the public API never holds the owner's credentials. Step-by-step setup is in [DEPLOYMENT.md](DEPLOYMENT.md); what to do when a job fails is in [chapter 5](docs/architecture/05-reliability-security-operations.md#51-failure-modes).
+* **All commands, configuration and environment variables, running the API, watching another field:** [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md)
+* **Deploying (Railway and Supabase), schedules and recovery:** [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## More documentation
 
 | File | What it holds |
 |---|---|
+| [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md) | running it locally, every command, configuration and environment variables |
 | [docs/architecture/](docs/architecture/README.md) | the design study: HLD, LLD, API, data, reliability and security, decisions |
 | [docs/REFERENCE.md](docs/REFERENCE.md) | the detailed reference: every setting, the full API parameters, newsletter rules, Gmail setup |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Railway and Supabase setup, schedules, first checks, recovery |
