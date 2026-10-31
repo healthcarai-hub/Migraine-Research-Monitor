@@ -4,7 +4,7 @@
 
 Every day the service searches the main scholarly sources, de-duplicates and enriches what it finds, and stores it with the full text where it can get it. Every week it renders a **newsletter into a Gmail draft** for a person to review and send it over to the Client. A **REST API and web app** let the team search the whole collection and tune what goes into the next newsletter.
 
-The first deployment is for **Curt: migraine research** (10 journals, 30 researchers, 12 topics). What counts as relevant lives in YAML config, not in code, so the same service can watch another field.
+The first deployment is **Curt: migraine research** (10 journals, 30 researchers, 12 topics). What counts as relevant lives in YAML config, not in code, so the same service can watch another field.
 
 _Naming note: the Python package and the CLI are still called `research_agent` and `research-agent`, from the project's first design._
 
