@@ -1,8 +1,8 @@
-# Research Monitor
+# Migraine Research Monitor
 
-> A scheduled ingestion pipeline, a PostgreSQL store, a token-protected REST API with a small web app, and a weekly newsletter generator, for keeping up with a research field.
+> A scheduled ingestion pipeline, a PostgreSQL store, a token-protected REST API with a small web app, and a weekly newsletter generator, for keeping up with a research field. Made for a client to help him keep on tabs with focused Migraine Research
 
-Every day the service searches the main scholarly sources, de-duplicates and enriches what it finds, and stores it with the full text where it can get it. Every week it renders a **newsletter into a Gmail draft** for a person to review and send. A **REST API and web app** let the team search the whole collection and tune what goes into the next newsletter.
+Every day the service searches the main scholarly sources, de-duplicates and enriches what it finds, and stores it with the full text where it can get it. Every week it renders a **newsletter into a Gmail draft** for a person to review and send it over to the Client. A **REST API and web app** let the team search the whole collection and tune what goes into the next newsletter.
 
 The first deployment is **Curt: migraine research** (10 journals, 30 researchers, 12 topics). What counts as relevant lives in YAML config, not in code, so the same service can watch another field.
 
