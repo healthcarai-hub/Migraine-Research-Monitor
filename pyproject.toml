@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "research-agent"
 version = "0.1.0"
-description = "Field-configurable research monitoring agent (collection pipeline, database, newsletter). First profile: Curt migraine."
+description = "Field-configurable research monitoring service (ingestion pipeline, database, REST API, newsletter). First profile: Curt migraine."
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.14,<2",

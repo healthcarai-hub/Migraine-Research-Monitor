@@ -64,7 +64,7 @@ def create_app(settings: Settings, factory: sessionmaker[Session], profile: Prof
     can_change = write_factory is not None and bool(admin_tokens)
     bearer = HTTPBearer(auto_error=False)
 
-    app = FastAPI(title="Research agent API", version=__version__, docs_url="/docs" if settings.api_docs else None,
+    app = FastAPI(title="Research Monitor API", version=__version__, docs_url="/docs" if settings.api_docs else None,
                   redoc_url=None, openapi_url="/openapi.json" if settings.api_docs else None)
     if settings.api_cors_origins:
         app.add_middleware(CORSMiddleware, allow_origins=list(settings.api_cors_origins), allow_methods=["GET", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])

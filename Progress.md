@@ -119,7 +119,7 @@ An edition is **dated Friday** but holds everything stored up to the Thursday bu
 
 ## 9. Files
 
-* `README.md`: the friendly overview for developers: what the agent is, flow diagrams of how it works, how to run it. `docs/REFERENCE.md` is the detailed reference (every setting, the full API, newsletter rules, Gmail setup) and `docs/images/` holds the README screenshots.
+* `README.md`: the friendly overview for developers: what the agent is, flow diagrams of how it works, how to run it. `docs/architecture/` is the design study (high-level design, low-level design, API design, data design, reliability and security, decision log), and `docs/REFERENCE.md` is the detailed reference (every setting, the full API, newsletter rules, Gmail setup) and `docs/images/` holds the README screenshots.
 * `DEPLOYMENT.md`: Railway and Supabase setup, schedules, first checks, day to day.
 * `Pipeline_design_plan.md`: the design, with build status in sections 13 to 16.
 * `Progress.md` (this file) and `Progress_history.md` (the detailed log).

@@ -1,6 +1,6 @@
 # Reference: commands, settings, API and details
 
-_This is the detailed reference that used to be the README. The friendly overview with diagrams is the [README](../README.md); day-to-day deployment steps are in [DEPLOYMENT.md](../DEPLOYMENT.md). File names below are relative to the repository root._
+_This is the detailed reference that used to be the README. The friendly overview is the [README](../README.md), and the design study (HLD, LLD, API, data, reliability, decisions) is in [docs/architecture](architecture/README.md); day-to-day deployment steps are in [DEPLOYMENT.md](../DEPLOYMENT.md). File names below are relative to the repository root._
 
 
 Daily collection pipeline and database for research monitoring. Field-specific behaviour (what counts as relevant, which journals,
