@@ -547,8 +547,8 @@ class Repository:
         return n
 
     def papers_missing_abstract_with_text(self, profile_id: str) -> list[tuple[m.Paper, m.PaperFulltext]]:
-        """Gate-passed or undecided papers that still have no abstract but whose PDF or plain text we hold (candidates for abstract recovery without a new download)."""
+        """Gate-passed or undecided papers that still have no abstract but whose PDF, plain or XML-derived text we hold (candidates for abstract recovery without a new download)."""
         q = (select(m.Paper, m.PaperFulltext).join(m.PaperFulltext, m.PaperFulltext.paper_id == m.Paper.id).join(m.ProfileMatch, m.ProfileMatch.paper_id == m.Paper.id)
              .where(m.ProfileMatch.profile_id == profile_id, m.ProfileMatch.gate_status.in_(["passed", "unknown"]), m.Paper.kind != "trial",
-                    func.length(func.trim(m.Paper.abstract)) == 0, m.PaperFulltext.status == "full_text", m.PaperFulltext.format.in_(["pdf_text", "plain_text"])))
+                    func.length(func.trim(m.Paper.abstract)) == 0, m.PaperFulltext.status == "full_text", m.PaperFulltext.format.in_(["pdf_text", "plain_text", "jats_xml"])))
         return [(p, f) for p, f in self.s.execute(q)]

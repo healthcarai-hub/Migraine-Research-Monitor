@@ -2,7 +2,7 @@
 {{ '=' * (cfg.title | length) }}
 {% if cfg.subtitle %}{{ cfg.subtitle }}
 {% endif %}
-Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}, papers first found {{ window_text }}.
+{{ date_long }} | {{ total }} result{{ '' if total == 1 else 's' }}
 {% if cfg.greeting or cfg.introduction %}
 
 {% if cfg.greeting %}{{ cfg.greeting }}
@@ -14,6 +14,37 @@ Week ending {{ week_end_text }}. {{ total }} item{{ '' if total == 1 else 's' }}
 
 No new papers matched this week.
 {% else %}
+
+
+AT A GLANCE: EDITION COVERAGE SUMMARY
+-------------------------------------
+{{ glance.total }} publication{{ '' if glance.total == 1 else 's' }} in this edition | {{ glance.full_text }} with full text available | {{ glance.followed }} from monitored journals or researchers | {{ glance.sources | length }} retrieval source{{ '' if glance.sources | length == 1 else 's' }} contributing
+
+Retrieval sources (a publication may be retrieved by more than one source, so these add up to more than the total):
+{% for name, coverage, n in glance.sources %}
+  {{ name }}: {{ n }} ({{ coverage }})
+{% endfor %}
+{% if glance.journals %}
+
+Monitored journals:
+{% for name, tier, n in glance.journals %}
+  {{ name }} [{{ tier }}]: {{ n }}
+{% endfor %}
+{% if glance.tiers %}
+
+What the priority means:
+{% for label, note in glance.tiers %}
+  {{ label }}: {{ note }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if glance.researchers %}
+
+Monitored researchers:
+{% for name, n in glance.researchers %}
+  {{ name }}: {{ n }}
+{% endfor %}
+{% endif %}
 {% if cfg.results_lead %}
 
 {{ cfg.results_lead }}

@@ -197,7 +197,7 @@ def test_a_journal_switched_off_loses_its_papers_unless_a_topic_keeps_them_and_l
     r = build(factory, profile, field)
     assert set(carried(factory)) == {with_topic, other_journal} and via_journal_only not in carried(factory)
     html = issue_of(factory, r.issue_id).html
-    assert "Watched journal: Headache" in html and "Watched journal: Cephalalgia" not in html
+    assert "Monitored journal: Headache" in html and "Monitored journal: Cephalalgia" not in html
 
 
 def test_a_researcher_switched_off_loses_papers_found_only_through_them(seeded, factory, curt):

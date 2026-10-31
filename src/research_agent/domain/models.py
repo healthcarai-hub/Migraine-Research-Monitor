@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Any
+
+from .text_repair import repair_abstract
 
 
 @dataclass(frozen=True)
@@ -83,6 +86,11 @@ class PaperRecord:
     oa_status: str | None = None
     links: list[Link] = field(default_factory=list)
     extra: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.journal:
+            self.journal = html.unescape(self.journal)         # some sources send 'Research &amp; Yoga'; store the real ampersand
+        self.abstract = repair_abstract(self.abstract)     # every source passes through here, so glued words ('ObjectiveTo', 'not.The') are repaired once, before the gate sees the text
 
 
 @dataclass(frozen=True)

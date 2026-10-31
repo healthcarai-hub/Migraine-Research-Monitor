@@ -60,7 +60,7 @@ class FullTextResult:
     rights: Rights = Rights.UNKNOWN
     detail: str = ""
     abstract: str | None = None         # an abstract found in the text itself (used only when the paper has none)
-    abstract_kind: str | None = None    # jats | pdf_abstract | pdf_summary | pdf_structured | pdf_intro
+    abstract_kind: str | None = None    # jats | pdf_abstract | pdf_summary | pdf_structured | pdf_intro | pdf_opening
 
     @property
     def words(self) -> int:
@@ -242,8 +242,40 @@ _KEYWORDS_LINE = re.compile(r"^\s*(?:key\s*words?|keywords?)\b\s*[:\-]?", re.I)
 _BACK_STOP = re.compile(r"^\s*(?:received\b|accepted\b|published\b|citation\b|copyright|\u00a9|open access\b|edited by\b|reviewed by\b|\*?correspondence\b|"
                         r"type\s+\w+(?:\s+\w+)?\s*$|\d+\s*[A-Z][^.]{0,120}(?:university|hospital|institute|department|faculty|school|college|cent(?:er|re)|laborator)|[^\s]+@[^\s]+)", re.I)
 _INSTITUTION = re.compile(r"\b(?:university|hospital|institute|department|faculty|school of|college|cent(?:er|re)|laborator|china|usa|italy|germany|india|spain|france|japan|denmark|brazil)\b", re.I)
-_INTRO_HEAD = re.compile(r"^\s*(?:\d+\.?\s*|[ivx]+\.\s*)?introduction\s*$", re.I)
+_INTRO_HEAD = re.compile(r"^\s*(?:#+\s*)?(?:\d+\.?\s*|[ivx]+\.\s*)?introduction\s*$", re.I)      # also the "## Introduction" of text built from XML
 MIN_ABSTRACT_WORDS = 40
+# Editorials, commentaries and letters often have no abstract, summary or Introduction heading: after a block of front matter the prose simply starts.
+_FRONT_MATTER = re.compile(r"uncorrected proof|proof of the article|copyright|creative commons|licen[cs]e|e-?mail|conflicts? of interest|acknowledg|funding|corresponding author|"
+                           r"\bissn\b|\bdoi\b|received\b|accepted\b|published online|all rights reserved|open access|\u00a9|https?://|orcid|cite as|affiliation|"
+                           r"declared|this version will|further copyediting", re.I)
+
+
+def _looks_like_heading(line: str) -> bool:
+    t = line.strip()
+    return 0 < len(t) <= 60 and not t.endswith((".", "!", "?", ":", ";", ",")) and not t.rstrip(".0123456789").endswith((".", "!", "?"))
+
+
+def _opening_of_the_body(lines: list[str]) -> str:
+    """The first real paragraph of a text that has no abstract of any kind: a run of prose lines that is not front matter (notices, dates, licence, affiliations)."""
+    for i, ln in enumerate(lines):
+        if len(ln.strip()) < 60:
+            continue
+        got: list[str] = []
+        size = 0
+        for nxt in lines[i:]:
+            if got and (_looks_like_heading(nxt) or not nxt.strip()):
+                break
+            got.append(nxt)
+            size += len(nxt) + 1
+            if size > 1400:
+                break
+        body = _join_lines(got)
+        sentences = len(re.findall(r"[.!?](?:\d*\s|\d*$)", body))
+        upper = sum(c.isupper() for c in body) / max(len(body), 1)
+        starts_like_a_sentence = bool(re.match(r"[A-Z0-9\"'\u201c\u2018(]", body))     # not a fragment from the middle of a sentence, nor a stray list dash
+        if len(body.split()) >= MIN_ABSTRACT_WORDS and sentences >= 2 and upper < 0.15 and starts_like_a_sentence and not _FRONT_MATTER.search(body):
+            return body
+    return ""
 
 
 def _join_lines(lines: list[str]) -> str:
@@ -279,7 +311,20 @@ def _collect(lines: list[str], start: int, first: str = "", *, max_chars: int = 
     return _join_lines(got)
 
 
+_EMPTY_CITATION = re.compile(r"\s*\[(?:\s|[,\u2013\u2014-])*\]")        # '[]' and '[, , , \u2013]': what is left where a reference marker was stripped
+
+
+def tidy_recovered(body: str) -> str:
+    out = _EMPTY_CITATION.sub("", body)
+    return re.sub(r"\s+([.,;:])", r"\1", re.sub(r"[ \t]{2,}", " ", out)).strip()
+
+
 def extract_abstract(text: str) -> tuple[str, str] | None:
+    found = _extract_abstract(text)
+    return (tidy_recovered(found[0]), found[1]) if found else None
+
+
+def _extract_abstract(text: str) -> tuple[str, str] | None:
     """Find an abstract in the first pages of a paper's text. Returns (abstract, kind) or None.
 
     Order: an 'Abstract' heading; a 'Summary' heading; a structured Background/Methods/Results/Conclusions block with no heading; the opening of the
@@ -324,6 +369,9 @@ def extract_abstract(text: str) -> tuple[str, str] | None:
             body = _collect(lines, i + 1, max_chars=1400, paragraphs=2)
             if len(body.split()) >= MIN_ABSTRACT_WORDS:
                 return body, "pdf_intro"
+    body = _opening_of_the_body(lines)         # editorial or commentary: no heading of any kind, so take the opening paragraph and say so
+    if body:
+        return body, "pdf_opening"
     return None
 
 

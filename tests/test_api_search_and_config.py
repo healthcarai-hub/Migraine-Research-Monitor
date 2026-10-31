@@ -119,6 +119,61 @@ def test_filters_combine_with_and(client, env):
     assert names(client, env, author="smith", published_from="2026-07-01") == ["E"]
 
 
+def tag(env, curt, *, hits=(), topics=()):
+    """Record which sources found which papers and which topics they matched (the fixture papers have neither)."""
+    _, ids, wf, _ = env
+    profile, field = curt
+    code = {sub.name: sub for sub in field.subjects}
+    with session_scope(wf) as s:
+        repo = Repository(s)
+        run = repo.start_run(profile.id, date(2026, 10, 1), date(2026, 10, 2), "test")
+        s.flush()
+        for name, source in hits:
+            s.add(m.PaperHit(paper_id=ids[name], run_id=run.id, source=source, path="topic", label="x"))
+        for name, topic in topics:
+            mt = s.scalar(select(m.ProfileMatch).where(m.ProfileMatch.paper_id == ids[name]))
+            mt.subjects = [*mt.subjects, {"code": code[topic].code, "name": topic, "track": "A", "terms": [], "specific": True}]
+        s.flush()
+
+
+def test_filter_by_source_matches_any_of_the_sources_that_found_the_paper(client, env, curt):
+    tag(env, curt, hits=[("A", "pubmed"), ("A", "crossref"), ("B", "crossref"), ("C", "openalex")])
+    assert set(names(client, env, source="crossref")) == {"A", "B"}
+    assert names(client, env, source="PubMed") == ["A"]                              # the display name works too
+    assert set(names(client, env, source=["pubmed", "openalex"])) == {"A", "C"}
+    assert names(client, env, source="europepmc") == []
+    assert names(client, env, source="crossref", journal="headache") == ["B"]          # combines with the other filters by AND
+    r = client.get("/v1/papers?source=google", headers=H)
+    assert r.status_code == 422 and "unknown source" in r.json()["detail"]
+
+
+def test_filter_by_topic_takes_a_code_or_a_name_and_ors_several(client, env, curt):
+    tag(env, curt, topics=[("A", "Migraine phenotype"), ("B", "Cortical excitability"), ("C", "Migraine phenotype"), ("C", "Genetics & channels")])
+    phenotype, cortical = next(x.code for x in curt[1].subjects if x.name == "Migraine phenotype"), "Cortical excitability"
+    assert set(names(client, env, topic=phenotype)) == {"A", "C"} and set(names(client, env, topic="migraine phenotype")) == {"A", "C"}
+    assert names(client, env, topic=cortical) == ["B"]
+    assert set(names(client, env, topic=[phenotype, cortical])) == {"A", "B", "C"}
+    assert names(client, env, topic="Hormonal regulation") == []
+    r = client.get("/v1/papers?topic=astrology", headers=H)
+    assert r.status_code == 422 and "unknown topic" in r.json()["detail"]
+
+
+def test_a_topic_code_is_matched_whole_not_as_part_of_another_code(client, env, curt):
+    """Codes such as '1' and '11' must not be confused."""
+    tag(env, curt, topics=[("A", "Migraine phenotype"), ("B", "Metabolism & vascular")])
+    codes = {x.name: x.code for x in curt[1].subjects}
+    assert codes["Migraine phenotype"] == "1" and codes["Metabolism & vascular"] == "11"
+    assert names(client, env, topic="1") == ["A"] and names(client, env, topic="11") == ["B"]
+
+
+def test_the_filters_route_counts_sources_and_topics(client, env, curt):
+    tag(env, curt, hits=[("A", "pubmed"), ("A", "crossref"), ("A", "crossref"), ("B", "crossref")], topics=[("A", "Migraine phenotype"), ("C", "Migraine phenotype")])
+    f = client.get("/v1/papers/filters", headers=H).json()
+    assert {x["key"]: x["papers"] for x in f["sources"]} == {"pubmed": 1, "europepmc": 0, "crossref": 2, "openalex": 0, "ctgov": 0}     # each paper counted once per source
+    assert next(x for x in f["sources"] if x["key"] == "ctgov")["name"] == "ClinicalTrials.gov"
+    assert len(f["topics"]) == 12 and next(x for x in f["topics"] if x["name"] == "Migraine phenotype")["papers"] == 2 and next(x for x in f["topics"] if x["name"] == "Hormonal regulation")["papers"] == 0
+
+
 # ---------------------------------------------------------------- sorting
 def test_sort_by_date_published_newest_first_unknown_dates_last(client, env):
     assert names(client, env, sort="published") == ["A", "E", "B", "C", "D"]
@@ -279,3 +334,21 @@ def test_the_web_script_never_puts_paper_text_into_the_page_as_html(env):
     for banned in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function"):
         assert banned not in js, banned
     assert "safeUrl" in js and 'protocol === "https:"' in js                              # links from the data are only followed when http(s)
+
+
+def test_the_page_has_chip_filters_a_published_dropdown_and_a_full_text_box_but_no_author_box(env):
+    html = env[0]().get("/app").text
+    for value in ('value="7">Last 7 days', 'value="15">Last 15 days', 'value="30">Last 30 days', 'value="90">Last 90 days', 'value="all">All time', 'value="custom">Custom range'):
+        assert value in html
+    assert html.index('<option value="7">') < html.index('<option value="15">')                        # 7 days is the first and so the default choice
+    assert 'id="fulltext" type="checkbox"' in html and 'id="tray"' in html and 'id="grps"' in html
+    assert html.index('id="grps"') < html.index('id="tray"')                                          # "Filtering by" comes after the chips and the other filters
+    assert 'id="author"' not in html and "Author" not in html and 'id="researcher"' not in html and 'id="journal"' not in html     # the old boxes are gone
+
+
+def test_the_script_asks_for_every_chip_filter_and_the_chosen_period(env):
+    js = env[0]().get("/app/app.js").text
+    for param in ('param: "source"', 'param: "journal"', 'param: "researcher"', 'param: "topic"', '"published_from"', '"has_full_text"'):
+        assert param in js
+    assert js.index('title: "Sources"') < js.index('title: "Journals"') < js.index('title: "Researchers"') < js.index('title: "Topics"')   # sources first
+    assert "searchSeq" in js and "author" not in js.replace("authors", "")                                                          # an old answer never overwrites a newer one; no author box

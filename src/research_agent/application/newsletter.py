@@ -6,6 +6,7 @@ The print edition is not part of this module: its template has not been supplied
 """
 from __future__ import annotations
 
+import html
 import logging
 import math
 from dataclasses import dataclass, field
@@ -16,7 +17,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from ..domain.field_config import FieldConfig, ProfileConfig
 from ..domain.gate import FieldMatcher
-from ..domain.newsletter import ItemView, SectionView, apply_caps, authors_short, format_pub, is_stale, score, tidy_title
+from ..domain.newsletter import ItemView, SectionView, apply_caps, authors_short, format_long_date, format_pub, is_stale, score, tidy_title
 from ..domain.selection import SOURCES, Selection
 from ..domain.summary import SummaryRequest, SummaryResult
 from ..infrastructure.db import models as m
@@ -104,7 +105,7 @@ class NewsletterService:
                              + (f", {report.skipped_over_cap} over the per-run cap (extract used)" if report.skipped_over_cap else "")
                              + (f". e.g. {report.reasons[0]}" if report.reasons else ""))
             kept_items, held = apply_caps(items, cfg.caps.per_section, cfg.caps.total, cfg.caps.priority_to_watched)
-            subject = f"{cfg.title}: week ending {format_pub(week_end.isoformat())}"
+            subject = cfg.subject.format(title=cfg.title, date=format_long_date(week_end))
             ai = any(i.summary_source == "llm" for i in items)
 
             def render(chosen: list[ItemView]):
@@ -172,8 +173,8 @@ class NewsletterService:
         self._last_stale = len(cands) - len(fresh)      # papers published long before we found them; reported, never marked as sent
         cands = fresh
         sel = self._selection = repo.get_selection(profile.id)     # what the application switched off; retraction alerts are never filtered by it
+        found_by = repo.sources_for([p.id for p, _ in cands])
         if not sel.is_default:
-            found_by = repo.sources_for([p.id for p, _ in cands])
             allowed = [(p, mt) for p, mt in cands if sel.allows(mt.subjects, mt.entities, found_by.get(p.id, ()))]
             self._last_deselected = len(cands) - len(allowed)     # left unsent, so switching the item back on lets a later edition carry them
             cands = allowed
@@ -181,10 +182,11 @@ class NewsletterService:
             self._last_deselected = 0
         alerts = repo.retraction_alerts(profile.id, start=start, end=cutoff, exclude_types=excluded, ignore_issue_id=ignore)
         ids = [p.id for p, _ in cands] + [p.id for p, _, _ in alerts]
+        found_by.update(repo.sources_for([p.id for p, _, _ in alerts if p.id not in found_by]))
         ft, notices = repo.fulltext_rows(ids), repo.notices_for(ids)
         carried_before = cutoff - timedelta(days=cfg.lookback_days)       # first stored before this = held back by an earlier edition
-        items = [self._view(p, mt, profile, field_cfg, ft.get(p.id), None, cfg, summaries.get(p.id), selection=sel, carried_before=carried_before) for p, mt in cands]
-        items += [self._view(p, mt, profile, field_cfg, ft.get(p.id), (notices.get(p.id), earlier), cfg, summaries.get(p.id), retraction=True, selection=sel) for p, mt, earlier in alerts]
+        items = [self._view(p, mt, profile, field_cfg, ft.get(p.id), None, cfg, summaries.get(p.id), selection=sel, carried_before=carried_before, found_by=found_by.get(p.id)) for p, mt in cands]
+        items += [self._view(p, mt, profile, field_cfg, ft.get(p.id), (notices.get(p.id), earlier), cfg, summaries.get(p.id), retraction=True, selection=sel, found_by=found_by.get(p.id)) for p, mt, earlier in alerts]
         return items, cands, alerts
 
     def _model_summaries(self, profile: ProfileConfig, field_cfg: FieldConfig, key: str, cutoff: datetime, rebuild: bool):
@@ -207,7 +209,8 @@ class NewsletterService:
         return self.summaries.ensure(reqs)
 
     def _view(self, p: m.Paper, mt: m.ProfileMatch, profile: ProfileConfig, field_cfg: FieldConfig, ft: m.PaperFulltext | None,
-              notice, cfg, model_summary: SummaryResult | None = None, retraction: bool = False, selection: Selection | None = None, carried_before: datetime | None = None) -> ItemView:
+              notice, cfg, model_summary: SummaryResult | None = None, retraction: bool = False, selection: Selection | None = None, carried_before: datetime | None = None,
+              found_by: set[str] | None = None) -> ItemView:
         selection = selection or Selection()
         seen = p.first_seen_at if p.first_seen_at.tzinfo else p.first_seen_at.replace(tzinfo=timezone.utc)
         late = bool(carried_before is not None and not retraction and seen <= carried_before)
@@ -217,15 +220,18 @@ class NewsletterService:
         journals = {j.key: j for j in profile.journals if selection.is_on("journals", j.key)}           # a journal or researcher switched off is no longer 'watched':
         researchers = {r.key: r for r in profile.researchers if selection.is_on("researchers", r.key)}   # no label, no priority, no score bonus
         watched, watched_j, watched_r = [], False, False
-        journal_name = p.journal or ""
+        mon_journal, mon_researchers = None, []
+        journal_name = html.unescape(p.journal or "")       # older rows may still hold '&amp;'; the template escapes once, not twice
         for e in mt.entities or []:
             if e["type"] == "journal" and e["key"] in journals:
                 watched_j = True
                 journal_name = journals[e["key"]].name   # one spelling for a watched journal, whatever each index calls it
-                watched.append(f"Watched journal: {journals[e['key']].name}")
+                mon_journal = mon_journal or journals[e["key"]]
+                watched.append(f"Monitored journal: {journals[e['key']].name}")
             elif e["type"] == "researcher" and e["key"] in researchers and e["confidence"] != "name_ambiguous":
                 watched_r = True
-                watched.append(f"Watched researcher: {researchers[e['key']].name}")
+                mon_researchers.append(researchers[e["key"]].name)
+                watched.append(f"Monitored researcher: {researchers[e['key']].name}")
         core = any(e["type"] == "journal" and journals.get(e["key"]) and journals[e["key"]].tier == "core" for e in mt.entities or [])
         open_text = bool(ft and ft.status == "full_text" and ft.rights == "open")     # drives the 'Open access' label
         printable_text = bool(ft and ft.status == "full_text" and ft.print_allowed)    # full text in hand that the print edition may carry
@@ -251,8 +257,10 @@ class NewsletterService:
             badges.append("Full text available")           # the printed edition carries this paper in full
         if p.abstract_source == "pdf_intro":
             badges.append("No abstract: summary from the introduction")
+        elif p.abstract_source == "pdf_opening":
+            badges.append("No abstract: summary from the opening of the text")
         elif p.abstract_source.startswith("pdf_"):
-            badges.append("Abstract recovered from the PDF")
+            badges.append("Abstract recovered from the full text")
         if late:
             badges.append("Held over from last week")
         if mt.exploratory:
@@ -272,12 +280,17 @@ class NewsletterService:
             section = "direct"
         grouped = section in ("direct", "mechanisms")
         group = (specific[0]["name"] if specific else "General") if grouped else ""
+        has_abstract = bool((p.abstract or "").strip())
+        if grouped and not has_abstract:
+            group = cfg.no_abstract_heading          # gathered at the end of the section, under their own heading
         return ItemView(
             paper_id=p.id, title=tidy_title(p.title) or "(untitled)", journal=journal_name, published=format_pub(p.published_label), authors=authors_short(p.authors or []),
             url=primary, doi=p.doi, summary=summary.text or "No abstract available.", summary_source=summary.source,
             section=section, group=group, kind=p.kind, track=track, badges=badges, links=links, watched=watched, retracted=bool(retraction or p.is_retracted),
             notice_url=(f"https://doi.org/{notice_paper.doi}" if notice_paper is not None and notice_paper.doi else (notice_paper.url if notice_paper is not None else None)),
-            previously_sent_in=earlier, fulltext_status=(ft.status if ft else "unknown"), carried_over=late, first_seen=(p.first_seen_at.date().isoformat() if p.first_seen_at else ""),
+            sources=[SOURCES[k] for k in SOURCES if k in (found_by or ())], journal_key=mon_journal.key if mon_journal else None, journal_name=mon_journal.name if mon_journal else "",
+            journal_tier=mon_journal.tier if mon_journal else "", researchers=mon_researchers,
+            previously_sent_in=earlier, fulltext_status=(ft.status if ft else "unknown"), carried_over=late, has_abstract=has_abstract, first_seen=(p.first_seen_at.date().isoformat() if p.first_seen_at else ""),
             date_label="Registered" if p.kind == "trial" else "Published",
             score=score(title_match=bool(self._gate(field_cfg).gate_matches(p.title or "")), watched_journal=watched_j, watched_researcher=watched_r, specific_subjects=len(specific), has_abstract=bool(p.abstract), printable_full_text=printable_text, core_journal=core, weights=cfg.ranking.weights, carried_over=late, carryover_penalty=cfg.carryover_penalty))
 
@@ -285,13 +298,14 @@ class NewsletterService:
         subject_order = {s.name: i for i, s in enumerate(field_cfg.subjects)}
         out = []
         for key in SECTION_ORDER:
-            mine = sorted((i for i in items if i.section == key), key=lambda i: (-i.score, -i.paper_id))
+            demote = key != "retractions"            # papers with no abstract go last in their section; a retraction alert never does
+            mine = sorted((i for i in items if i.section == key), key=lambda i: (demote and not i.has_abstract, -i.score, -i.paper_id))
             if not mine:
                 continue
             groups: dict[str, list[ItemView]] = {}
             for it in mine:
                 groups.setdefault(it.group, []).append(it)
-            ordered = sorted(groups.items(), key=lambda kv: (kv[0] == "General", subject_order.get(kv[0], 99), kv[0]))
+            ordered = sorted(groups.items(), key=lambda kv: (kv[0] == cfg.no_abstract_heading, kv[0] == "General", subject_order.get(kv[0], 99), kv[0]))
             out.append(SectionView(key, cfg.section_titles.get(key, key.title()), ordered))
         return out
 

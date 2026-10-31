@@ -1,9 +1,12 @@
 {#- Every style is inline and the layout is tables: Gmail's compose window (where a draft is opened and edited) drops <style> blocks and CSS classes. A single dense column, 760 px wide. -#}
 {% set accent = cfg.accent_color %}
 {% set font = "Arial,Helvetica,sans-serif" %}
-{% set ink = "#1f2937" %}
-{% set muted = "#5b6678" %}
-{% set rule = "#e5eaf0" %}
+{% set deep = cfg.deep_color %}
+{% set ink = "#1b2a3b" %}
+{% set muted = "#5f6f82" %}
+{% set rule = "#d9e1ec" %}
+{% set zebra = "#f6f8fb" %}
+{% set head = "#eef2f8" %}
 {% set sec_colors = {"retractions": "#b42318", "preprints": "#92400e", "trials": "#0f766e"} %}
 {% macro pill(label) %}{% set t = tone(label) %}<span class="badge" style="display:inline-block;margin:0 5px 4px 0;padding:1px 8px;border-radius:999px;background:{{ t[0] }};color:{{ t[1] }};font-family:{{ font }};font-size:11px;line-height:17px;font-weight:700;">{{ label }}</span>{% endmacro %}
 <!doctype html>
@@ -14,81 +17,121 @@
 <meta name="color-scheme" content="light">
 <title>{{ subject }}</title>
 </head>
-<body style="margin:0;padding:0;background:#eef2f6;">
+<body style="margin:0;padding:0;background:#eef2f8;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{{ total }} paper{{ '' if total == 1 else 's' }} this week{% if stats.full_text %}, {{ stats.full_text }} with full text{% endif %}.</div>
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eef2f6;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eef2f8;">
 <tr><td align="center" style="padding:16px 8px;">
 <table role="presentation" width="760" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:760px;background:#ffffff;border:1px solid {{ rule }};border-radius:8px;overflow:hidden;">
 
-<tr><td style="background:{{ accent }};padding:18px 24px;font-family:{{ font }};color:#ffffff;">
-<div style="font-size:11px;line-height:16px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:#ffffff;opacity:.9;">{{ cfg.subtitle or 'Weekly research briefing' }}</div>
-<h1 style="margin:4px 0 3px;font-size:22px;line-height:28px;font-weight:700;color:#ffffff;font-family:{{ font }};">{{ cfg.title }}</h1>
-<div style="font-size:13px;line-height:19px;color:#ffffff;opacity:.92;">Week ending {{ week_end_text }} &middot; {{ total }} paper{{ '' if total == 1 else 's' }}</div>
+<tr><td style="background:{{ deep }};border-bottom:3px solid {{ accent }};padding:32px 24px;font-family:{{ font }};color:#ffffff;">
+<div style="font-size:12px;line-height:18px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:#ffffff;opacity:.88;">{{ cfg.header_label }}</div>
+<h1 style="margin:7px 0 6px;font-size:27px;line-height:34px;font-weight:700;color:#ffffff;font-family:{{ font }};">{{ cfg.title }}</h1>
+{% if cfg.subtitle %}<div style="font-size:14px;line-height:21px;color:#ffffff;opacity:.9;">{{ cfg.subtitle }}</div>{% endif %}
+</td></tr>
+<tr><td style="padding:22px 24px 0;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+<td style="font-family:{{ font }};font-size:13px;line-height:20px;color:{{ muted }};">{{ date_long }}</td>
+<td align="right" style="font-family:{{ font }};font-size:13px;line-height:20px;color:{{ muted }};">{{ total }} result{{ '' if total == 1 else 's' }}</td>
+</tr></table>
 </td></tr>
 
-<tr><td style="padding:18px 24px 4px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};">
-{% if cfg.greeting %}<p style="margin:0 0 8px;font-weight:700;">{{ cfg.greeting }}</p>{% endif %}
+<tr><td style="padding:32px 24px 10px;font-family:{{ font }};font-size:14px;line-height:24px;color:{{ ink }};">
+{% if cfg.greeting %}<p style="margin:0 0 14px;font-weight:700;">{{ cfg.greeting }}</p>{% endif %}
 {% if cfg.introduction %}<p style="margin:0;">{{ cfg.introduction }}</p>{% endif %}
 </td></tr>
 
 {% if total == 0 %}
 <tr><td style="padding:14px 24px 24px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ muted }};">No new papers matched this week.</td></tr>
 {% else %}
-<tr><td style="padding:12px 24px 4px;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f8fc;border-left:3px solid {{ accent }};">
-<tr><td style="padding:9px 14px;font-family:{{ font }};font-size:13px;line-height:20px;color:{{ muted }};">
-<span style="font-size:11px;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:{{ accent }};">This week at a glance</span><br>
-{% for sec in sections %}<strong style="color:{{ sec_colors.get(sec.key, accent) }};">{{ sec.count }}</strong> {{ sec.title }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
-{% if stats.full_text or stats.followed %}<br>{% if stats.full_text %}<strong style="color:{{ ink }};">{{ stats.full_text }}</strong> with the full text held{% endif %}{% if stats.full_text and stats.followed %} &middot; {% endif %}{% if stats.followed %}<strong style="color:{{ ink }};">{{ stats.followed }}</strong> from followed journals or researchers{% endif %}{% endif %}
+{% set g = glance %}
+<tr><td style="padding:28px 24px 6px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid {{ rule }};border-radius:8px;overflow:hidden;background:#ffffff;">
+<tr><td style="background:{{ deep }};padding:20px 24px;font-family:{{ font }};color:#ffffff;">
+<div style="font-size:11px;line-height:16px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:#ffffff;opacity:.8;">At a glance</div>
+<div style="font-size:21px;line-height:28px;font-weight:700;padding-top:2px;color:#ffffff;">Edition Coverage Summary</div>
+<div style="font-size:13px;line-height:20px;padding-top:2px;color:#ffffff;opacity:.88;">The sources, journals and researchers from which the publications in this edition were drawn.</div>
+</td></tr>
+<tr><td style="padding:0;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-bottom:1px solid {{ rule }};"><tr>
+{% for big, label in [(g.total, "Publications in this edition"), (g.full_text, "With full text available"), (g.followed, "From monitored journals or researchers"), (g.sources | length, "Retrieval sources contributing")] %}
+<td align="center" valign="top" style="padding:16px 8px;font-family:{{ font }};{% if not loop.last %}border-right:1px solid {{ rule }};{% endif %}"><div style="font-size:30px;line-height:34px;font-weight:700;color:{{ deep }};">{{ big }}</div><div style="font-size:11.5px;line-height:16px;color:{{ muted }};padding-top:3px;">{{ label }}</div></td>
+{% endfor %}
+</tr></table></td></tr>
+<tr><td style="padding:0 24px 24px;">
+{% macro heading(title, sub) %}<div style="padding:24px 0 8px;font-family:{{ font }};"><div style="font-size:15px;line-height:21px;font-weight:700;color:{{ deep }};">{{ title }}</div><div style="font-size:12.5px;line-height:18px;color:{{ muted }};">{{ sub }}</div></div>{% endmacro %}
+{% macro th(label, align, width) %}<th align="{{ align }}" width="{{ width }}" style="padding:9px 12px;font-family:{{ font }};font-size:10.5px;line-height:14px;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:{{ muted }};background:{{ head }};border-top:1px solid {{ rule }};border-bottom:1px solid {{ rule }};text-align:{{ align }};">{{ label }}</th>{% endmacro %}
+{% macro cell(i, bold=false, align="left", small=false) %}padding:11px 12px;font-family:{{ font }};font-size:{{ '12.5px' if small else '13.5px' }};line-height:19px;color:{{ muted if small else ink }};border-bottom:1px solid {{ rule }};background:{{ zebra if i % 2 else '#ffffff' }};{% if bold %}font-weight:700;{% endif %}text-align:{{ align }};{% endmacro %}
+{{ heading("Retrieval sources", "Databases that retrieved publications included in this edition.") }}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>{{ th("Source", "left", "22%") }}{{ th("Coverage", "left", "58%") }}{{ th("Publications", "right", "20%") }}</tr>
+{% for name, coverage, n in g.sources %}<tr><td style="{{ cell(loop.index0, bold=true) }}">{{ name }}</td><td style="{{ cell(loop.index0, small=true) }}">{{ coverage }}</td><td align="right" style="{{ cell(loop.index0, bold=true, align='right') }}">{{ n }}</td></tr>
+{% endfor %}</table>
+<div style="padding:8px 2px 0;font-family:{{ font }};font-size:12px;line-height:18px;color:#6c7d91;">A publication may be retrieved by more than one source; the source counts therefore add up to more than the total.</div>
+{% if g.journals %}
+{{ heading("Monitored journals", "Journals designated for continuous monitoring that contributed publications to this edition.") }}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>{{ th("Journal", "left", "58%") }}{{ th("Priority", "left", "22%") }}{{ th("Publications", "right", "20%") }}</tr>
+{% for name, tier, n in g.journals %}<tr><td style="{{ cell(loop.index0, bold=true) }}">{{ name }}</td><td style="{{ cell(loop.index0) }}">{{ tier }}</td><td align="right" style="{{ cell(loop.index0, bold=true, align='right') }}">{{ n }}</td></tr>
+{% endfor %}</table>
+{% if g.tiers %}<div style="padding:8px 2px 0;font-family:{{ font }};font-size:12px;line-height:18px;color:#6c7d91;"><div style="padding-bottom:2px;font-weight:700;color:{{ ink }};">What the priority means</div>
+{% for label, note in g.tiers %}<div style="padding:2px 0;"><strong style="color:{{ ink }};">{{ label }}</strong> &mdash; {{ note }}</div>
+{% endfor %}</div>{% endif %}
+{% endif %}
+{% if g.researchers %}
+{{ heading("Monitored researchers", "Researchers designated for continuous monitoring whose publications appear in this edition (identity confirmed).") }}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>{{ th("Researcher", "left", "80%") }}{{ th("Publications", "right", "20%") }}</tr>
+{% for name, n in g.researchers %}<tr><td style="{{ cell(loop.index0, bold=true) }}">{{ name }}</td><td align="right" style="{{ cell(loop.index0, bold=true, align='right') }}">{{ n }}</td></tr>
+{% endfor %}</table>
+{% endif %}
 </td></tr>
 </table>
 </td></tr>
-{% if cfg.results_lead %}<tr><td style="padding:12px 24px 0;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};font-weight:700;">{{ cfg.results_lead }}</td></tr>{% endif %}
+{% if cfg.results_lead %}<tr><td style="padding:24px 24px 0;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};font-weight:700;">{{ cfg.results_lead }}</td></tr>{% endif %}
 {% endif %}
 
 {% for sec in sections %}
-{% set sc = sec_colors.get(sec.key, accent) %}
-<tr><td style="padding:20px 24px 2px;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-bottom:2px solid {{ sc }};"><tr>
-<td style="padding:0 0 6px;font-family:{{ font }};font-size:17px;line-height:24px;font-weight:700;color:{{ ink }};">{{ sec.title }}</td>
-<td align="right" style="padding:0 0 6px;font-family:{{ font }};font-size:12px;line-height:24px;color:{{ sc }};font-weight:700;white-space:nowrap;">{{ sec.count }} paper{{ '' if sec.count == 1 else 's' }}</td>
+{% set sc = sec_colors.get(sec.key, deep) %}
+{% set rc = sec_colors.get(sec.key, accent) %}
+<tr><td style="padding:36px 24px 0;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{{ sc }};"><tr>
+<td style="padding:9px 14px;font-family:{{ font }};font-size:12px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:#ffffff;">{{ sec.title }}</td>
+<td align="right" style="padding:9px 14px;font-family:{{ font }};font-size:12px;line-height:18px;font-weight:700;color:#ffffff;white-space:nowrap;">{{ sec.count }} paper{{ '' if sec.count == 1 else 's' }}</td>
 </tr></table>
 {% if sec.key == 'retractions' %}<p style="margin:6px 0 0;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">Papers that have been retracted or withdrawn. If we sent one earlier, the edition is named.</p>{% endif %}
 {% if sec.key == 'preprints' %}<p style="margin:6px 0 0;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">Not yet peer reviewed. Treat the findings as provisional.</p>{% endif %}
 </td></tr>
 {% for group, items in sec.groups %}
 {% if group %}
-<tr><td style="padding:12px 24px 0;font-family:{{ font }};font-size:11px;line-height:16px;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:{{ muted }};">{{ group }}</td></tr>
+<tr><td style="padding:28px 24px 6px;">
+<h2 style="margin:0;padding:0 0 10px;border-bottom:2px solid {{ rc }};font-family:{{ font }};font-size:19px;line-height:27px;color:{{ deep }};">{{ group }}</h2>
+</td></tr>
 {% endif %}
 {% for it in items %}
-<tr><td style="padding:12px 24px;font-family:{{ font }};border-bottom:1px solid {{ rule }};{% if it.retracted %}border-left:4px solid #b42318;{% endif %}">
+<tr><td style="padding:22px 24px;font-family:{{ font }};border-bottom:1px solid {{ rule }};{% if it.retracted %}border-left:4px solid #b42318;{% endif %}">
 <a href="{{ it.url }}" style="color:{{ accent }};font-size:15px;line-height:21px;font-weight:700;text-decoration:none;">{{ it.title }}</a>
 {% set meta = [it.journal, ((it.date_label ~ ' ' ~ it.published) if it.published else ''), it.authors] | select | list %}
-{% if meta %}<div style="margin-top:3px;font-size:12.5px;line-height:18px;color:{{ muted }};">{{ meta | join(' &middot; ' | safe) }}</div>{% endif %}
-{% if it.badges or it.watched %}<div style="margin-top:7px;">{% for b in it.badges %}{{ pill(b) }}{% endfor %}{% for w in it.watched %}{{ pill(w) }}{% endfor %}</div>{% endif %}
-{% if it.previously_sent_in %}<div style="margin-top:3px;font-size:13.5px;line-height:20px;color:#b42318;"><strong>We sent this paper earlier</strong> (edition {{ it.previously_sent_in }}).{% if it.notice_url %} <a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.{% endif %}</div>
-{% elif it.retracted and it.notice_url %}<div style="margin-top:3px;font-size:13.5px;line-height:20px;"><a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.</div>{% endif %}
-<div style="margin-top:6px;font-size:14px;line-height:21px;color:{{ ink }};">{{ it.summary }}</div>
-<div style="margin-top:6px;font-size:12.5px;line-height:18px;color:{{ muted }};">{% if it.doi %}DOI: <a href="{{ it.url }}" style="color:{{ accent }};">{{ it.doi }}</a>{% else %}<a href="{{ it.url }}" style="color:{{ accent }};">Open the record</a>{% endif %}{% for label, url in it.links %} &middot; <a href="{{ url }}" style="color:{{ accent }};">{{ label }}</a>{% endfor %}</div>
+{% if meta %}<div style="margin-top:5px;font-size:12.5px;line-height:18px;color:{{ muted }};">{{ meta | join(' &middot; ' | safe) }}</div>{% endif %}
+{% if it.badges or it.watched %}<div style="margin-top:10px;">{% for b in it.badges %}{{ pill(b) }}{% endfor %}{% for w in it.watched %}{{ pill(w) }}{% endfor %}</div>{% endif %}
+{% if it.previously_sent_in %}<div style="margin-top:6px;font-size:13.5px;line-height:20px;color:#b42318;"><strong>We sent this paper earlier</strong> (edition {{ it.previously_sent_in }}).{% if it.notice_url %} <a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.{% endif %}</div>
+{% elif it.retracted and it.notice_url %}<div style="margin-top:6px;font-size:13.5px;line-height:20px;"><a href="{{ it.notice_url }}" style="color:#b42318;">Read the retraction notice</a>.</div>{% endif %}
+<div style="margin-top:10px;font-size:14px;line-height:22px;color:{{ ink }};">{{ it.summary }}</div>
+<div style="margin-top:10px;font-size:12.5px;line-height:18px;color:{{ muted }};">{% if it.doi %}DOI: <a href="{{ it.url }}" style="color:{{ accent }};">{{ it.doi }}</a>{% else %}<a href="{{ it.url }}" style="color:{{ accent }};">Open the record</a>{% endif %}{% for label, url in it.links %} &middot; <a href="{{ url }}" style="color:{{ accent }};">{{ label }}</a>{% endfor %}</div>
 </td></tr>
 {% endfor %}
 {% endfor %}
 {% endfor %}
 
 {% if cfg.closing %}
-<tr><td style="padding:22px 24px 12px;font-family:{{ font }};font-size:14px;line-height:22px;color:{{ ink }};"><p style="margin:0;">{{ cfg.closing }}</p></td></tr>
+<tr><td style="padding:40px 24px 18px;font-family:{{ font }};font-size:14px;line-height:24px;color:{{ ink }};"><p style="margin:0;">{{ cfg.closing }}</p></td></tr>
 {% endif %}
 {% if cfg.signature %}
-<tr><td style="padding:0 24px 20px;font-family:{{ font }};font-size:12.5px;line-height:19px;color:{{ muted }};">
+<tr><td style="padding:0 24px 36px;font-family:{{ font }};font-size:12.5px;line-height:20px;color:{{ muted }};">
 <div style="font-size:13.5px;font-weight:700;color:{{ ink }};">{{ cfg.signature.name }}</div>
 {% if cfg.signature.title %}<div style="margin:0;">{{ cfg.signature.title }}</div>{% endif %}
 {% if cfg.signature.email %}<div style="margin:0;"><a href="mailto:{{ cfg.signature.email }}" style="color:{{ accent }};text-decoration:none;">{{ cfg.signature.email }}</a></div>{% endif %}
 {% if cfg.signature.phone %}<div style="margin:0;">{{ cfg.signature.phone }}</div>{% endif %}
-{% if cfg.signature.disclaimer %}<div style="margin-top:8px;font-size:11px;line-height:16px;color:#8791a3;">{{ cfg.signature.disclaimer }}</div>{% endif %}
+{% if cfg.signature.disclaimer %}<div style="margin-top:12px;font-size:11px;line-height:16px;color:#8791a3;">{{ cfg.signature.disclaimer }}</div>{% endif %}
 </td></tr>
 {% endif %}
 
-<tr><td style="padding:14px 24px 16px;background:#f7f9fc;border-top:3px solid {{ accent }};font-family:{{ font }};font-size:11.5px;line-height:17px;color:{{ muted }};">
+<tr><td style="padding:20px 24px 22px;background:{{ zebra }};border-top:3px solid {{ deep }};font-family:{{ font }};font-size:11.5px;line-height:17px;color:{{ muted }};">
 {% if held_back %}<p style="margin:0 0 6px;">{{ held_back }} further matching paper{{ '' if held_back == 1 else 's' }} {{ 'was' if held_back == 1 else 'were' }} held back this week to keep this email short. {{ 'It' if held_back == 1 else 'Each' }} may appear in next week's edition, ranked lower, and not after that.</p>{% endif %}
 <p style="margin:0;">Selection: papers first found by our searches from {{ window_text }}, in {{ sources_text }}, that mention the field in the title or abstract. {% if ai_summaries %}Most summaries are written by an AI model from each paper's abstract and checked against it; they can be wrong, so read the paper before relying on one.{% else %}Summaries are taken from the paper's own abstract.{% endif %} Edition generated {{ built_text }}.</p>
 {% if cfg.footer %}<p style="margin:6px 0 0;">{{ cfg.footer }}</p>{% endif %}

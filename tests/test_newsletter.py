@@ -1,6 +1,7 @@
 """Weekly digital edition: selection by first-stored date, sections, never-twice, retractions, rendering and drafts."""
 from datetime import date, datetime, timedelta, timezone
 
+import re
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -54,7 +55,7 @@ def seeded(factory, curt):
     return profile, field
 
 
-def add(factory, profile, n, *, days_ago=1, now=NOW, gate="passed", lang="ok", track="A", subjects=(), entities=(), exploratory=False, **kw):
+def add(factory, profile, n, *, days_ago=1, now=NOW, gate="passed", lang="ok", track="A", subjects=(), entities=(), exploratory=False, sources=("pubmed",), **kw):
     """One stored paper plus its match for the profile, first stored `days_ago` days before NOW."""
     with session_scope(factory) as s:
         repo = Repository(s)
@@ -65,6 +66,10 @@ def add(factory, profile, n, *, days_ago=1, now=NOW, gate="passed", lang="ok", t
         p.first_seen_at = seen
         repo.upsert_match(profile.id, p.id, gate_status=gate, language_status=lang, track=track, exploratory=exploratory,
                           subjects=[{"code": c, "name": nme, "track": t, "terms": [], "specific": True} for c, nme, t in subjects], entities=list(entities))
+        run = s.scalar(select(m.Run)) or repo.start_run(profile.id, WEEK_END, WEEK_END, "test")
+        s.flush()
+        for src in sources:
+            s.add(m.PaperHit(paper_id=p.id, run_id=run.id, source=src, path="topic", label="x"))
         s.flush()
         return p.id
 
@@ -132,8 +137,8 @@ def test_watched_journal_uses_one_spelling_and_is_labelled(factory, seeded):
     svc(factory).build(profile, field, WEEK_END)
     with session_scope(factory) as s:
         text = s.scalar(select(m.Issue.text))
-    assert "Headache: The Journal of Head and Face Pain" in text and "Watched journal: Headache: The Journal of Head and Face Pain" in text
-    assert "Watched researcher: Peter J. Goadsby" in text and "Jan Hoffmann" not in text      # ambiguous name matches are never advertised
+    assert "Headache: The Journal of Head and Face Pain" in text and "Monitored journal: Headache: The Journal of Head and Face Pain" in text
+    assert "Monitored researcher: Peter J. Goadsby" in text and "Jan Hoffmann" not in text      # ambiguous name matches are never advertised
 
 
 def test_ordering_puts_watched_sources_first(factory, seeded):
@@ -620,7 +625,7 @@ def test_tidy_title_drops_the_added_full_stop_only():
 # ---------------------------------------------------------------- watched sources are chosen first when a cap bites (owner, 2026-10-31)
 def test_watched_sources_are_chosen_before_higher_scoring_papers():
     from research_agent.domain.newsletter import apply_caps
-    watched = view(1, sc=3); watched.watched = ["Watched journal: Neurology"]
+    watched = view(1, sc=3); watched.watched = ["Monitored journal: Neurology"]
     items = [watched, view(2, sc=9), view(3, sc=8)]
     kept, held = apply_caps(items, {"direct": 2}, None)
     assert {i.paper_id for i in kept} == {1, 2} and [i.paper_id for i, _ in held] == [3]       # the low-scoring watched paper beats the 8-point one
@@ -630,7 +635,7 @@ def test_watched_sources_are_chosen_before_higher_scoring_papers():
 
 def test_the_overall_cap_also_prefers_watched_papers():
     from research_agent.domain.newsletter import apply_caps
-    watched = view(1, "mechanisms", 1); watched.watched = ["Watched researcher: X"]
+    watched = view(1, "mechanisms", 1); watched.watched = ["Monitored researcher: X"]
     kept, held = apply_caps([watched, view(2, "direct", 9), view(3, "preprints", 8)], {}, 1)
     assert [i.paper_id for i in kept] == [1]
 
@@ -829,21 +834,60 @@ def test_the_accent_colour_is_a_setting_that_reaches_the_header_and_links_and_is
 def test_label_pills_are_coloured_by_what_they_say():
     from research_agent.infrastructure.rendering import badge_tone
     assert badge_tone("RETRACTED", "#123456")[1] == "#b42318" and badge_tone("Full text available", "#123456")[1] == "#166534"
-    assert badge_tone("Open access", "#123456")[1] == "#1d4ed8" and badge_tone("Preprint: not peer reviewed", "#123456")[1] == "#92400e"
-    assert badge_tone("Watched journal: Cephalalgia", "#123456")[1] == "#123456" and badge_tone("Exploratory", "#123456") == ("#f1f5f9", "#475569")
+    assert badge_tone("Open access", "#123456")[1] == "#1d4e89" and badge_tone("Preprint: not peer reviewed", "#123456")[1] == "#92400e"
+    assert badge_tone("Monitored journal: Cephalalgia", "#123456")[1] == "#123456" and badge_tone("Exploratory", "#123456") == ("#f1f5f9", "#475569")
 
 
-def test_the_glance_row_counts_sections_full_text_and_followed_sources(factory, seeded):
+def test_the_glance_panel_lists_only_sources_journals_and_researchers_with_publications(factory, seeded):
     import re
     profile, field = seeded
-    pid = add(factory, profile, 1, days_ago=2, entities=WATCHED)
+    names = {j.key: j.name for j in profile.journals}
+    researcher = profile.researchers[0]
+    pid = add(factory, profile, 1, days_ago=2, entities=WATCHED + [{"type": "researcher", "key": researcher.key, "track": "A", "via": "x", "confidence": "name_orcid"}])
     with session_scope(factory) as s:
         s.add(m.PaperFulltext(paper_id=pid, status="full_text", rights="open", print_allowed=True, words=500, text="t"))
     add(factory, profile, 2, days_ago=2)
     r = svc(factory).build(profile, field, WEEK_END)
     with session_scope(factory) as s:
+        issue = s.get(m.Issue, r.issue_id)
+        html, text = issue.html, issue.text
+    assert "Edition Coverage Summary" in html and "At a glance" in html
+    for label in ("Publications in this edition", "With full text available", "From monitored journals or researchers", "Retrieval sources contributing"):
+        assert label in html
+    assert re.search(r">2</div><div[^>]*>Publications in this edition", html) and re.search(r">1</div><div[^>]*>With full text available", html) and re.search(r">1</div><div[^>]*>From monitored journals or researchers", html)
+    assert names["cephalalgia"] in html and "Monitored journals" in html and "Monitored researchers" in html and researcher.name in html
+    assert "What the priority means" in html and "Core" in html                                  # only the priorities that appear are explained
+    assert "Targeted</strong>" not in html                                                         # no targeted journal had a publication this week
+    assert "Share of edition" not in html and "Other journals" not in html and "Preprint servers" not in html and "no publications" not in html.lower()
+    unused = [n for k, n in names.items() if k != "cephalalgia"]
+    assert not any(f">{n}<" in html for n in unused)                                            # a journal with no publication is not listed
+    assert "AT A GLANCE" in text and "Monitored journals:" in text and f"{names['cephalalgia']} [Core]: 1" in text and f"{researcher.name}: 1" in text
+
+
+def test_the_glance_panel_counts_each_source_and_omits_one_that_is_switched_off(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, sources=("pubmed", "crossref"))
+    add(factory, profile, 2, days_ago=2, sources=("pubmed",))
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
         html = s.get(m.Issue, r.issue_id).html
-    assert "This week at a glance" in html and re.search(r">2</strong> Direct research", html) and re.search(r">1</strong> with the full text held", html) and re.search(r">1</strong> from followed journals or researchers", html)
+    assert ">PubMed</td>" in html and ">Crossref</td>" in html and ">OpenAlex</td>" not in html       # only sources that retrieved something are listed
+    assert re.search(r">PubMed</td><td[^>]*>[^<]*</td><td[^>]*>2</td>", html) and re.search(r">Crossref</td><td[^>]*>[^<]*</td><td[^>]*>1</td>", html)
+    with session_scope(factory) as s:
+        Repository(s).set_selection(profile.id, "sources", "crossref", False, NOW)
+    r = svc(factory).build(profile, field, WEEK_END, rebuild=True)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert ">PubMed</td>" in html and ">Crossref</td>" not in html
+
+
+def test_the_html_uses_the_navy_palette_and_the_configured_colours(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2)
+    r = svc(factory).build(with_config(profile, deep_color="#0a1b2c", accent_color="#2255aa"), field, WEEK_END)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert "background:#0a1b2c" in html and "#2255aa" in html
 
 
 def test_a_late_paper_wears_a_held_over_label_and_a_new_one_does_not(factory, seeded):
@@ -864,3 +908,153 @@ def test_the_curt_profile_has_its_own_wording_in_the_same_spirit_as_the_old_agen
     assert cfg.greeting.startswith("Hello Curt") and cfg.signature and cfg.signature.name and cfg.footer
     assert cfg.greeting != "Good morning Curt," and cfg.closing != "Have a great weekend." and cfg.results_lead != "Here are the latest publications:"     # similar, not the same
     assert "email" not in (cfg.signature.model_dump(exclude_none=True)) and "phone" not in cfg.signature.model_dump(exclude_none=True)   # contact details are not committed unless chosen
+
+
+def test_category_headings_match_the_older_newsletters_and_there_is_room_around_everything(factory, seeded):
+    import re
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, subjects=[("2", "Trigeminovascular & neuropeptides", "A")])
+    add(factory, profile, 2, days_ago=2, subjects=[("2", "Trigeminovascular & neuropeptides", "A")])
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    # the older newsletters' category heading: an h2, 19 px / 27 px, dark navy, with a 2 px rule under it
+    assert re.search(r'<h2 style="margin:0;padding:0 0 10px;border-bottom:2px solid #[0-9a-f]{6};font-family:Arial,Helvetica,sans-serif;font-size:19px;line-height:27px;color:#0b2545;">Trigeminovascular &amp; neuropeptides</h2>', html)
+    rows = re.findall(r'<td style="padding:(\d+)px 24px;font-family:Arial,Helvetica,sans-serif;border-bottom:1px solid', html)
+    assert len(rows) == 2 and all(int(x) >= 20 for x in rows)                         # generous space between results
+    assert int(re.search(r'<td style="padding:(\d+)px 24px 10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:24px', html).group(1)) >= 28            # intro
+    assert int(re.search(r'<td style="padding:(\d+)px 24px 18px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:24px', html).group(1)) >= 36            # outro
+
+
+
+def test_an_html_entity_in_a_journal_name_is_shown_as_the_real_character_not_double_escaped(factory, seeded):
+    from research_agent.domain.models import PaperRecord
+    profile, field = seeded
+    stored = add(factory, profile, 1, days_ago=2, journal="National Journal of Medical Research &amp; Yoga Sciences")
+    with session_scope(factory) as s:
+        # a record created now is cleaned on the way in ...
+        assert PaperRecord(source="crossref", source_id="x", journal="Research &amp; Yoga").journal == "Research & Yoga"
+        # ... and a row stored earlier (with the entity still in it) is cleaned on the way out
+        s.get(m.Paper, stored).journal = "National Journal of Medical Research &amp; Yoga Sciences"
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        html_, text_ = s.get(m.Issue, r.issue_id).html, s.get(m.Issue, r.issue_id).text
+    assert "Research &amp; Yoga Sciences" in html_ and "&amp;amp;" not in html_ and "Research & Yoga Sciences" in text_
+
+
+# ---------------------------------------------------------------- header and subject as in the older newsletter
+def test_the_header_is_the_older_newsletters_with_a_date_and_a_result_count_and_no_week_ending(factory, seeded):
+    import re
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2)
+    add(factory, profile, 2, days_ago=2)
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        issue = s.get(m.Issue, r.issue_id)
+        html, text_, subject = issue.html, issue.text, issue.subject
+    for doc in (html, text_, subject):
+        assert "week ending" not in doc.lower()
+    assert subject == "This Week in Migraine Research — October 30, 2026"
+    assert re.search(r'letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:#ffffff;opacity:.88;">Research briefing</div>', html)
+    assert re.search(r'<h1 style="margin:7px 0 6px;font-size:27px;line-height:34px;[^"]*">Weekly Migraine Research Digest</h1>', html)
+    assert "Curated insights from recent publications" in html and "padding:32px 24px" in html
+    assert re.search(r">October 30, 2026</td>\s*<td align=\"right\"[^>]*>2 results</td>", html)
+    assert "October 30, 2026 | 2 results" in text_ and "Weekly Migraine Research Digest" in text_ and text_.index("Weekly Migraine Research Digest") < text_.index("October 30, 2026")
+    assert "background:#0b2545;border-bottom:3px solid #1d4e89" in html                    # the navy header band, as in the At a glance panel
+
+
+def test_one_result_is_singular_and_a_missing_subtitle_is_left_out(factory, seeded):
+    profile, field = seeded
+    cfg = profile.newsletter.model_copy(update={"subtitle": ""})
+    add(factory, profile, 1, days_ago=2)
+    r = svc(factory).build(profile.model_copy(update={"newsletter": cfg}), field, WEEK_END)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert ">1 result</td>" in html and "Curated insights" not in html
+
+
+def test_the_subject_is_a_setting_with_title_and_date_and_bad_placeholders_are_refused(curt):
+    from pydantic import ValidationError
+    from research_agent.domain.field_config import NewsletterConfig
+    from research_agent.domain.newsletter import format_long_date
+    assert format_long_date(date(2026, 11, 3)) == "November 3, 2026" and format_long_date(date(2026, 1, 21)) == "January 21, 2026"
+    assert NewsletterConfig().subject == "{title}: {date}" and NewsletterConfig(subject="Weekly {title} - {date}").subject
+    for bad in ("{week}", "{0}", "oops {date", "{title.upper}"):
+        with pytest.raises(ValidationError):
+            NewsletterConfig(subject=bad)
+    assert curt[0].newsletter.subject == "This Week in Migraine Research — {date}" and curt[0].newsletter.header_label == "Research briefing"
+
+
+def test_section_headings_are_a_slim_strip_one_level_above_the_categories(factory, seeded):
+    import re
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, subjects=[("2", "Trigeminovascular & neuropeptides", "A")])
+    add(factory, profile, 2, days_ago=2, kind="trial") if False else None
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    strip = re.search(r'background:#0b2545;"><tr>\s*<td style="padding:9px 14px;[^"]*font-size:12px;[^"]*text-transform:uppercase;[^"]*color:#ffffff;">Direct research</td>', html)
+    assert strip and html.index("Direct research</td>") < html.index("Trigeminovascular &amp; neuropeptides</h2>")
+
+
+# ---------------------------------------------------------------- papers with no abstract go last in their section
+def edition_docs(factory, profile, field):
+    r = svc(factory).build(profile, field, WEEK_END)
+    with session_scope(factory) as s:
+        i = s.get(m.Issue, r.issue_id)
+        return i.html, i.text
+
+
+def title_of(n):
+    return f"Migraine study number {n} with a sufficiently long title"
+
+
+def test_papers_with_no_abstract_are_gathered_at_the_end_of_the_section_under_their_own_heading(factory, seeded):
+    profile, field = seeded
+    topic = [("2", "Trigeminovascular & neuropeptides", "A")]
+    add(factory, profile, 1, days_ago=2, subjects=topic)                                          # has an abstract
+    add(factory, profile, 2, days_ago=2, subjects=topic, entities=WATCHED, abstract="")           # no abstract, and the highest score of all
+    add(factory, profile, 3, days_ago=2)                                                           # has an abstract, no topic: General
+    html, text = edition_docs(factory, profile, field)
+    for doc in (html, text):
+        assert doc.index("Trigeminovascular") < doc.index("General") < doc.index("Without an abstract")
+        assert doc.index(title_of(1)) < doc.index(title_of(3)) < doc.index("Without an abstract") < doc.index(title_of(2))
+    assert html.count("No abstract available.") == 1 and "Without an abstract</h2>" in html
+    assert html.index("Without an abstract</h2>") < html.index("No abstract available.")
+
+
+def test_in_a_section_without_categories_the_papers_with_no_abstract_simply_come_last(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, is_preprint=True, abstract="", entities=WATCHED, pmid=None, doi="10.1101/1")    # no abstract but ranks highest
+    add(factory, profile, 2, days_ago=2, is_preprint=True, pmid=None, doi="10.1101/2")
+    html, _ = edition_docs(factory, profile, field)
+    assert html.index(title_of(2)) < html.index(title_of(1)) and "Without an abstract" not in html        # no extra heading where there are no categories
+
+
+def test_a_retraction_alert_is_never_pushed_down_for_having_no_abstract(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, retracted=True, abstract="", entities=WATCHED)
+    add(factory, profile, 2, days_ago=2, retracted=True)
+    html, _ = edition_docs(factory, profile, field)
+    assert html.index(title_of(1)) < html.index(title_of(2)) and "Without an abstract" not in html
+
+
+def test_an_abstract_recovered_from_the_full_text_counts_as_having_one(factory, seeded):
+    profile, field = seeded
+    topic = [("2", "Trigeminovascular & neuropeptides", "A")]
+    pid = add(factory, profile, 1, days_ago=2, subjects=topic, abstract="")
+    with session_scope(factory) as s:
+        p = s.get(m.Paper, pid)
+        p.abstract, p.abstract_source = "A recovered opening paragraph that tells the reader what the editorial is about and why it matters now.", "pdf_opening"
+    add(factory, profile, 2, days_ago=2, subjects=topic)
+    html, _ = edition_docs(factory, profile, field)
+    assert "Without an abstract" not in html and "No abstract available." not in html
+
+
+def test_the_heading_for_papers_without_an_abstract_is_a_setting(factory, seeded):
+    profile, field = seeded
+    add(factory, profile, 1, days_ago=2, subjects=[("2", "Trigeminovascular & neuropeptides", "A")], abstract="")
+    add(factory, profile, 2, days_ago=2, subjects=[("2", "Trigeminovascular & neuropeptides", "A")])
+    html, text = edition_docs(factory, profile.model_copy(update={"newsletter": profile.newsletter.model_copy(update={"no_abstract_heading": "Title and link only"})}), field)
+    assert "Title and link only</h2>" in html and "[Title and link only]" in text and "Without an abstract" not in html
+    assert seeded[0].newsletter.no_abstract_heading == "Without an abstract"

@@ -4,17 +4,19 @@ Nothing here writes. Each method opens its own short session, so the same servic
 """
 from __future__ import annotations
 
+import html
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Sequence
 
-from sqlalchemy import and_, case, func, literal, or_, select
+from sqlalchemy import Text, and_, case, cast, func, literal, or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..domain.field_config import FieldConfig, ProfileConfig
 from ..domain.names import fold, words
 from ..domain.newsletter import DEFAULT_WEIGHTS, authors_short, format_pub, summarise
+from ..domain.selection import SOURCES
 from ..infrastructure.db import models as m
 from ..infrastructure.db.session import session_scope
 
@@ -87,6 +89,34 @@ class QueryService:
             conds.append(m.ProfileMatch.entity_tags.like(f"%|researcher:{_esc(r.key)}|%", escape="\\"))
         return or_(*conds) if conds else None
 
+    def _source_filter(self, values: list[str]):
+        """Papers found by at least one of the named discovery sources (its key or its display name)."""
+        by_name = {v.lower(): k for k, v in SOURCES.items()}
+        keys = []
+        for v in (x.strip().lower() for x in values):
+            if not v:
+                continue
+            key = v if v in SOURCES else by_name.get(v)
+            if key is None:
+                raise ValueError(f"unknown source '{v}' (one of {', '.join(SOURCES)})")
+            keys.append(key)
+        return m.Paper.id.in_(select(m.PaperHit.paper_id).where(m.PaperHit.source.in_(keys))) if keys else None
+
+    def _topic_filter(self, values: list[str]):
+        """Papers matched to at least one of the named search topics (the topic's code or its name). The stored subjects are JSON, so the match is on the text
+        '"code": "2"', which both SQLite and Postgres write the same way and which cannot occur inside another value (a quote there would be escaped)."""
+        by_name = {fold(sub.name): sub for sub in self.field.subjects}
+        by_code = {sub.code: sub for sub in self.field.subjects}
+        conds = []
+        for v in (x.strip() for x in values):
+            if not v:
+                continue
+            sub = by_code.get(v) or by_name.get(fold(v))
+            if sub is None:
+                raise ValueError(f"unknown topic '{v}' (GET /v1/papers/filters lists the topics)")
+            conds.append(cast(m.ProfileMatch.subjects, Text).like(f'%"code": "{_esc(sub.code)}"%', escape="\\"))
+        return or_(*conds) if conds else None
+
     @staticmethod
     def _author_filter(values: list[str]):
         """Every word of a name must appear in the same paper's author list (accents and case ignored): 'goadsby p' finds Goadsby P, 'müller' finds Muller."""
@@ -103,9 +133,10 @@ class QueryService:
     def papers(self, *, days: int | None = None, since: date | None = None, published_from: date | None = None, published_to: date | None = None,
                q: str | None = None, track: str | None = None, kind: str | None = None, content_type: str | None = None, watched: bool | None = None,
                has_full_text: bool | None = None, retracted: bool | None = None, journal: str | Sequence[str] | None = None, author: Sequence[str] | None = None,
-               researcher: Sequence[str] | None = None, include_hidden: bool = False, sort: str = "newest", direction: str = "desc", limit: int = 50,
+               researcher: Sequence[str] | None = None, source: Sequence[str] | None = None, topic: Sequence[str] | None = None,
+               include_hidden: bool = False, sort: str = "newest", direction: str = "desc", limit: int = 50,
                offset: int = 0) -> Page:
-        """The search. Filters combine with AND; several values of one filter (journal, author, researcher) combine with OR.
+        """The search. Filters combine with AND; several values of one filter (journal, author, researcher, source, topic) combine with OR.
         Sorts: newest (when we first stored it), published (publication date; unknown dates last), relevance, fulltext (full text held first, then newest)."""
         limit, offset = max(1, min(limit, MAX_PAGE)), max(0, offset)
         if sort not in SORTS:
@@ -137,7 +168,7 @@ class QueryService:
         if retracted is not None:
             base = base.where(m.Paper.is_retracted.is_(retracted))
         for cond in (self._journal_filter([journal] if isinstance(journal, str) else list(journal or [])), self._author_filter(list(author or [])),
-                     self._researcher_filter(list(researcher or []))):
+                     self._researcher_filter(list(researcher or [])), self._source_filter(list(source or [])), self._topic_filter(list(topic or []))):
             if cond is not None:
                 base = base.where(cond)
         if has_full_text is True:
@@ -177,6 +208,11 @@ class QueryService:
             tags: Counter[str] = Counter()
             for (t,) in s.execute(select(m.ProfileMatch.entity_tags).join(m.Paper, m.ProfileMatch.paper_id == m.Paper.id).where(*visible, m.ProfileMatch.entity_tags != "")):
                 tags.update(x for x in t.split("|") if x)
+            by_source = dict(s.execute(select(m.PaperHit.source, func.count(m.PaperHit.paper_id.distinct())).join(m.ProfileMatch, m.ProfileMatch.paper_id == m.PaperHit.paper_id)
+                                       .join(m.Paper, m.Paper.id == m.PaperHit.paper_id).where(*visible).group_by(m.PaperHit.source)).all())
+            topics: Counter[str] = Counter()
+            for (subs,) in s.execute(select(m.ProfileMatch.subjects).join(m.Paper, m.ProfileMatch.paper_id == m.Paper.id).where(*visible)):
+                topics.update(x.get("code") for x in subs or [] if x.get("code"))
             lo, hi, first, last, total = s.execute(select(func.min(m.Paper.published_date), func.max(m.Paper.published_date), func.min(m.Paper.first_seen_at),
                                                           func.max(m.Paper.first_seen_at), func.count()).join(m.ProfileMatch, m.ProfileMatch.paper_id == m.Paper.id).where(*visible)).one()
         day = lambda x: x.isoformat() if x else None
@@ -184,6 +220,8 @@ class QueryService:
                 "journals_in_database": [{"name": n, "papers": c} for n, c in journals],
                 "followed_journals": [{"key": j.key, "name": j.name, "papers": tags[f"journal:{j.key}"]} for j in self.profile.journals],
                 "researchers": [{"key": r.key, "name": r.name, "papers": tags[f"researcher:{r.key}"]} for r in self.profile.researchers],
+                "sources": [{"key": k, "name": n, "papers": by_source.get(k, 0)} for k, n in SOURCES.items()],
+                "topics": [{"code": t.code, "name": t.name, "papers": topics[t.code]} for t in self.field.subjects],
                 "published_between": [day(lo), day(hi)], "stored_between": [iso(first), iso(last)],
                 "sort": list(SORTS), "direction": ["desc", "asc"]}
 
@@ -320,7 +358,7 @@ class QueryService:
             elif e["type"] == "researcher" and e["key"] in self._researchers and e["confidence"] != "name_ambiguous":
                 watched.append({"type": "researcher", "name": self._researchers[e["key"]].name})
         text = bool(ft and ft.status == "full_text")
-        return {"id": p.id, "title": p.title, "journal": p.journal, "authors": authors_short(p.authors or []), "published": format_pub(p.published_label), "published_date": p.published_date.isoformat() if p.published_date else None,
+        return {"id": p.id, "title": p.title, "journal": html.unescape(p.journal) if p.journal else p.journal, "authors": authors_short(p.authors or []), "published": format_pub(p.published_label), "published_date": p.published_date.isoformat() if p.published_date else None,
                 "first_seen_at": iso(p.first_seen_at), "doi": p.doi, "pmid": p.pmid, "pmcid": p.pmcid, "nct_id": p.nct_id,
                 "url": f"https://doi.org/{p.doi}" if p.doi else p.url, "kind": p.kind, "content_type": p.content_type, "track": mt.track, "exploratory": mt.exploratory,
                 "subjects": [x["name"] for x in (mt.subjects or []) if x.get("specific", True)], "watched": watched, "retracted": p.is_retracted, "preprint": p.kind == "preprint",

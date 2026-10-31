@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from ..domain.newsletter import format_pub
+from ..domain.newsletter import format_long_date, format_pub
 from ..domain.selection import SOURCES
 from ..ports import RenderedIssue
 
@@ -21,12 +22,35 @@ def badge_tone(label: str, accent: str) -> tuple[str, str]:
     if low.startswith("full text"):
         return "#e6f4ea", "#166534"
     if low.startswith("open access"):
-        return "#e8f0fe", "#1d4ed8"
+        return "#e6eef8", "#1d4e89"
     if low.startswith("preprint"):
         return "#fff4e0", "#92400e"
-    if low.startswith("watched"):
-        return "#eef4ff", accent
+    if low.startswith("monitored"):
+        return "#eef2f8", accent
     return "#f1f5f9", "#475569"
+
+
+SOURCE_COVERAGE = {"OpenAlex": "Open catalogue of scholarly works", "Crossref": "Publisher and DOI registration records",
+                   "Europe PMC": "Life-sciences literature, including PubMed Central and preprints", "PubMed": "Biomedical literature database of the U.S. National Library of Medicine",
+                   "ClinicalTrials.gov": "Registry of clinical studies of the U.S. National Library of Medicine"}
+
+
+def glance(items, cfg, active_sources: list[str]) -> dict:
+    """The At a glance panel: where this edition's publications came from. Only sources, journals and researchers with publications are listed, most first.
+    A publication found by several sources counts once for each, so the source counts can add up to more than the total."""
+    count = lambda seq: sorted(Counter(seq).items(), key=lambda kv: (-kv[1], kv[0]))
+    by_source = Counter(name for it in items for name in it.sources if name in active_sources)
+    order = {name: i for i, name in enumerate(SOURCES.values())}
+    sources = sorted(by_source.items(), key=lambda kv: (-kv[1], order.get(kv[0], 99)))
+    journals = {}
+    for it in items:
+        if it.journal_key:
+            journals.setdefault(it.journal_key, [it.journal_name, it.journal_tier, 0])[2] += 1
+    journals = sorted(journals.values(), key=lambda j: (-j[2], j[0]))
+    tiers = [(t.title(), cfg.priority_notes[t]) for t in dict.fromkeys(j[1] for j in journals) if cfg.priority_notes.get(t)]
+    researchers = count(name for it in items for name in dict.fromkeys(it.researchers))
+    return {"total": len(items), "full_text": sum("Full text available" in it.badges for it in items), "followed": sum(bool(it.watched) for it in items),
+            "sources": [(n, SOURCE_COVERAGE.get(n, ""), c) for n, c in sources], "journals": [(n, t.title(), c) for n, t, c in journals], "tiers": tiers, "researchers": researchers}
 
 
 def _list_words(names: list[str]) -> str:
@@ -45,7 +69,7 @@ class JinjaNewsletterRenderer:
         day = lambda d: format_pub(d.date().isoformat() if hasattr(d, "date") else d.isoformat())
         items = [it for sec in sections for _, grp in sec.groups for it in grp]
         stats = {"full_text": sum("Full text available" in it.badges for it in items), "followed": sum(bool(it.watched) for it in items)}
-        ctx = {"tone": lambda label: badge_tone(label, cfg.accent_color), "stats": stats, "subject": subject, "cfg": cfg, "sections": sections, "total": sum(counts.values()), "week_end_text": format_pub(week_end.isoformat()),
+        ctx = {"glance": glance(items, cfg, sources or list(SOURCES.values())), "tone": lambda label: badge_tone(label, cfg.accent_color), "stats": stats, "subject": subject, "cfg": cfg, "sections": sections, "total": sum(counts.values()), "week_end_text": format_pub(week_end.isoformat()), "date_long": format_long_date(week_end),
                "window_text": f"{day(window_start)} to {day(window_end)}", "ai_summaries": ai_summaries, "held_back": held_back, "sources_text": _list_words(sources or list(SOURCES.values())), "built_text": built_at.strftime("%-d %b %Y %H:%M UTC")}
         html = self.env.get_template("newsletter.html.j2").render(**ctx)
         text = re.sub(r"\n{3,}", "\n\n", self.env.get_template("newsletter.txt.j2").render(**ctx)).strip() + "\n"

@@ -101,6 +101,11 @@ def format_pub(label: str | None) -> str:
         return label
 
 
+def format_long_date(d: date) -> str:
+    """date(2026, 10, 30) -> 'October 30, 2026' (the older newsletters' style)."""
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
 DEFAULT_WEIGHTS = {"watched_journal": 3, "watched_researcher": 3, "printable_full_text": 3, "title_match": 2, "subject_breadth": 1, "has_abstract": 1, "core_journal": 1}
 SUBJECT_BREADTH_CAP = 3
 
@@ -134,6 +139,11 @@ class ItemView:
     badges: list[str] = field(default_factory=list)
     links: list[tuple[str, str]] = field(default_factory=list)   # (label, url) beyond the primary link
     watched: list[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)            # display names of the discovery sources that found it (for the At a glance panel)
+    journal_key: str | None = None      # the monitored journal it came from, with its name and priority, when that journal is switched on
+    journal_name: str = ""
+    journal_tier: str = ""
+    researchers: list[str] = field(default_factory=list)        # monitored researchers whose identity is confirmed on it
     retracted: bool = False
     notice_url: str | None = None
     previously_sent_in: str | None = None
@@ -141,6 +151,7 @@ class ItemView:
     summary_source: str = "extractive"  # llm | extractive
     fulltext_status: str = "unknown"    # full_text | abstract_and_links_only | unknown (kept for the print edition later)
     carried_over: bool = False          # first stored before this edition's normal window: it was held back by an earlier edition
+    has_abstract: bool = True           # False: nothing to summarise; such papers are listed last in their section
     first_seen: str = ""
 
 

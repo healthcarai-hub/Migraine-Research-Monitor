@@ -197,6 +197,8 @@ def create_app(settings: Settings, factory: sessionmaker[Session], profile: Prof
                     journal: Annotated[list[Word] | None, Query(max_length=20, description="a followed journal's key, or part of any journal name; repeat for several (OR)")] = None,
                     author: Annotated[list[Word] | None, Query(max_length=20, description="author name words, e.g. 'goadsby p'; accents and case ignored; repeat for several (OR)")] = None,
                     researcher: Annotated[list[Word] | None, Query(max_length=30, description="a followed researcher's key or name (see /v1/papers/filters); repeat for several (OR)")] = None,
+                    source: Annotated[list[Word] | None, Query(max_length=5, description="a discovery source (pubmed, europepmc, crossref, openalex, ctgov) that found the paper; repeat for several (OR)")] = None,
+                    topic: Annotated[list[Word] | None, Query(max_length=20, description="a search topic's code or name (see /v1/papers/filters); repeat for several (OR)")] = None,
                     q: Annotated[str | None, Query(max_length=200, description="words that must all appear in the title or abstract")] = None,
                     has_full_text: Annotated[bool | None, Query(description="true: only papers whose full text we hold; false: only those without")] = None,
                     sort: Annotated[Literal["newest", "published", "relevance", "fulltext"], Query(description="newest: when we stored it; published: publication date; relevance; fulltext: full text held first")] = "newest",
@@ -209,7 +211,7 @@ def create_app(settings: Settings, factory: sessionmaker[Session], profile: Prof
                     include_hidden: Annotated[bool, Query(description="include repository deposits, datasets, book chapters, letters and corrections")] = False,
                     limit: Limit = 50, offset: Offset = 0) -> dict:
         page = svc.papers(days=days, since=since, published_from=published_from, published_to=published_to, q=q, track=track, kind=kind, content_type=content_type,
-                          watched=watched, has_full_text=has_full_text, retracted=retracted, journal=journal, author=author, researcher=researcher,
+                          watched=watched, has_full_text=has_full_text, retracted=retracted, journal=journal, author=author, researcher=researcher, source=source, topic=topic,
                           include_hidden=include_hidden, sort=sort, direction=direction, limit=limit, offset=offset)
         return {"total": page.total, "limit": page.limit, "offset": page.offset, "items": page.items}
 

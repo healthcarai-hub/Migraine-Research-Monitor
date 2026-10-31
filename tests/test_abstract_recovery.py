@@ -33,7 +33,8 @@ def test_abstract_on_the_same_line_as_the_heading_and_the_run_in_form():
 def test_summary_heading():
     got = extract_abstract(f"Title\nAuthors\nSummary: {BODY} {MORE}\nKey words: a, b\nIntroduction\ntext")
     assert got and got[1] == "pdf_summary"
-    assert extract_abstract(f"Title\nSummary of the findings is given below as a sentence. {BODY} {MORE}\nIntroduction\nx") is None   # running prose, not a heading
+    prose = extract_abstract(f"Title\nSummary of the findings is given below as a sentence. {BODY} {MORE}\nIntroduction\nx")
+    assert prose is None or prose[1] == "pdf_opening"             # running prose is never taken for a Summary heading; at most the last-resort opening rule picks it up, and says so
 
 
 def test_structured_abstract_without_a_heading():
@@ -204,7 +205,7 @@ def test_edition_labels_full_text_and_pdf_derived_abstracts(factory, curt):
         i = text.index(title)
         return text[i:i + 520]
     assert "Full text available" in block_for(full) and "Full text available" not in block_for(none) and "Full text available" not in block_for(blocked)
-    assert "Abstract recovered from the PDF" in block_for(pdf_abs) and "No abstract: summary from the introduction" in block_for(intro)
+    assert "Abstract recovered from the full text" in block_for(pdf_abs) and "No abstract: summary from the introduction" in block_for(intro)
     import re
     assert re.search(r'class="badge"[^>]*>Full text available</span>', html)
 
@@ -278,3 +279,121 @@ def test_verify_stored_removes_texts_that_are_not_their_paper(factory, curt):
     with session_scope(factory) as s:
         assert s.scalar(select(m.FulltextAttempt.detail).where(m.FulltextAttempt.paper_id == bad_id)).startswith("stored text is not this paper")
     assert ft_svc(factory).verify_stored(profile) == []
+
+
+# ---------------------------------------------------------------- editorials and commentaries: no abstract, summary or Introduction heading at all
+EDITORIAL = """Journal Uncorrected Proof
+This is an uncorrected proof of the article accepted for publication in
+Example Journal. This version will undergo further
+copyediting, typesetting, and proofreading before publication in its final form.
+ISSN: 1234-5678
+DOI:10.1234/example.1
+
+A new class of drugs and migraine: promise or hype?
+Jane Author1, John Writer2
+EDITORIAL
+1 Department of Neurology, Example University, Poland
+2 School of Health, Another University, Italy
+
+Corresponding author
+Jane Author
+E-mail: jane@example.edu
+Funding sources
+None declared
+Conflict of interest
+The authors declare no conflicts of interest.
+Copyright
+This is an article distributed under the terms of the
+Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+
+Two drug classes with almost no shared history are now being discussed in the same sentence. Calcitonin gene-related peptide targeted therapies have, within a
+decade, become the defining pharmacological achievement in headache medicine. Glucagon-like peptide-1 receptor agonists, developed for diabetes and obesity,
+have become the most consequential drug class in modern metabolic medicine, and are now being explored for pain and neuroinflammation. Whether this overlap
+justifies the clinical narrative building around it is a separate question that deserves careful and sceptical study.
+The case for convergence
+Start with anatomy. Receptors are expressed in regions central to the biology of both systems, and the mechanistic data go further than anyone expected.
+"""
+
+
+def test_an_editorial_with_no_headings_gets_its_opening_paragraph_and_the_front_matter_is_skipped():
+    body, kind = extract_abstract(EDITORIAL)
+    assert kind == "pdf_opening" and body.startswith("Two drug classes with almost no shared history")
+    assert body.endswith("careful and sceptical study.")                         # stops at the first section heading
+    for front in ("uncorrected proof", "Corresponding author", "Creative Commons", "Funding", "jane@example.edu", "Department of Neurology"):
+        assert front not in body
+    assert len(body.split()) >= 40
+
+
+def test_a_real_abstract_or_introduction_still_beats_the_opening_rule():
+    with_abstract = EDITORIAL.replace("Two drug classes", "Abstract\nThis editorial argues that two drug classes with almost no shared history deserve careful and sceptical study before anyone changes practice, "
+                                      "and that the overlap between them is real but unproven in people with migraine today. It sets out the case for and against.\n\nTwo drug classes", 1)
+    assert extract_abstract(with_abstract)[1] == "pdf_abstract"
+    with_intro = EDITORIAL.replace("Two drug classes", "Introduction\nTwo drug classes", 1)
+    assert extract_abstract(with_intro)[1] == "pdf_intro"
+
+
+def test_a_text_with_only_front_matter_or_fragments_yields_nothing_rather_than_a_guess():
+    front_only = "\n".join(EDITORIAL.split("\n")[:22])
+    assert extract_abstract(front_only) is None
+    fragment = "the head. It can be correlated with migraine. Migraine accounts for 16% of all the primary headaches, it is three times more common in women than in men. " * 3
+    assert extract_abstract(fragment) is None                                      # starts in the middle of a sentence
+    assert extract_abstract("- Migraine is a leading cause of disability worldwide and is frequently underdiagnosed. " * 4) is None      # stray list dash
+    assert extract_abstract("") is None
+
+
+def test_a_heading_style_line_ends_the_opening():
+    text = "A title that is long enough to be a title line here\n" + "x\n" * 3 + "\nMigraine is common. " * 1 + "It affects many people around the world, and its burden is large for patients and societies alike. " * 3 + "\nNext section\nOther text follows."
+    got = extract_abstract(text)
+    assert got and got[1] == "pdf_opening" and "Next section" not in got[0]
+
+
+def test_the_edition_labels_an_abstract_taken_from_the_opening_of_the_text(factory, curt):
+    from research_agent.domain.models import PaperRecord
+    from conftest import rec
+    profile, field = curt
+    with session_scope(factory) as s:
+        repo = Repository(s)
+        repo.sync_config(profile, field)
+        p = repo.merge_record(rec("pubmed", "9", doi="10.1/ed", pmid="9", abstract="")).paper
+        p.abstract, p.abstract_source = extract_abstract(EDITORIAL)
+        s.flush()
+        pid = p.id
+    from research_agent.application.newsletter import NewsletterService
+    from research_agent.infrastructure.rendering import JinjaNewsletterRenderer
+    with session_scope(factory) as s:
+        mt, _ = Repository(s).upsert_match(profile.id, pid, gate_status="passed", language_status="ok", track="A", subjects=[], entities=[])
+        s.get(m.Paper, pid).first_seen_at = __import__("datetime").datetime(2026, 10, 28, tzinfo=__import__("datetime").timezone.utc)
+    r = NewsletterService(factory, JinjaNewsletterRenderer(), {}, now=lambda: __import__("datetime").datetime(2026, 10, 30, 18, tzinfo=__import__("datetime").timezone.utc)).build(profile, field, __import__("datetime").date(2026, 10, 30))
+    with session_scope(factory) as s:
+        html = s.get(m.Issue, r.issue_id).html
+    assert "No abstract: summary from the opening of the text" in html and "Two drug classes" in html
+
+
+# ---------------------------------------------------------------- text built from XML (no abstract element), and debris from stripped references
+XML_TEXT = ("## Key Summary Points\n\n[Table]\n\n## Introduction\n\nMigraine is a recurrent primary headache disorder with attacks accompanied by nausea and sensitivity to light and sound [], "
+            "and its impact extends well beyond individual attacks [, , , –] into disability, lost work and reduced quality of life for patients and their families. Many people "
+            "remain undiagnosed and undertreated in several regions of the world [].\n\n## Methods\n\nWe searched the literature.")
+
+
+def test_empty_reference_brackets_left_by_stripped_citations_are_removed():
+    from research_agent.domain.fulltext import tidy_recovered
+    assert tidy_recovered("light and sound [], and more [, , , –] text [ ] end [1] kept.") == "light and sound, and more text end [1] kept."
+    assert tidy_recovered("no debris here.") == "no debris here."
+
+
+def test_a_text_built_from_xml_with_a_markdown_style_introduction_heading_is_recognised():
+    got = extract_abstract(XML_TEXT)
+    assert got and got[1] == "pdf_intro" and got[0].startswith("Migraine is a recurrent primary headache disorder") and "[]" not in got[0] and "[," not in got[0]
+    assert "Key Summary" not in got[0] and "We searched" not in got[0]
+
+
+def test_the_stored_text_recovery_now_also_covers_papers_whose_full_text_came_as_xml(factory, no_abstract):
+    profile, field, pid = no_abstract
+    with session_scope(factory) as s:
+        s.add(m.PaperFulltext(paper_id=pid, status="full_text", format="jats_xml", provider="springer_open_access", words=900, text=XML_TEXT))
+    service = ft_svc(factory)
+    assert service.recover_abstracts(profile, field) == 1
+    with session_scope(factory) as s:
+        p = s.get(m.Paper, pid)
+        assert p.abstract_source == "pdf_intro" and p.abstract.startswith("Migraine is a recurrent") and "[]" not in p.abstract
+    assert service.recover_abstracts(profile, field) == 0

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import string
 from pathlib import Path
 from typing import Literal
 
@@ -174,11 +175,18 @@ class NewsletterConfig(BaseModel):
     """Digital edition settings. Print-edition settings are deliberately absent: the print template has not been supplied yet."""
     title: str = "Research digest"
     subtitle: str = ""
+    header_label: str = "Research briefing"   # the small capitals line above the title in the header band
+    subject: str = "{title}: {date}"          # the email subject; {title} and {date} (for example October 30, 2026) are filled in
     recipients: list[str] = Field(default_factory=list)
-    accent_color: str = "#1f5f8b"     # header band, links and section rules in the HTML edition; a #rrggbb colour
+    accent_color: str = "#1f5f8b"     # links, bars and section rules in the HTML edition; a #rrggbb colour
+    deep_color: str = "#0b2545"       # the dark navy of the header band, the At a glance panel and the section strips; a #rrggbb colour
+    priority_notes: dict[str, str] = Field(default_factory=lambda: {
+        "core": "Leading journals of the field, which carry most of its literature. When an edition has to be limited in size, their publications rank slightly higher.",
+        "targeted": "Journals of broader scope that publish work on the field only occasionally; they are searched for related work."})   # what each journal priority means, shown under the Monitored journals table
     greeting: str = "Hello,"
     introduction: str = "Here is this week's round-up of new research, grouped by topic. Papers whose full text we hold are marked."
     results_lead: str = "This week's papers:"
+    no_abstract_heading: str = "Without an abstract"   # papers with no abstract of any kind are listed last in their section, under this heading
     closing: str = "That is everything for this week. Have a good weekend."
     signature: SignatureConfig | None = None
     footer: str = ""                  # a line at the very end of the edition, e.g. who prepared it
@@ -204,8 +212,15 @@ class NewsletterConfig(BaseModel):
             raise ValueError("max_catchup_days must be at least lookback_days")
         if self.carryover_penalty < 0:
             raise ValueError("carryover_penalty must be 0 or more")
-        if not re.fullmatch(r"#[0-9a-fA-F]{6}", self.accent_color):
-            raise ValueError("accent_color must look like #1f5f8b")
+        try:
+            fields = [(name, spec, conv) for _, name, spec, conv in string.Formatter().parse(self.subject) if name is not None]
+        except ValueError:
+            fields = [("?", "", None)]
+        if any(name not in ("title", "date") or spec or conv for name, spec, conv in fields):
+            raise ValueError("subject may only use the plain placeholders {title} and {date}")
+        for name in ("accent_color", "deep_color"):
+            if not re.fullmatch(r"#[0-9a-fA-F]{6}", getattr(self, name)):
+                raise ValueError(f"{name} must look like #1f5f8b")
         return self
 
 

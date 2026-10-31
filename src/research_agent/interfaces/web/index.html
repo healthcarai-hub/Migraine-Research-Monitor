@@ -5,95 +5,232 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Curt migraine research</title>
 <style>
-:root { --bg:#f7f7f5; --card:#fff; --ink:#1d2327; --muted:#5b6670; --line:#d9dde0; --accent:#1f5f8b; --accent-ink:#fff; --ok:#1d6b43; --warn:#9a5b00; --bad:#a32424; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#15191c; --card:#1e2428; --ink:#e8ecef; --muted:#a2adb5; --line:#333d44; --accent:#6fb1dd; --accent-ink:#0b1217; --ok:#6fcf9a; --warn:#e3b05a; --bad:#f08a8a; } }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-header, main { max-width: 56rem; margin: 0 auto; padding: 0 16px; }
-header { padding-top: 16px; }
-h1 { font-size: 1.35rem; margin: 0 0 .5rem; }
-label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:2px; }
-input, select, button { font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 10px; min-height:40px; }
-input, select { width:100%; }
+/* Same navy and blue as the newsletter. Every colour is a token, so dark mode only swaps the tokens. */
+:root {
+  --navy:#0b2545; --blue:#1d4e89; --link:#1d4e89; --bg:#eef2f8; --card:#fff; --ink:#1b2a3b; --muted:#5f6f82; --line:#d9e1ec; --head:#eef2f8; --zebra:#f6f8fb;
+  --ok:#166534; --okbg:#e6f4ea; --warn:#92400e; --warnbg:#fff4e0; --bad:#b42318; --badbg:#fde8e8; --focus:#1d4e89;
+  --j-t:#e6eef8; --j-i:#1d4e89; --j-s:#1d4e89; --r-t:#dff3f0; --r-i:#0f6b62; --r-s:#0f766e; --t-t:#ece9fb; --t-i:#4a3fb0; --t-s:#5b4bc4; --s-t:#fdf0dc; --s-i:#8a4b08; --s-s:#b45f06;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --blue:#2b5fa3; --link:#8fbdf0; --bg:#0f1720; --card:#17212b; --ink:#e8edf3; --muted:#9aa8b8; --line:#2b3846; --head:#1d2937; --zebra:#1b2733;
+  --ok:#7fd1a0; --okbg:#143222; --warn:#f0c27d; --warnbg:#3a2a10; --bad:#f29a92; --badbg:#3a1a18; --focus:#8fbdf0;
+  --j-t:#1c2f4a; --j-i:#a9ccf3; --r-t:#12332f; --r-i:#7fd8cb; --t-t:#2a2650; --t-i:#c2bbf7; --s-t:#3d2a10; --s-i:#f2c98c;
+} }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+.wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
+.hidden { display:none !important; }
+a { color:var(--link); }
+button, input, select { font:inherit; color:var(--ink); }
 button { cursor:pointer; }
 button:disabled { opacity:.5; cursor:default; }
-button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
-button.danger { color:var(--bad); }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
-a { color:var(--accent); }
-.row { display:flex; gap:8px; flex-wrap:wrap; align-items:end; }
-.row > * { flex:1 1 9rem; }
-.row > button { flex:0 0 auto; }
-.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap:10px; }
-.tabs { display:flex; gap:6px; margin:12px 0; border-bottom:1px solid var(--line); }
-.tabs button { border:0; border-bottom:3px solid transparent; border-radius:0; background:none; }
-.tabs button[aria-selected="true"] { border-bottom-color:var(--accent); font-weight:600; }
-.panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px; }
-.paper { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; margin:10px 0; }
-.paper h3 { font-size:1rem; margin:0 0 4px; }
-.meta { color:var(--muted); font-size:.88rem; }
-.badge { display:inline-block; font-size:.75rem; border:1px solid var(--line); border-radius:99px; padding:0 8px; margin:4px 4px 0 0; }
-.badge.ft { color:var(--ok); border-color:var(--ok); }
-.badge.retracted { color:var(--bad); border-color:var(--bad); }
-.badge.followed { color:var(--accent); border-color:var(--accent); }
-.badge.pre { color:var(--warn); border-color:var(--warn); }
-.fulltext { white-space:pre-wrap; max-height:24rem; overflow:auto; border-top:1px solid var(--line); margin-top:8px; padding-top:8px; font-size:.9rem; }
-fieldset { border:1px solid var(--line); border-radius:8px; margin:0 0 12px; padding:8px 12px; background:var(--card); }
-legend { font-weight:600; padding:0 6px; }
-.check { display:flex; gap:8px; align-items:center; padding:4px 0; min-height:36px; }
-.check input { width:auto; min-height:0; }
-.check label { margin:0; color:inherit; font-size:1rem; }
-.check .tag { color:var(--muted); font-size:.8rem; }
-#msg { min-height:1.5em; margin:8px 0; }
+:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+
+/* header, token, tabs */
+.top { background:var(--navy); border-bottom:3px solid var(--blue); color:#fff; }
+.top .wrap { display:flex; align-items:center; justify-content:space-between; gap:16px 24px; padding-top:18px; padding-bottom:18px; flex-wrap:wrap; }
+.eyebrow { font-size:11px; letter-spacing:1.4px; text-transform:uppercase; font-weight:700; opacity:.8; }
+h1 { margin:2px 0 0; font-size:22px; line-height:28px; }
+.token { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.token input { height:36px; width:240px; max-width:100%; border-radius:6px; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1); color:#fff; padding:0 12px; font-size:14px; }
+.token input::placeholder { color:rgba(255,255,255,.65); }
+.token .ok { font-size:13px; color:#b9e6c8; display:flex; align-items:center; gap:6px; }
+.token .ok svg { width:14px; height:14px; }
+.token .btn { border-color:rgba(255,255,255,.35); background:transparent; color:#fff; }
+.token .btn.primary { background:#fff; color:var(--navy); border-color:#fff; }
+.tabs { background:var(--card); border-bottom:1px solid var(--line); }
+.tabs .wrap { display:flex; gap:4px; overflow-x:auto; }
+.tabs button { background:none; border:0; border-bottom:3px solid transparent; padding:14px 16px 12px; font-weight:600; font-size:14.5px; color:var(--muted); white-space:nowrap; }
+.tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--blue); }
+main { padding:20px 0 56px; }
+#msg { min-height:1.5em; margin:0 0 10px; font-size:14px; }
 #msg.error { color:var(--bad); } #msg.ok { color:var(--ok); }
+
+/* buttons, fields */
+.btn { height:36px; border-radius:6px; border:1px solid var(--line); background:var(--card); padding:0 16px; font-size:14px; font-weight:600; }
+.btn.primary { background:var(--blue); border-color:var(--blue); color:#fff; }
+.btn.danger { color:var(--bad); }
+.linkbtn { background:none; border:0; padding:0; color:var(--link); font-weight:600; font-size:13px; }
+label.l { display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin:0 0 4px; }
+.in, select, input[type=date] { height:40px; width:100%; border:1px solid var(--line); border-radius:6px; padding:0 12px; background:var(--card); color:var(--ink); font-size:14.5px; }
+.in { display:flex; align-items:center; gap:8px; padding:0 12px; }
+.in input { flex:1; min-width:0; height:100%; border:0; background:none; outline:0; font-size:inherit; }
+.in:focus-within { border-color:var(--blue); box-shadow:0 0 0 3px rgba(29,78,137,.2); }
+.in svg { width:16px; height:16px; color:var(--muted); flex:none; }
+.sublabel { font-size:12px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin:0; }
+
+/* cards */
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:16px; }
+.card > .pad { padding:18px 20px; }
+.card > .pad + .pad, .card > .grps + .pad, .card > .pad + .grps { border-top:1px solid var(--line); }
+.cardhead { padding:14px 20px; border-bottom:1px solid var(--line); background:var(--head); border-radius:10px 10px 0 0; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.cardhead h2 { margin:0; font-size:13px; letter-spacing:.9px; text-transform:uppercase; color:var(--muted); }
+.cardhead .left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.meta { color:var(--muted); font-size:13px; }
+.searchrow { display:flex; gap:10px; }
+.searchrow .in { flex:1; height:46px; font-size:16px; }
+.searchrow .btn { height:46px; padding:0 24px; }
+
+/* chips */
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chips.collapsed { max-height:34px; overflow:hidden; }
+.chip { display:inline-flex; align-items:center; min-height:32px; border-radius:999px; font-size:13.5px; font-weight:600; line-height:1.25; border:1px solid transparent; max-width:100%; text-align:left; }
+.chip svg { width:14px; height:14px; flex:none; }
+.chip .n { font-weight:600; font-size:11.5px; margin-left:8px; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,.65); color:inherit; }
+.chip.add, .chip.off { padding:6px 13px 6px 9px; gap:6px; }
+.chip.add svg, .chip.off svg { opacity:.75; }
+.chip.add:hover { filter:brightness(.95); box-shadow:0 0 0 2px rgba(29,78,137,.2); }
+.chip.off { background:var(--card); border:1px dashed var(--muted); color:var(--muted); }
+.chip.off:hover { color:var(--ink); border-color:var(--ink); }
+.chip.sel { padding:6px 12px 6px 14px; color:#fff; cursor:default; }
+.chip .x { display:inline-flex; align-items:center; justify-content:center; width:0; height:20px; padding:0; border:0; overflow:hidden; margin-left:0; border-radius:50%; opacity:0; background:rgba(255,255,255,.22); color:#fff; flex:none; transition:width .12s, margin .12s, opacity .12s; }
+.chip .x svg { width:12px; height:12px; }
+.chip.sel:hover .x, .chip.sel:focus-within .x { width:20px; margin-left:8px; opacity:1; }
+.chip .x:hover { background:rgba(255,255,255,.42); }
+@media (hover: none) { .chip .x { width:20px; margin-left:8px; opacity:1; } }
+.j.add { background:var(--j-t); color:var(--j-i); } .j.sel { background:var(--j-s); }
+.r.add { background:var(--r-t); color:var(--r-i); } .r.sel { background:var(--r-s); }
+.t.add { background:var(--t-t); color:var(--t-i); } .t.sel { background:var(--t-s); }
+.s.add { background:var(--s-t); color:var(--s-i); } .s.sel { background:var(--s-s); }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex:none; }
+.dot.j { background:var(--j-s); } .dot.r { background:var(--r-s); } .dot.t { background:var(--t-s); } .dot.s { background:var(--s-s); }
+
+/* search filter groups */
+.grps { padding:6px 20px 8px; }
+.grp { padding:16px 0 6px; border-top:1px solid var(--line); }
+.grp:first-child { border-top:0; }
+.grphead { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.grphead b { font-size:14px; }
+.grphead .sub { color:var(--muted); font-size:12.5px; }
+.find { margin-left:auto; width:230px; max-width:100%; height:32px; border:1px solid var(--line); border-radius:99px; padding:0 12px; display:flex; align-items:center; gap:6px; background:var(--card); }
+.find input { flex:1; min-width:0; border:0; background:none; outline:0; font-size:13px; height:100%; }
+.find svg { width:14px; height:14px; color:var(--muted); flex:none; }
+.find:focus-within { border-color:var(--blue); }
+.more { margin:8px 0 10px; display:block; }
+.none { color:var(--muted); font-size:13.5px; }
+.ctl { display:grid; gap:14px; grid-template-columns:1.4fr 1.3fr 1.2fr 1fr; align-items:end; }
+.ctl .custom { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.hint { grid-column:1 / -1; color:var(--muted); font-size:12.5px; margin:-4px 0 0; }
+.check { position:relative; height:40px; border:1px solid var(--line); border-radius:6px; display:flex; align-items:center; gap:10px; padding:0 12px; background:var(--card); font-weight:600; font-size:14px; cursor:pointer; }
+.check input { position:absolute; opacity:0; inset:0; width:100%; height:100%; margin:0; cursor:pointer; }
+.check .box { width:20px; height:20px; border-radius:5px; border:2px solid var(--muted); display:flex; align-items:center; justify-content:center; flex:none; color:#fff; }
+.check .box svg { width:13px; height:13px; opacity:0; }
+.check input:checked + .box { background:var(--blue); border-color:var(--blue); }
+.check input:checked + .box svg { opacity:1; }
+.check input:focus-visible + .box { outline:3px solid var(--focus); outline-offset:2px; }
+.check small { color:var(--muted); font-weight:500; font-size:12px; margin-left:auto; }
+.trayhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.tray { min-height:52px; border:1px dashed var(--muted); border-radius:8px; padding:10px 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--zebra); }
+
+/* results */
+.summary { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:22px 0 10px; flex-wrap:wrap; }
+.summary .count { font-weight:700; }
+.legend { display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:12.5px; align-items:center; }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.paper { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+.paper h3 { margin:0 0 4px; font-size:16px; line-height:22px; }
+.paper h3 a { color:var(--link); text-decoration:none; }
+.paper h3 a:hover { text-decoration:underline; }
+.paper p { margin:10px 0 0; }
+.pill { display:inline-block; margin:10px 6px 0 0; padding:1px 9px; border-radius:99px; font-size:11.5px; line-height:18px; font-weight:700; background:var(--head); color:var(--muted); }
+.pill.ft { background:var(--okbg); color:var(--ok); } .pill.mon { background:var(--head); color:var(--link); }
+.pill.warn { background:var(--warnbg); color:var(--warn); } .pill.bad { background:var(--badbg); color:var(--bad); }
+.fulltext { white-space:pre-wrap; max-height:24rem; overflow:auto; border-top:1px solid var(--line); margin-top:8px; padding-top:8px; font-size:.9rem; }
+details { margin-top:10px; } summary { cursor:pointer; color:var(--link); font-weight:600; font-size:14px; }
 .pager { display:flex; gap:8px; align-items:center; justify-content:space-between; margin:12px 0 32px; }
-.hidden { display:none; }
+.actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.note { color:var(--muted); font-size:13.5px; margin:0 0 16px; }
+
+/* newsletter settings */
+.two { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.two .sublabel { margin-bottom:8px; }
+.savebar { position:sticky; bottom:12px; background:var(--navy); color:#fff; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:14px; justify-content:space-between; box-shadow:0 8px 24px rgba(11,37,69,.28); flex-wrap:wrap; }
+.savebar .btn { border-color:rgba(255,255,255,.35); background:transparent; color:#fff; }
+.savebar .btn.primary { background:#fff; color:var(--navy); border-color:#fff; }
+.savebar .btn.danger { color:#ffb4ac; }
+.savebar .go { display:flex; gap:10px; flex-wrap:wrap; }
+.after { margin-top:14px; }
+
+@media (max-width: 760px) {
+  .wrap { padding:0 14px; }
+  .searchrow { flex-direction:column; }
+  .ctl { grid-template-columns:1fr; }
+  .two { grid-template-columns:1fr; gap:16px; }
+  .find { width:100%; margin-left:0; }
+  .chip { white-space:normal; }
+  .card > .pad, .grps { padding-left:14px; padding-right:14px; }
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>Curt migraine research</h1>
-  <form id="tokenform" class="row" autocomplete="off">
-    <div><label for="token">Access token</label><input id="token" type="password" autocomplete="off" placeholder="paste your token"></div>
-    <button class="primary" type="submit">Use token</button>
-  </form>
-  <div id="msg" role="status" aria-live="polite"></div>
-  <div class="tabs" role="tablist">
+<header class="top">
+  <div class="wrap">
+    <div><div class="eyebrow">Research monitoring</div><h1>Curt migraine research</h1></div>
+    <form id="tokenform" class="token" autocomplete="off">
+      <span id="tokenok" class="ok hidden"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5l3 3 6-6.5"/></svg>Token saved for this tab</span>
+      <input id="token" type="password" autocomplete="off" placeholder="Paste your access token" aria-label="Access token">
+      <button class="btn primary" id="tokenbtn" type="submit">Use token</button>
+    </form>
+  </div>
+</header>
+<nav class="tabs">
+  <div class="wrap" role="tablist">
     <button role="tab" id="tab-search" aria-selected="true" aria-controls="panel-search">Search</button>
     <button role="tab" id="tab-editions" aria-selected="false" aria-controls="panel-editions">Editions</button>
     <button role="tab" id="tab-settings" aria-selected="false" aria-controls="panel-settings">Newsletter settings</button>
   </div>
-</header>
-<main>
+</nav>
+<main class="wrap">
+  <div id="msg" role="status" aria-live="polite"></div>
   <section id="panel-search" role="tabpanel" aria-labelledby="tab-search">
-    <form id="searchform" class="panel">
-      <div class="grid">
-        <div><label for="q">Words in title or abstract</label><input id="q" type="search"></div>
-        <div><label for="author">Author (comma for several)</label><input id="author" type="text" placeholder="goadsby p, lipton"></div>
-        <div><label for="journal">Journal (comma for several)</label><input id="journal" type="text" list="journals" placeholder="cephalalgia, headache"><datalist id="journals"></datalist></div>
-        <div><label for="researcher">Followed researcher</label><select id="researcher"><option value="">Anyone</option></select></div>
-        <div><label for="from">Published from</label><input id="from" type="date"></div>
-        <div><label for="to">Published to</label><input id="to" type="date"></div>
-        <div><label for="fulltext">Full text</label><select id="fulltext"><option value="">Any</option><option value="true">Held</option><option value="false">Not held</option></select></div>
-        <div><label for="sort">Sort by</label>
-          <select id="sort"><option value="newest">Newest stored</option><option value="published">Publication date</option><option value="relevance">Relevance</option><option value="fulltext">Full text first</option></select></div>
-        <div><label for="direction">Order</label><select id="direction"><option value="desc">Descending</option><option value="asc">Ascending</option></select></div>
+    <form id="searchform" class="card">
+      <div class="pad">
+        <div class="searchrow">
+          <label class="in" for="q"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><input id="q" type="search" placeholder="Words in title or abstract" autocomplete="off"></label>
+          <button class="btn primary" type="submit">Search</button>
+        </div>
       </div>
-      <div class="row" style="margin-top:10px"><button class="primary" type="submit">Search</button><button type="button" id="clear">Clear</button></div>
+      <div class="grps" id="grps"></div>
+      <div class="pad ctl">
+        <div><label class="l" for="published">Published</label>
+          <select id="published">
+            <option value="7">Last 7 days</option><option value="15">Last 15 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option>
+            <option value="all">All time</option><option value="custom">Custom range…</option>
+          </select></div>
+        <div><label class="l" for="fulltext">Full text</label>
+          <label class="check"><input id="fulltext" type="checkbox"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5l3 3 6-6.5"/></svg></span>Full text held<small>only these</small></label></div>
+        <div><label class="l" for="sort">Sort by</label>
+          <select id="sort"><option value="relevance">Relevance</option><option value="newest">Newest stored</option><option value="published">Publication date</option><option value="fulltext">Full text first</option></select></div>
+        <div><label class="l" for="direction">Order</label>
+          <select id="direction"><option value="desc">Descending</option><option value="asc">Ascending</option></select></div>
+        <div class="custom hidden" id="custom">
+          <div><label class="l" for="from">Published from</label><input id="from" type="date"></div>
+          <div><label class="l" for="to">Published to</label><input id="to" type="date"></div>
+        </div>
+        <p class="hint">Papers whose publication date is unknown only appear under All time.</p>
+      </div>
+      <div class="pad">
+        <div class="trayhead"><p class="sublabel">Filtering by · <span id="traycount">0</span></p><button type="button" id="clear" class="linkbtn">Clear all</button></div>
+        <div id="tray" class="tray" aria-label="Selected filters"></div>
+      </div>
     </form>
-    <div id="count" class="meta" role="status"></div>
+    <div class="summary"><span id="count" class="count" role="status"></span>
+      <span class="legend"><span><i class="dot s"></i>Source</span><span><i class="dot j"></i>Journal</span><span><i class="dot r"></i>Researcher</span><span><i class="dot t"></i>Topic</span></span></div>
     <div id="results"></div>
-    <div class="pager hidden" id="pager"><button type="button" id="prev">Previous</button><span id="page"></span><button type="button" id="next">Next</button></div>
+    <div class="pager hidden" id="pager"><button class="btn" type="button" id="prev">Previous</button><span id="page"></span><button class="btn" type="button" id="next">Next</button></div>
   </section>
   <section id="panel-editions" role="tabpanel" aria-labelledby="tab-editions" class="hidden">
-    <p class="meta">The weekly newsletter editions that have been built. Each is kept as it was built; nothing here sends anything.</p>
+    <p class="note">The weekly newsletter editions that have been built. Each is kept as it was built; nothing here sends anything.</p>
     <div id="editions"></div>
   </section>
   <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" class="hidden">
-    <p class="meta" id="applies"></p>
+    <p class="note" id="applies"></p>
     <div id="groups"></div>
-    <div class="row"><button class="primary" id="save" type="button">Save changes</button><button id="resetcfg" class="danger" type="button">Switch everything back on</button></div>
-    <p class="meta">Switches change which papers the next newsletter picks. They do not change what is collected or what the search shows. Changing them needs an admin token.</p>
+    <div class="savebar" id="savebar">
+      <span id="saveinfo">No unsaved changes</span>
+      <span class="go"><button id="resetcfg" class="btn danger" type="button">Switch everything back on</button><button id="discard" class="btn" type="button">Discard</button><button class="btn primary" id="save" type="button">Save changes</button></span>
+    </div>
+    <p class="note after">Switches change which papers the next newsletter picks. They do not change what is collected or what the search shows. Changing them needs an admin token.</p>
   </section>
 </main>
 <script src="/app/app.js"></script>

@@ -52,6 +52,30 @@ def cmd_job(args, settings: Settings) -> int:
     return run_job(args.kind, settings, args.profile, week_ending, main)
 
 
+def cmd_fix_abstracts(args, settings: Settings) -> int:
+    """Repair glued words (section labels and sentence ends) in abstracts already stored. Shows what it would do unless --apply is given."""
+    from .domain.text_repair import repair_abstract
+    changed = spaces = 0
+    examples: list[str] = []
+    with session_scope(session_factory(settings)) as s:
+        for p in s.scalars(select(m.Paper).where(m.Paper.abstract != "")):
+            fixed = repair_abstract(p.abstract)
+            if fixed == p.abstract:
+                continue
+            changed += 1
+            spaces += len(fixed) - len(p.abstract)
+            if len(examples) < 5:
+                at = next(i for i, (a, b) in enumerate(zip(p.abstract, fixed)) if a != b)
+                examples.append(f"  paper {p.id}: ...{p.abstract[max(0, at - 18):at + 16]!r} -> ...{fixed[max(0, at - 18):at + 17]!r}")
+            if args.apply:
+                p.abstract = fixed
+    print(f"{changed} abstract(s) {'repaired' if args.apply else 'would be repaired'}, {spaces} space(s) {'added' if args.apply else 'to add'}; nothing else changes")
+    print("\n".join(examples))
+    if changed and not args.apply:
+        print("Run again with --apply to store the repaired text.")
+    return 0
+
+
 def cmd_gmail(args, settings: Settings) -> int:
     """One-time Gmail sign-in: opens the browser, asks Google for permission to create drafts (never to read or send), and writes the refresh token
     straight into .env. Nothing secret is printed."""
@@ -297,6 +321,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("kind", choices=["daily", "weekly"]); p.add_argument("--profile", default="curt"); p.add_argument("--week-ending", help="weekly: YYYY-MM-DD; default today UTC"); p.set_defaults(fn=cmd_job)
     p = sub.add_parser("gmail", help="one-time Gmail sign-in so the weekly job can create drafts")
     p.add_argument("action", choices=["authorize"]); p.add_argument("--port", type=int, default=0, help="local port for Google's redirect (default: any free port)"); p.set_defaults(fn=cmd_gmail)
+    p = sub.add_parser("fix-abstracts", help="repair glued words in stored abstracts (dry run unless --apply)")
+    p.add_argument("--apply", action="store_true"); p.set_defaults(fn=cmd_fix_abstracts)
     p = sub.add_parser("seed"); p.add_argument("--profile", default="curt"); p.set_defaults(fn=cmd_seed)
     p = sub.add_parser("plan"); p.add_argument("--profile", default="curt"); p.add_argument("--sources"); p.add_argument("--paths"); p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("collect")

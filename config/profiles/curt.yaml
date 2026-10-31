@@ -19,9 +19,15 @@ newsletter:
       subject_breadth: 1           # per matching subject, up to 3
       has_abstract: 1
       core_journal: 1
-  title: Curt migraine research digest
-  subtitle: Weekly migraine research briefing                 # the small line above the title in the header band
-  accent_color: "#1f5f8b"                                      # header band, links and rules in the HTML edition (#rrggbb)
+  title: Weekly Migraine Research Digest                      # header wording taken from the earlier newsletter agent
+  header_label: Research briefing                             # the small capitals line above the title
+  subtitle: Curated insights from recent publications
+  subject: "This Week in Migraine Research — {date}"          # {date} is filled in like October 30, 2026; {title} is also available
+  accent_color: "#1d4e89"                                      # links, bars and section rules (#rrggbb); owner approved the navy and blue look of the At a glance panel, 2026-10-31
+  deep_color: "#0b2545"                                        # the navy of the header band, the At a glance panel and the section strips
+  priority_notes:                                              # shown under the Monitored journals table; confirm this wording with the owner
+    core: "Leading headache and neurology journals that carry most of the migraine literature. When an edition has to be limited in size, their publications rank slightly higher."
+    targeted: "Journals of broader scope (general neurology, immunology, nutrition) that publish migraine research only occasionally; they are searched for migraine-related work."
   greeting: "Hello Curt,"                                      # wording in the style of the earlier newsletter agent (not copied from it); edit freely
   introduction: "Here is this week's round-up of new migraine research: what our monitoring agent found over the past week, grouped by topic. Papers whose full text we hold are marked."
   results_lead: "This week's papers:"

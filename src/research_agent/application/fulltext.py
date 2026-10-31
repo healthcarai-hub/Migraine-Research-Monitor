@@ -18,6 +18,7 @@ from ..domain.fulltext import ERROR, NOT_AVAILABLE, NOT_PERMITTED, OK, FullTextP
 from ..domain.field_config import FieldConfig, ProfileConfig, selected_subjects
 from ..domain.fulltext import extract_abstract, text_matches_paper
 from ..domain.gate import FieldMatcher
+from ..domain.text_repair import repair_abstract
 from ..infrastructure.db import models as m
 from ..infrastructure.db.repository import Repository
 from ..infrastructure.db.session import session_scope
@@ -153,7 +154,7 @@ class FullTextService:
                                text=res.text, fetched_at=self.now(), checked_at=self.now())
             summary.print_allowed += allowed
             if res.abstract and not (paper.abstract or "").strip():   # the paper had no abstract anywhere else: use the one found in its own text
-                paper.abstract, paper.abstract_source = res.abstract, res.abstract_kind or "pdf_abstract"
+                paper.abstract, paper.abstract_source = repair_abstract(res.abstract), res.abstract_kind or "pdf_abstract"
                 recovered.append(paper)
             return True
         if not tried:
@@ -191,7 +192,7 @@ class FullTextService:
             for paper, ft in repo.papers_missing_abstract_with_text(profile.id):
                 found = extract_abstract(ft.text or "")
                 if found:
-                    paper.abstract, paper.abstract_source = found
+                    paper.abstract, paper.abstract_source = repair_abstract(found[0]), found[1]
                     done.append(paper)
             if done:
                 self._rematch(repo, profile, field_cfg, done)
