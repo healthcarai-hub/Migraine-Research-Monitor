@@ -47,7 +47,8 @@ def glance(items, cfg, active_sources: list[str]) -> dict:
         if it.journal_key:
             journals.setdefault(it.journal_key, [it.journal_name, it.journal_tier, 0])[2] += 1
     journals = sorted(journals.values(), key=lambda j: (-j[2], j[0]))
-    tiers = [(t.title(), cfg.priority_notes[t]) for t in dict.fromkeys(j[1] for j in journals) if cfg.priority_notes.get(t)]
+    present = {j[1] for j in journals}
+    tiers = [(t.title(), note) for t, note in cfg.priority_notes.items() if t in present and note]     # in the order the profile lists them (core first), not the order journals happen to appear
     researchers = count(name for it in items for name in dict.fromkeys(it.researchers))
     return {"total": len(items), "full_text": sum("Full text available" in it.badges for it in items), "followed": sum(bool(it.watched) for it in items),
             "sources": [(n, SOURCE_COVERAGE.get(n, ""), c) for n, c in sources], "journals": [(n, t.title(), c) for n, t, c in journals], "tiers": tiers, "researchers": researchers}

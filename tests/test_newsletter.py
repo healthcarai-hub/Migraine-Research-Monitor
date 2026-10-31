@@ -864,6 +864,18 @@ def test_the_glance_panel_lists_only_sources_journals_and_researchers_with_publi
     assert "AT A GLANCE" in text and "Monitored journals:" in text and f"{names['cephalalgia']} [Core]: 1" in text and f"{researcher.name}: 1" in text
 
 
+def test_the_glance_priority_key_follows_the_profile_order_and_lists_journals_most_first(seeded):
+    from research_agent.infrastructure.rendering import glance
+    profile, _ = seeded
+    a, b, c = view(1), view(2), view(3)
+    a.journal_key, a.journal_name, a.journal_tier = "frontiers_neurology", "Frontiers in Neurology", "targeted"
+    b.journal_key, b.journal_name, b.journal_tier = "headache", "Headache", "core"
+    c.journal_key, c.journal_name, c.journal_tier = "frontiers_neurology", "Frontiers in Neurology", "targeted"
+    g = glance([a, b, c], profile.newsletter, ["PubMed"])
+    assert [j[:3] for j in g["journals"]] == [("Frontiers in Neurology", "Targeted", 2), ("Headache", "Core", 1)]      # most publications first
+    assert [t for t, _ in g["tiers"]] == ["Core", "Targeted"]                                                       # the key lists core first whatever the journal order
+
+
 def test_the_glance_panel_counts_each_source_and_omits_one_that_is_switched_off(factory, seeded):
     profile, field = seeded
     add(factory, profile, 1, days_ago=2, sources=("pubmed", "crossref"))
