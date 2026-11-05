@@ -76,8 +76,12 @@ class PrintEditionRenderer:
     def _card(self, card: dict, level: str, kind: str = "full", flow: bool = False) -> str:
         return self.env.get_template("print_card.html.j2").render(card=card, level=level, flow=flow, kind=kind)
 
+    def _html(self, html: str):
+        """The document for WeasyPrint. The templates folder is its base address, so the stylesheet's `fonts/...` links find the fonts shipped with the program."""
+        return self.weasyprint.HTML(string=html, base_url=str(TEMPLATES) + "/")
+
     def _pages(self, html: str) -> int:
-        return len(self.weasyprint.HTML(string=html).render().pages)
+        return len(self._html(html).render().pages)
 
     @staticmethod
     def condense(card: dict, level: int, max_chips: int) -> dict:
@@ -128,5 +132,5 @@ class PrintEditionRenderer:
         view["retraction_html"] = [self._card({**c, "limit": view["max_chips"]}, "fit0", kind="retraction") for c in view["retractions"]]
         base = self.env.get_template("print_edition.html.j2")
         pages = self._pages(base.render(view=view, css=self._css(view, None)))     # first pass: how many pages, so the credit line can sit on the last one only
-        rendered = self.weasyprint.HTML(string=base.render(view=view, css=self._css(view, pages))).render()
+        rendered = self._html(base.render(view=view, css=self._css(view, pages))).render()
         return PrintPdf(rendered.write_pdf(), len(rendered.pages), fit)

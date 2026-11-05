@@ -5,7 +5,7 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # pdftotext, used to read free PDF full texts; Pango and fonts, used by WeasyPrint to lay out the printed edition (PDF)
-RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils libpango-1.0-0 libpangoft2-1.0-0 fonts-liberation fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-liberation fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY pyproject.toml alembic.ini ./

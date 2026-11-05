@@ -435,6 +435,26 @@ def test_text_from_a_paper_cannot_inject_markup_into_the_pdf_layout(renderer):
     assert "<b>Bold</b> & <script>alert(1)</script> title" in " ".join(pages)
 
 
+def test_the_pdf_uses_only_the_fonts_shipped_with_the_program(renderer, tmp_path):
+    if not shutil.which("pdffonts"):
+        pytest.skip("pdffonts (poppler) is needed to list the embedded fonts")
+    (tmp_path / "e.pdf").write_bytes(renderer.render(a_view(high=[a_card(1)], medium=[a_card(2, band="medium")], listed=[a_card(3, band="listed")])).pdf)
+    listing = subprocess.run(["pdffonts", str(tmp_path / "e.pdf")], capture_output=True, check=True).stdout.decode().splitlines()[2:]
+    names = {ln.split()[0].split("+")[-1] for ln in listing if ln.strip()}
+    assert {"Edition-Serif", "Edition-Sans", "Edition-Mono-Bold"} <= names                                              # the serif, the sans and the DOI's monospace
+    assert all(n.startswith("Edition-") for n in names), names                                                        # no Georgia, Helvetica, Menlo or Liberation from the machine itself
+
+
+def test_every_font_the_stylesheet_names_is_shipped_with_its_licence():
+    import re
+    from research_agent.infrastructure.print_rendering import TEMPLATES
+    css = (TEMPLATES / "print_edition.css.j2").read_text(encoding="utf8")
+    files = re.findall(r'url\("fonts/([^"]+)"\)', css)
+    assert len(files) == 9 and all((TEMPLATES / "fonts" / f).stat().st_size > 50_000 for f in files)
+    for licence in ("OFL-Gelasio.txt", "LICENSE-Liberation.txt", "LICENSE-DejaVu.txt", "README.md"):
+        assert (TEMPLATES / "fonts" / licence).read_text(encoding="utf8").strip()                                     # the licences travel with the fonts
+
+
 def test_the_qr_code_encodes_the_clean_link(renderer):
     uri = renderer.qr_uri("https://doi.org/10.1000/sample.1")
     assert uri.startswith("data:image/svg+xml") and len(uri) > 500

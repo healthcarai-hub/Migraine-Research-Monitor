@@ -1,32 +1,42 @@
 /* The printed edition: US Letter, calm and spacious (owner decisions 2026-11-05). Written for WeasyPrint: no flexbox gap, no calc(); tables where alignment matters. */
+/* The fonts are shipped with the program (templates/fonts, see the README there), so every machine lays the pages out the same way. */
+@font-face { font-family: "Edition Serif"; src: url("fonts/Gelasio-Regular.ttf"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Edition Serif"; src: url("fonts/Gelasio-Bold.ttf"); font-weight: 700; font-style: normal; }
+@font-face { font-family: "Edition Serif"; src: url("fonts/Gelasio-Italic.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Edition Serif"; src: url("fonts/Gelasio-BoldItalic.ttf"); font-weight: 700; font-style: italic; }
+@font-face { font-family: "Edition Sans"; src: url("fonts/LiberationSans-Regular.ttf"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Edition Sans"; src: url("fonts/LiberationSans-Bold.ttf"); font-weight: 700; font-style: normal; }
+@font-face { font-family: "Edition Sans"; src: url("fonts/LiberationSans-Italic.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Edition Mono"; src: url("fonts/LiberationMono-Bold.ttf"); font-weight: 700; font-style: normal; }
+@font-face { font-family: "Edition Symbols"; src: url("fonts/DejaVuSans.ttf"); font-weight: 400; font-style: normal; }
 @page {
   size: Letter;
   margin: 17mm 13mm 19mm 13mm;
-  @top-left { content: "{{ view.running_header|css }} · {{ view.date_short|css }}"; font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
-  @top-right { content: string(section); font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
-  @top-center { content: string(cardtitle, start); font: italic 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #92400e; }
-  @bottom-right { content: counter(page) " / " counter(pages); font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
+  @top-left { content: "{{ view.running_header|css }} · {{ view.date_short|css }}"; font: 8.5pt "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #5b6675; }
+  @top-right { content: string(section); font: 8.5pt "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #5b6675; }
+  @top-center { content: string(cardtitle, start); font: italic 8.5pt "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #92400e; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 8.5pt "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #5b6675; }
 }
 @page :first { margin-top: 0; @top-left { content: none; } @top-right { content: none; } @top-center { content: none; } }
 {% if last_page %}
-@page :nth({{ last_page }}) { @bottom-left { content: "{{ view.credit|css }}"; font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; } }
+@page :nth({{ last_page }}) { @bottom-left { content: "{{ view.credit|css }}"; font: 8.5pt "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #5b6675; } }
 {% endif %}
 
 * { box-sizing: border-box; }
-html { font-family: Georgia, "Liberation Serif", "DejaVu Serif", "Times New Roman", serif; color: #1c2430; font-size: 14px; }
+html { font-family: "Edition Serif", "Edition Sans", "Edition Symbols", Georgia, serif; color: #1c2430; font-size: 14px; }
 body { margin: 0; }
-.sans, table, .pill, .chip, .facts, h2, h4, .qr, .sec, .stat, .legend, .note, .imp .lbl, .sign, .tag-line { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif; }
+.sans, table, .pill, .chip, .facts, h2, h4, .qr, .sec, .stat, .legend, .note, .imp .lbl, .sign, .tag-line { font-family: "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; }
 p { margin: 0 0 14px; font-size: 15px; line-height: 1.65; }
 a { color: inherit; text-decoration: none; }
 
 /* ---- cover ---- */
 .band { background: #0b2545; color: #fff; margin: 0 -13mm; padding: 17mm 13mm 9mm; border-bottom: 5px solid #1d4e89; }
-.band .k { font: 600 11px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.band .k { font: 600 11px "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
 .band h1 { margin: 10px 0 8px; font-size: 32px; font-weight: 700; line-height: 1.2; }
-.band .d { font: 15px/1.6 "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; opacity: .94; }
+.band .d { font: 15px/1.6 "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; opacity: .94; }
 .lead { font-size: 16.5px; line-height: 1.65; margin: 30px 0 18px; }
 .theme { background: #eef3f9; border-left: 4px solid #1d4e89; padding: 16px 20px; font-size: 15px; line-height: 1.65; margin: 0 0 26px; }
-.theme .lbl, .imp .lbl { display: block; font: 700 11px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #1d4e89; margin-bottom: 6px; }
+.theme .lbl, .imp .lbl { display: block; font: 700 11px "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #1d4e89; margin-bottom: 6px; }
 table.stats { width: 100%; border-collapse: separate; border-spacing: 12px 0; margin: 0 -12px; width: calc(100% + 24px); }
 .stat { border: 1px solid #d9e0ea; border-radius: 6px; padding: 12px 14px; font-size: 12.5px; color: #5b6675; }
 .stat b { display: block; font-size: 24px; color: #0b2545; margin-bottom: 2px; }
@@ -52,11 +62,11 @@ a.pg::after { content: target-counter(attr(href), page); }
 table.src { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; page-break-inside: avoid; }
 .src th { font-size: 13px; font-weight: 700; color: #0b2545; background: #eef3f9; padding: 12px 6px; border: 1px solid #d9e0ea; }
 .src td { font-size: 26px; font-weight: 700; color: #0b2545; padding: 16px 6px; border: 1px solid #d9e0ea; }
-.src-note { font: 12.5px/1.6 "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; margin: 14px 0 0; }
+.src-note { font: 12.5px/1.6 "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #5b6675; margin: 14px 0 0; }
 .guide .chip { font-size: 12px; padding: 4px 12px; }
 .legend b { color: #0b2545; }
 .retract-box { border: 2px solid #b42318; border-radius: 6px; padding: 14px 18px; margin: 0 0 22px; background: #fff7f6; }
-.retract-box h3 { margin: 0 0 8px; color: #b42318; font: 700 13px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.retract-box h3 { margin: 0 0 8px; color: #b42318; font: 700 13px "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 
 /* ---- chips: colour AND shape, so they still read on a black-and-white printer ---- */
 .chips { margin: 12px 0 20px; }
@@ -72,7 +82,7 @@ table.src { width: 100%; table-layout: fixed; border-collapse: collapse; text-al
 /* ---- full card (High): one page each, with a fit ladder ---- */
 .card { page-break-before: always; page-break-inside: avoid; border: 1px solid #d9e0ea; border-top: 4px solid #1d4e89; border-radius: 6px; padding: 28px 24px 18px; margin: 0; }
 .card.flow { page-break-inside: auto; }
-.card .n { font: 700 12.5px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #1d4e89; }
+.card .n { font: 700 12.5px "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1d4e89; }
 .card h3 { margin: 8px 0 0; font-size: 29px; line-height: 1.28; color: #0b2545; string-set: cardtitle "Continued"; }
 .card .hdr { string-set: section "High priority papers"; }
 .cardend { height: 0; string-set: cardtitle ""; }
@@ -82,8 +92,8 @@ table.src { width: 100%; table-layout: fixed; border-collapse: collapse; text-al
 .facts .doi { display: inline-block; width: 48%; font-size: 13.5px; margin-top: 0; vertical-align: top; }
 .facts .doi small { font-size: 10.5px; }
 .facts b { color: #0b2545; }
-.doi { display: block; font: 700 15px "SF Mono", Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace; color: #0b2545; margin-top: 2px; }
-.doi small { font: 700 11.5px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #0b2545; margin-right: 8px; letter-spacing: .06em; }
+.doi { display: block; font: 700 15px "Edition Mono", "Edition Symbols", "SF Mono", Menlo, monospace; color: #0b2545; margin-top: 2px; }
+.doi small { font: 700 11.5px "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #0b2545; margin-right: 8px; letter-spacing: .06em; }
 h4 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #1d4e89; margin: 25px 0 10px; }
 ul { margin: 0; padding-left: 22px; font-size: 15px; line-height: 1.65; }
 li { margin-bottom: 10px; }
@@ -140,7 +150,7 @@ td.qrc { width: 118px; text-align: center; padding-left: 20px; }
 .cc table { width: 100%; border-collapse: collapse; }
 .cc td { padding: 0; vertical-align: bottom; }
 .cc .t { font-size: 17.5px; font-weight: 700; color: #0b2545; line-height: 1.4; }
-.cc .m { font-size: 12px; color: #5b6675; margin: 6px 0 2px; font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; }
+.cc .m { font-size: 12px; color: #5b6675; margin: 6px 0 2px; font-family: "Edition Sans", "Edition Symbols", "Helvetica Neue", Helvetica, Arial, sans-serif; }
 .cc p { font-size: 14px; line-height: 1.6; margin: 8px 0 0; }
 .cc .doi { font-size: 13px; margin-top: 14px; }
 .cc .qr img { width: 70px; height: 70px; }
@@ -150,7 +160,7 @@ table.l { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 
 .l tr { page-break-inside: avoid; }
 .l td { padding: 14px 8px; border-bottom: 1px solid #d9e0ea; vertical-align: middle; }
 .l .t { font-size: 14.5px; font-weight: 700; color: #0b2545; }
-.l .s { font-size: 12px; color: #333; margin-top: 5px; font-family: Georgia, "Liberation Serif", "DejaVu Serif", serif; }
+.l .s { font-size: 12px; color: #333; margin-top: 5px; font-family: "Edition Serif", "Edition Sans", "Edition Symbols", Georgia, serif; }
 .l .doi { font-size: 12.5px; margin: 0; }
 .l img { width: 56px; height: 56px; display: block; }
 .l td.q { width: 64px; }

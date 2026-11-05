@@ -36,7 +36,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-research_agent = ["templates/*.j2", "interfaces/web/*.html", "interfaces/web/*.js"]
+research_agent = ["templates/*.j2", "templates/fonts/*", "interfaces/web/*.html", "interfaces/web/*.js"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

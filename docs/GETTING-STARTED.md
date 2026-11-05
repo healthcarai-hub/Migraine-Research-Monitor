@@ -31,7 +31,7 @@ export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib         # macOS with Homebre
 .venv/bin/research-agent newsletter pdf curt-2026-10-30     # writes the PDF next to the draft files
 ```
 
-The Docker image already contains all of this. What the PDF looks like is set in the `newsletter.print_edition` block of the profile (title, the score bands for High, Medium and Listed, how many chips a title may carry); the layout itself is in `src/research_agent/templates/print_*.j2`. The model-written text on each card is cached, so building an edition again does not call the model again. Without `LLM_MODEL` and `LLM_API_KEY` the cards carry an excerpt of each abstract instead.
+The Docker image already contains all of this. The fonts are shipped with the program (`src/research_agent/templates/fonts`, open licences, listed in the README there), so the PDF looks the same on every machine, whatever fonts it has installed. What the PDF looks like is set in the `newsletter.print_edition` block of the profile (title, the score bands for High, Medium and Listed, how many chips a title may carry); the layout itself is in `src/research_agent/templates/print_*.j2`. The model-written text on each card is cached, so building an edition again does not call the model again. Without `LLM_MODEL` and `LLM_API_KEY` the cards carry an excerpt of each abstract instead.
 
 ## Commands
 
