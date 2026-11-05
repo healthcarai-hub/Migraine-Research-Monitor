@@ -61,4 +61,5 @@ class DraftPublisher(Protocol):
 
     name: str
 
-    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None) -> str: ...
+    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None,
+                attachments: "list[tuple[str, bytes, str]] | None" = None) -> str: ...      # attachments: (file name, content, MIME type), e.g. the printed edition

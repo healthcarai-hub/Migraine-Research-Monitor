@@ -38,6 +38,15 @@ newsletter:
     disclaimer: "This message is confidential and intended only for its recipient."
   app_link:                                                    # the box under At a glance (owner decision 2026-10-31: there only, not in the outro)
     url: "https://api-production-c72b3.up.railway.app/app"
+  print_edition:                   # the PDF attached to the Gmail draft: the same papers as the edition, laid out for paper (owner decisions 2026-11-05)
+    title: Migraine Publication Watch
+    recipient: Curt                # named in the reading guide: "what Curt monitors"
+    label: Weekly research edition
+    running_header: Migraine Publication Watch
+    bands:                         # priority from the ranking score: High = a full page each, Medium = a compact card, Listed = a row. A loose guide until the client gives strict criteria; scores are never printed
+      high_min: 10                 # tuned on the first real edition (35 papers scored 1 to 12): 10 and up is 5 papers, 6 to 9 is 24, below 6 is 6
+      medium_min: 6
+    max_chips: 6                   # chips under a title; more are shortened to "+N more"
   footer: "Prepared for Curt by the Healthcar AI Research Team."
   recheck_retraction_weeks: 8      # papers sent in the last N weeks are re-checked for a retraction before each build
   freshness:                       # owner decision 2026-10-31: papers published long before we found them do not appear in the week they surface

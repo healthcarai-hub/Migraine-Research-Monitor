@@ -176,4 +176,4 @@ cp .env.example .env                       # every credential is optional
 
 ## Status
 
-The ingestion pipeline, the full-text stage, the weekly newsletter, the REST API and web app, and the hosting are built and deployed. Still ahead: a printable PDF edition (waiting for the client's template) and, for v2.0, multi-user sign-up, search inside the full text and search by meaning. See [Progress.md](Progress.md).
+The ingestion pipeline, the full-text stage, the weekly newsletter, the REST API and web app, and the hosting are built and deployed. Each weekly draft also carries a printable PDF edition (one page per high-priority paper, with a DOI and a QR code). Still ahead: the client's final PDF template and, for v2.0, multi-user sign-up, search inside the full text and search by meaning. See [Progress.md](Progress.md).

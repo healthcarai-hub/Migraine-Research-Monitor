@@ -7,6 +7,7 @@ import logging
 import re
 import time
 
+from ..domain.print_edition import PrintRequest, PrintText, build_print_messages, build_synthesis_messages, check_print_text, check_synthesis
 from ..domain.summary import SummaryRequest, SummaryResult, build_messages, check_summary
 from .http import HttpClient, HttpError, redact
 
@@ -110,3 +111,55 @@ class ChatSummariser:
             if not reason:
                 return SummaryResult(text, "llm", self.model)
         return SummaryResult("", "failed", self.model, reason)
+
+
+def extract_json(raw: str) -> dict:
+    """The JSON object in a model answer: strict JSON, or JSON wrapped in other text or a code fence. Whatever comes out still has to pass the content checks."""
+    text = raw.strip()
+    for candidate in (text, *re.findall(r"\{.*\}", text, re.S)):
+        try:
+            value = json.loads(candidate)
+        except ValueError:
+            continue
+        if isinstance(value, dict):
+            return value
+    raise ValueError("no JSON object in the answer")
+
+
+class ChatPrintWriter(ChatSummariser):
+    """The printed edition's texts, through the same chat endpoint, pacing and token handling as the summaries. Untrusted like them: every answer is checked
+    against the abstract (see domain/print_edition.py). An answer that fails a check is asked for again, twice at most, with the reason given to the model."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_tokens = max(self.max_tokens, 1000)     # a High paper's structured card needs more room than a two-sentence summary
+
+    def _ask(self, messages: list[dict], check):
+        """(result, "") for an acceptable answer, else (None, the reason). Never raises for model or network problems."""
+        reason = "no attempt"
+        sent = list(messages)
+        for _ in range(3):
+            try:
+                data = extract_json(self._complete(sent))
+            except _Truncated:
+                self.max_tokens = min(self.max_tokens * 2, 3200)
+                reason = "answer cut off: raised the token budget"
+                continue
+            except HttpError as exc:
+                return None, redact(str(exc))[:200]
+            except (KeyError, IndexError, TypeError, ValueError) as exc:
+                reason = f"unreadable answer: {type(exc).__name__}"
+                continue
+            result, reason = check(data)
+            if result is not None:
+                return result, ""
+            sent = list(messages) + [{"role": "user", "content": f"That answer was rejected: {reason}. Return the JSON again, fixing exactly that."}]
+        return None, reason
+
+    def write(self, req: PrintRequest) -> tuple[PrintText | None, str]:
+        messages = build_print_messages(req.title, req.abstract, req.tier, field_name=self.field_name)
+        return self._ask(messages, lambda data: check_print_text(data, req.abstract, req.title, req.tier))
+
+    def synthesise(self, papers: list[dict]) -> tuple[dict | None, str]:
+        messages = build_synthesis_messages(papers, field_name=self.field_name)
+        return self._ask(messages, lambda data: check_synthesis(data, papers))

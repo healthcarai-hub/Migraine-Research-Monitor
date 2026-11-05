@@ -11,7 +11,10 @@ ISSUE_HEADER = "X-Research-Agent-Issue-Key"
 GMAIL_COMPOSE_SCOPE = "https://www.googleapis.com/auth/gmail.compose"  # create and edit drafts (Google has no draft-only scope: this one would also allow sending, which this code never does); cannot read the mailbox
 
 
-def mime_message(subject: str, html: str, text: str, issue_key: str, recipients: list[str]) -> EmailMessage:
+Attachment = tuple[str, bytes, str]    # (file name, content, MIME type), for example the printed edition ("...pdf", b"%PDF...", "application/pdf")
+
+
+def mime_message(subject: str, html: str, text: str, issue_key: str, recipients: list[str], attachments: list[Attachment] | None = None) -> EmailMessage:
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["Date"] = formatdate(localtime=False)
@@ -20,6 +23,9 @@ def mime_message(subject: str, html: str, text: str, issue_key: str, recipients:
         msg["To"] = ", ".join(recipients)
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
+    for name, data, mime in attachments or []:
+        maintype, _, subtype = mime.partition("/")
+        msg.add_attachment(data, maintype=maintype, subtype=subtype or "octet-stream", filename=name)
     return msg
 
 
@@ -31,12 +37,15 @@ class FileDraftPublisher:
     def __init__(self, out_dir: Path):
         self.out_dir = Path(out_dir)
 
-    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None) -> str:
+    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None,
+                attachments: list[Attachment] | None = None) -> str:
         folder = self.out_dir / issue_key
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "newsletter.html").write_text(html, encoding="utf8")
         (folder / "newsletter.txt").write_text(text, encoding="utf8")
-        (folder / "newsletter.eml").write_bytes(mime_message(subject, html, text, issue_key, recipients).as_bytes())
+        for name, data, _ in attachments or []:
+            (folder / Path(name).name).write_bytes(data)      # the printed edition next to the draft files (a bare file name only: never a path)
+        (folder / "newsletter.eml").write_bytes(mime_message(subject, html, text, issue_key, recipients, attachments).as_bytes())
         return str(folder)
 
 
@@ -62,7 +71,9 @@ class GmailDraftPublisher:
                 return str(d["id"])
         return None
 
-    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None) -> str:
+    def publish(self, subject: str, html: str, text: str, issue_key: str, recipients: list[str], existing_ref: str | None = None,
+                attachments: list[Attachment] | None = None) -> str:
+        """An existing draft for this issue is reused as it is, so a PDF is only attached to a draft this call creates."""
         if existing_ref:
             try:
                 self.service.users().drafts().get(userId="me", id=existing_ref).execute()
@@ -72,7 +83,7 @@ class GmailDraftPublisher:
         found = self._find(subject, issue_key)
         if found:
             return found
-        raw = base64.urlsafe_b64encode(mime_message(subject, html, text, issue_key, recipients).as_bytes()).decode("ascii")
+        raw = base64.urlsafe_b64encode(mime_message(subject, html, text, issue_key, recipients, attachments).as_bytes()).decode("ascii")
         return str(self.service.users().drafts().create(userId="me", body={"message": {"raw": raw}}).execute()["id"])
 
 

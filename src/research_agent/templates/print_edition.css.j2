@@ -1,0 +1,164 @@
+/* The printed edition: US Letter, calm and spacious (owner decisions 2026-11-05). Written for WeasyPrint: no flexbox gap, no calc(); tables where alignment matters. */
+@page {
+  size: Letter;
+  margin: 17mm 13mm 19mm 13mm;
+  @top-left { content: "{{ view.running_header|css }} · {{ view.date_short|css }}"; font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
+  @top-right { content: string(section); font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
+  @top-center { content: string(cardtitle, start); font: italic 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #92400e; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; }
+}
+@page :first { margin-top: 0; @top-left { content: none; } @top-right { content: none; } @top-center { content: none; } }
+{% if last_page %}
+@page :nth({{ last_page }}) { @bottom-left { content: "{{ view.credit|css }}"; font: 8.5pt "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; } }
+{% endif %}
+
+* { box-sizing: border-box; }
+html { font-family: Georgia, "Liberation Serif", "DejaVu Serif", "Times New Roman", serif; color: #1c2430; font-size: 14px; }
+body { margin: 0; }
+.sans, table, .pill, .chip, .facts, h2, h4, .qr, .sec, .stat, .legend, .note, .imp .lbl, .sign, .tag-line { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif; }
+p { margin: 0 0 14px; font-size: 15px; line-height: 1.65; }
+a { color: inherit; text-decoration: none; }
+
+/* ---- cover ---- */
+.band { background: #0b2545; color: #fff; margin: 0 -13mm; padding: 17mm 13mm 9mm; border-bottom: 5px solid #1d4e89; }
+.band .k { font: 600 11px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.band h1 { margin: 10px 0 8px; font-size: 32px; font-weight: 700; line-height: 1.2; }
+.band .d { font: 15px/1.6 "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; opacity: .94; }
+.lead { font-size: 16.5px; line-height: 1.65; margin: 30px 0 18px; }
+.theme { background: #eef3f9; border-left: 4px solid #1d4e89; padding: 16px 20px; font-size: 15px; line-height: 1.65; margin: 0 0 26px; }
+.theme .lbl, .imp .lbl { display: block; font: 700 11px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #1d4e89; margin-bottom: 6px; }
+table.stats { width: 100%; border-collapse: separate; border-spacing: 12px 0; margin: 0 -12px; width: calc(100% + 24px); }
+.stat { border: 1px solid #d9e0ea; border-radius: 6px; padding: 12px 14px; font-size: 12.5px; color: #5b6675; }
+.stat b { display: block; font-size: 24px; color: #0b2545; margin-bottom: 2px; }
+h2 { font-size: 13.5px; letter-spacing: .1em; text-transform: uppercase; color: #0b2545; margin: 32px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #0b2545; }
+table.g { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; table-layout: fixed; }
+.g th { background: #0b2545; color: #fff; text-align: left; padding: 10px 12px; font-weight: 600; }
+.g td { padding: 12px; border-bottom: 1px solid #d9e0ea; vertical-align: top; }
+.g tr.alt td { background: #f7f9fc; }
+.g tr { page-break-inside: avoid; }
+.facts .f.wide { width: 100%; }
+a.pg::after { content: target-counter(attr(href), page); }
+.pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 11px; letter-spacing: .04em; }
+.pill.high { color: #b42318; background: #fdecea; }
+.pill.medium { color: #92400e; background: #fef3c7; }
+.pill.listed { color: #1d4e89; background: #e3edf8; }
+.pill.tag { color: #374151; background: #eceff3; margin-left: 6px; }
+.pill.retraction { color: #fff; background: #b42318; }
+
+/* ---- reading guide ---- */
+.legend div { border: 1px solid #d9e0ea; border-radius: 6px; padding: 22px 24px; font-size: 14.5px; line-height: 1.7; margin-bottom: 22px; }
+.guide h2 { margin-bottom: 20px; }
+.guide h2.sources { margin-top: 50px; page-break-after: avoid; }      /* a clear gap after the last box of the guide */
+table.src { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; page-break-inside: avoid; }
+.src th { font-size: 13px; font-weight: 700; color: #0b2545; background: #eef3f9; padding: 12px 6px; border: 1px solid #d9e0ea; }
+.src td { font-size: 26px; font-weight: 700; color: #0b2545; padding: 16px 6px; border: 1px solid #d9e0ea; }
+.src-note { font: 12.5px/1.6 "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #5b6675; margin: 14px 0 0; }
+.guide .chip { font-size: 12px; padding: 4px 12px; }
+.legend b { color: #0b2545; }
+.retract-box { border: 2px solid #b42318; border-radius: 6px; padding: 14px 18px; margin: 0 0 22px; background: #fff7f6; }
+.retract-box h3 { margin: 0 0 8px; color: #b42318; font: 700 13px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+
+/* ---- chips: colour AND shape, so they still read on a black-and-white printer ---- */
+.chips { margin: 12px 0 20px; }
+.chip { display: inline-block; font-size: 11.5px; padding: 3px 11px; border-radius: 12px; border: 1px solid; margin: 0 8px 8px 0; white-space: nowrap; line-height: 1.35; }
+.chip.journal { color: #1d4e89; background: #e3edf8; border-color: #9fbbdc; border-radius: 5px; }
+.chip.researcher { color: #6b21a8; background: #f3e8ff; border-color: #cfa9f2; }
+.chip.source { color: #374151; background: #eceff3; border-color: #b9c1cd; font-style: italic; }
+.chip.topic { color: #0f766e; background: #e0f5f1; border-color: #8fd3c8; }
+.chip.more { color: #374151; background: #fff; border: 1px dashed #9aa5b4; font-weight: 700; }
+.compact .chips { margin: 8px 0 10px; }
+.compact .chip { font-size: 10.5px; padding: 2px 9px; }
+
+/* ---- full card (High): one page each, with a fit ladder ---- */
+.card { page-break-before: always; page-break-inside: avoid; border: 1px solid #d9e0ea; border-top: 4px solid #1d4e89; border-radius: 6px; padding: 28px 24px 18px; margin: 0; }
+.card.flow { page-break-inside: auto; }
+.card .n { font: 700 12.5px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #1d4e89; }
+.card h3 { margin: 8px 0 0; font-size: 29px; line-height: 1.28; color: #0b2545; string-set: cardtitle "Continued"; }
+.card .hdr { string-set: section "High priority papers"; }
+.cardend { height: 0; string-set: cardtitle ""; }
+.cite { font-size: 13px; line-height: 1.6; color: #333; }
+.facts { background: #eef3f9; border-radius: 4px; padding: 12px 16px 8px; margin: 16px 0 2px; font-size: 11.5px; line-height: 1.4; }
+.facts .f { display: inline-block; width: 48%; margin-bottom: 4px; vertical-align: top; }
+.facts .doi { display: inline-block; width: 48%; font-size: 13.5px; margin-top: 0; vertical-align: top; }
+.facts .doi small { font-size: 10.5px; }
+.facts b { color: #0b2545; }
+.doi { display: block; font: 700 15px "SF Mono", Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace; color: #0b2545; margin-top: 2px; }
+.doi small { font: 700 11.5px "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; color: #0b2545; margin-right: 8px; letter-spacing: .06em; }
+h4 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #1d4e89; margin: 25px 0 10px; }
+ul { margin: 0; padding-left: 22px; font-size: 15px; line-height: 1.65; }
+li { margin-bottom: 10px; }
+.imp { background: #e6f4ea; border-left: 4px solid #166534; padding: 16px 20px; font-size: 15px; line-height: 1.65; margin: 24px 0 0; }
+.imp .lbl { color: #166534; margin-bottom: 4px; }
+.imp.clinical { background: #e3edf8; border-left-color: #1d4e89; }
+.imp.clinical .lbl { color: #1d4e89; }
+table.lastrow { width: 100%; border-collapse: collapse; margin-top: 0; }
+table.lastrow td { padding: 0; vertical-align: bottom; }
+td.qrc { width: 118px; text-align: center; padding-left: 20px; }
+.qr { font-size: 10.5px; line-height: 1.35; color: #0b2545; text-align: center; }
+.qr img { width: 96px; height: 96px; display: block; margin: 0 auto 6px; }
+.qr b { display: block; font-size: 11px; }
+.qr span { color: #5b6675; }
+.qr.article b { color: #92400e; }
+.nobrief { font-style: italic; color: #5b6675; }
+
+/* fit ladder: each level keeps the type size it names or smaller, the later ones shorten what is printed (see print_rendering.py) */
+.fit1 { padding: 22px 22px 14px; }
+.fit1 h4 { margin: 19px 0 8px; } .fit1 li { margin-bottom: 8px; } .fit1 p { margin-bottom: 11px; }
+.fit1 .facts { margin: 15px 0 2px; padding: 14px 18px; } .fit1 .imp { margin-top: 20px; padding: 13px 18px; } .fit1 .chips { margin: 9px 0 15px; }
+.fit2, .fit3, .fit4, .fit5 { padding: 18px 20px 10px; }
+.fit2 h4, .fit3 h4, .fit4 h4, .fit5 h4 { margin: 15px 0 6px; }
+.fit2 li, .fit3 li, .fit4 li, .fit5 li { margin-bottom: 6px; line-height: 1.5; }
+.fit2 p, .fit3 p, .fit4 p, .fit5 p { margin-bottom: 8px; line-height: 1.5; }
+.fit2 ul, .fit3 ul, .fit4 ul, .fit5 ul { line-height: 1.5; }
+.fit2 .facts, .fit3 .facts, .fit4 .facts, .fit5 .facts { margin: 11px 0 2px; padding: 11px 16px; }
+.fit2 .imp, .fit3 .imp, .fit4 .imp, .fit5 .imp { margin-top: 14px; padding: 10px 16px; line-height: 1.5; }
+.fit2 .chips, .fit3 .chips, .fit4 .chips, .fit5 .chips { margin: 7px 0 11px; }
+.fit3 h3 { font-size: 26px; }
+.fit3 p, .fit3 ul, .fit3 .imp { font-size: 14px; }
+.fit4 p, .fit4 ul, .fit4 .imp, .fit5 p, .fit5 ul, .fit5 .imp { font-size: 13px; }      /* the floor: body text never goes below 13px */
+.fit4, .fit5 { padding: 14px 18px 8px; }
+.fit4 h3 { font-size: 22px; } .fit5 h3 { font-size: 21px; }
+.fit4 h4, .fit5 h4 { margin: 11px 0 4px; }
+.fit4 li, .fit5 li { margin-bottom: 3px; line-height: 1.42; }
+.fit4 p, .fit5 p { margin-bottom: 5px; line-height: 1.42; }
+.fit4 ul, .fit5 ul { line-height: 1.42; }
+.fit4 .facts, .fit5 .facts { margin: 8px 0 0; padding: 8px 14px; font-size: 12px; }
+.fit4 .facts .f, .fit5 .facts .f { margin-bottom: 3px; }
+.fit4 .imp, .fit5 .imp { margin-top: 8px; padding: 8px 14px; line-height: 1.42; }
+.fit4 .chips, .fit5 .chips { margin: 5px 0 8px; }
+.fit4 .cite, .fit5 .cite { line-height: 1.4; }
+.fit4 .doi, .fit5 .doi { font-size: 13.5px; }
+.fit4 .qr img, .fit5 .qr img { width: 72px; height: 72px; }
+.fit4 td.qrc, .fit5 td.qrc { width: 92px; padding-left: 14px; }
+
+/* ---- sections, compact cards, rows ---- */
+.sec { background: #0b2545; color: #fff; font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 9px 14px; margin: 30px 0 12px; border-radius: 3px; page-break-after: avoid; }
+.sec.first { margin-top: 0; page-break-before: always; }
+.sec.medium-title { string-set: section "More papers"; }
+.sec.summary-title { string-set: section "Summary"; }
+.cc { page-break-inside: avoid; border-bottom: 1px solid #d9e0ea; padding: 24px 0 26px; }
+.cc table { width: 100%; border-collapse: collapse; }
+.cc td { padding: 0; vertical-align: bottom; }
+.cc .t { font-size: 17.5px; font-weight: 700; color: #0b2545; line-height: 1.4; }
+.cc .m { font-size: 12px; color: #5b6675; margin: 6px 0 2px; font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif; }
+.cc p { font-size: 14px; line-height: 1.6; margin: 8px 0 0; }
+.cc .doi { font-size: 13px; margin-top: 14px; }
+.cc .qr img { width: 70px; height: 70px; }
+.cc td.qrc { width: 92px; padding-left: 16px; }
+.cc .qr { font-size: 10px; }
+table.l { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.45; }
+.l tr { page-break-inside: avoid; }
+.l td { padding: 14px 8px; border-bottom: 1px solid #d9e0ea; vertical-align: middle; }
+.l .t { font-size: 14.5px; font-weight: 700; color: #0b2545; }
+.l .s { font-size: 12px; color: #333; margin-top: 5px; font-family: Georgia, "Liberation Serif", "DejaVu Serif", serif; }
+.l .doi { font-size: 12.5px; margin: 0; }
+.l img { width: 56px; height: 56px; display: block; }
+.l td.q { width: 64px; }
+.surv p { font-size: 14px; margin: 0 0 12px; }
+.keep { page-break-inside: avoid; }
+.note { font-size: 11.5px; line-height: 1.6; color: #5b6675; font-style: italic; margin-top: 14px; }
+.sign { margin-top: 36px; border-top: 4px solid #1d4e89; padding-top: 18px; page-break-inside: avoid; }
+.sign b { font-size: 18px; color: #0b2545; display: block; margin-bottom: 4px; }
+.sign span { font-size: 12px; color: #5b6675; line-height: 1.6; }
+.retract-item { margin-bottom: 14px; font-size: 13px; line-height: 1.55; }
+.retract-item b { color: #0b2545; font-size: 14px; }

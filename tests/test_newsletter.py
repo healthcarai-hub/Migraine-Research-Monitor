@@ -385,7 +385,7 @@ def test_cli_newsletter_round_trip(tmp_path, monkeypatch, capsys):
     assert "curt-2026-10-30 [built]" in out and "warning: this edition is empty" in out
     assert cli.main(["newsletter", "list"]) == 0 and "curt-2026-10-30" in capsys.readouterr().out
     assert cli.main(["newsletter", "show", "curt-2026-10-30"]) == 0 and "No new papers" in capsys.readouterr().out
-    assert cli.main(["newsletter", "publish", "curt-2026-10-30", "--to", "file"]) == 0 and (tmp_path / "out" / "curt-2026-10-30" / "newsletter.html").exists()
+    assert cli.main(["newsletter", "publish", "curt-2026-10-30", "--to", "file", "--no-pdf"]) == 0 and (tmp_path / "out" / "curt-2026-10-30" / "newsletter.html").exists()      # the email round trip; the PDF has its own tests
     assert cli.main(["newsletter", "build", "--week-ending", "2026-10-30", "--rebuild"]) == 1       # published issues are never rebuilt
     assert cli.main(["newsletter", "mark-sent", "curt-2026-10-30"]) == 0
     assert cli.main(["newsletter", "show", "nope"]) == 1

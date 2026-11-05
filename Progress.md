@@ -13,7 +13,7 @@ A field-configurable research-monitoring agent whose first profile is **Curt (mi
 | Weekly digital newsletter (HTML and text, Gmail draft) | **Built, deployed, scheduled** |
 | Application: API, web page (Search, Editions, Newsletter settings) | **Built, deployed** |
 | Hosting: Railway (API and two cron jobs) and Supabase (database) | **Live**; first scheduled runs still to be watched |
-| Printable PDF edition | **Not started: waiting for the client's template** |
+| Printable PDF edition | **Built (5 Nov 2026)**: attached to the Gmail draft; layout follows the client's sample, not yet their final template |
 | Multi-user sign-up and other fields (v2.0) | Deferred on purpose |
 | Search inside the full text and search by meaning (v2.0) | Parked for later; see section 8 |
 
@@ -30,7 +30,7 @@ Quality: 536 offline tests and 1 live test pass. Every run, search and decision 
 | **5. Weekly newsletter** (31 Oct) | Selection by the date we first stored a paper, never resent, 7-day freshness limit, size caps, held-back papers return once and rank lower, AI summaries with checks (Groq), retractions section, Gmail draft. Layout rebuilt for Gmail (tables with inline styles, header and category headings like the older newsletter), the **At a glance** summary panel, one navy-and-blue colour scheme, outro signed by the Healthcar AI Research Team. | A real weekly edition builds in about 7 minutes and arrives as a Gmail draft. |
 | **6. Application** (31 Oct) | Read-only token-protected API, one search endpoint (date, source, journal, researcher, topic, author, full text, sorts), newsletter on/off switches stored separately from the collection, web page with coloured chip filters, Editions tab with a formatted preview in a locked frame. Rate limiting, wrong-token lockout and limited database roles. | Everything is served by the API itself at `/app`. |
 | **7. Hosting and scheduling** (31 Oct) | Railway with three services from one Docker image; Supabase through the session pooler; GitHub only runs the tests; Gmail sign-in done once. Speed work (batched database calls, a commit per search) took the daily run from about 23 minutes to about 2. | Daily collection 05:30 UTC (11:00 IST). Weekly job Thursday 14:30 UTC (20:00 IST), edition dated Friday, 12-hour freshness guard. See `DEPLOYMENT.md`. |
-| **8. Print edition** | PDF with full text, QR code and DOI line per paper, retracted section. | **Not started** (see section 3). |
+| **8. Print edition** (5 Nov) | US Letter PDF of the same papers as the weekly edition: a cover with an at-a-glance table, a reading guide, one full card per High paper (title, chips, citation, fact box with the printed DOI, "In brief", key findings, why it matters, implication, QR code bottom right), compact cards for Medium, rows for Listed, retractions, a line per subject, research significance. Text is written by the model from each abstract and checked against it; a card that is too long is tightened step by step to fit one page. | **Done.** Priority bands High 10+, Medium 6 to 9, Listed below 6 (a loose guide, tuned on the first real edition). Needs WeasyPrint and Pango; `research-agent newsletter pdf <issue>` writes it, `newsletter publish` attaches it. |
 
 How this lines up with the original build order in the design plan: its phases 0 to 4 and 6 (scheduling) are done; phase 5 (print) is the only one not started; "monitoring" (watching real unattended runs) begins with the first scheduled runs.
 
@@ -38,7 +38,7 @@ How this lines up with the original build order in the design plan: its phases 0
 
 | Item | Kind | Notes |
 |---|---|---|
-| **Printable PDF edition** | Waiting on the client | Needs their template. Also unanswered: papers per edition and who chooses them, large print or high contrast and the font size, figures and tables. Full text, the "printable" ranking signal and the rule that licences do not limit printing are already in place. |
+| **Final PDF template** | Waiting on the client | The PDF follows the client's sample document (`Migraine Output - Akeso.docx`), not a final template: when one arrives only the three print templates change. Still open: the source-chip order and chip cap were confirmed (PubMed first, six chips); whether to add vitamin D, ginger and NAD+ precursors as search terms (changes collection, needs approval); the Core/Targeted wording; whether the PDF should print full text itself. |
 | Feed URLs for JAMA Neurology and Nutrients | Question for the client | Both are covered through the databases only today. |
 | What "abstract-only" means in rule 8 of the instructions sheet | Question for the client | Our reading: only the abstract is readable. |
 | Track B bridge list: who approves it, and a starting list | Question for the client | Today a "mechanism" paper needs "migraine" in the title or abstract, or a bridge entry. |
@@ -70,7 +70,7 @@ An edition is **dated Friday** but holds everything stored up to the Thursday bu
 | Sources | PubMed stands in for Cochrane. Track B journals stay. Preprints from the extra servers are included and labelled. No Wiley or Elsevier keys; their papers stay "abstract, QR code and links". Retracted papers are kept and flagged, and a retraction of something already sent is always announced. |
 | Collection | 3-day overlapping window; no weekly cross-check. Papers are chosen by the date we first stored them. |
 | Newsletter content | Never resend a paper. Leave out papers published more than 7 days before we found them. Edition size is capped; a held-back paper returns once, ranked lower, then drops out. Papers from monitored journals and researchers are chosen first. Papers with no abstract go last. Summaries come from Groq. The program creates drafts only. |
-| Printing | Licences do not limit printing full text. The print edition waits for the client's template. |
+| Printing | Licences do not limit printing full text. The PDF is built and attached to the draft; its layout is the owner's choice from the client's sample, and a final client template would replace the three print templates only. |
 | Newsletter look | Header, title and category headings follow the older newsletter. At a glance panel with Retrieval sources, Monitored journals (with what Core and Targeted mean) and Monitored researchers, listing only those with publications. Navy and blue colours throughout. A box under At a glance links to the web app (there only, not in the outro; the address is `newsletter.app_link.url` in the profile and the email never carries a token). The outro is signed "Healthcar AI Research Team" in large navy type with an accent bar. |
 | Timing | Weekly job Thursday 20:00 IST; edition dated Friday; freshness guard 12 hours. |
 | Application | Chip filters, Published dropdown (last 7 days by default), Full text checkbox, Author box removed. Editions tab with an inline preview and a "Draft not created yet" label. |

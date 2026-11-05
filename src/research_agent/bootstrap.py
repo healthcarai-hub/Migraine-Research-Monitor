@@ -7,11 +7,12 @@ from . import __version__
 from .application.fulltext import FullTextService
 from .application.ingest import IngestPipeline
 from .application.newsletter import NewsletterService
+from .application.print_texts import PrintTextService
 from .application.summaries import SummaryService
 from .domain.field_config import load_profile
 from .infrastructure.db.session import make_engine, make_session_factory
 from .infrastructure.http import HttpClient
-from .infrastructure.llm import ChatSummariser
+from .infrastructure.llm import ChatPrintWriter, ChatSummariser
 from .infrastructure.publishers import FileDraftPublisher, GmailDraftPublisher, build_gmail_service
 from .infrastructure.registry import Providers, build_providers
 from .infrastructure.rendering import JinjaNewsletterRenderer
@@ -51,11 +52,26 @@ def build_summary_service(settings: Settings, factory: sessionmaker[Session], fi
     return SummaryService(factory, llm, max_per_run=settings.llm_max_summaries_per_run)
 
 
+def build_print_service(settings: Settings, factory: sessionmaker[Session], field_name: str, max_words: int = 60,
+                        llm_http: HttpClient | None = None) -> PrintTextService:
+    """The printed edition's texts, written by the same model and endpoint as the summaries when LLM_MODEL and LLM_API_KEY are set; otherwise nothing is
+    generated and the PDF prints an excerpt of each abstract."""
+    llm = None
+    if settings.llm_model and settings.llm_api_key:
+        http = llm_http or HttpClient(user_agent(settings), max_tries=settings.llm_max_retries + 1)
+        llm = ChatPrintWriter(http, base_url=settings.llm_base_url, api_key=settings.llm_api_key, model=settings.llm_model, field_name=field_name,
+                              max_words=max_words, min_interval=settings.llm_request_interval, reasoning_effort=settings.llm_reasoning_effort)
+    return PrintTextService(factory, llm, max_per_run=settings.llm_max_summaries_per_run)
+
+
 def build_newsletter(settings: Settings, factory: sessionmaker[Session] | None = None, http: HttpClient | None = None, *, field_name: str = "research",
                      max_words: int = 60, llm_http: HttpClient | None = None) -> NewsletterService:
     p = providers(settings, http)
     factory = factory or session_factory(settings)
-    return NewsletterService(factory, JinjaNewsletterRenderer(), p.enrichers, build_summary_service(settings, factory, field_name, max_words, llm_http))
+    if llm_http is None and settings.llm_model and settings.llm_api_key:
+        llm_http = HttpClient(user_agent(settings), max_tries=settings.llm_max_retries + 1)     # one client for both services, so the pacing and token waits are shared
+    return NewsletterService(factory, JinjaNewsletterRenderer(), p.enrichers, build_summary_service(settings, factory, field_name, max_words, llm_http),
+                             build_print_service(settings, factory, field_name, max_words, llm_http))
 
 
 def build_publisher(settings: Settings, kind: str):

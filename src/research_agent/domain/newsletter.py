@@ -159,6 +159,8 @@ class ItemView:
     carried_over: bool = False          # first stored before this edition's normal window: it was held back by an earlier edition
     has_abstract: bool = True           # False: nothing to summarise; such papers are listed last in their section
     first_seen: str = ""
+    subjects: list[str] = field(default_factory=list)   # every specific subject the paper matched (chips and surveillance lines in the printed edition)
+    print_facts: dict = field(default_factory=dict)     # what the printed edition needs beyond the above (citation, QR target, ids); see application/newsletter.py
 
 
 @dataclass

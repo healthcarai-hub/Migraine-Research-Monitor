@@ -5,6 +5,7 @@ import argparse
 import logging
 import sys
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 from sqlalchemy import func, select
 
@@ -197,10 +198,35 @@ def choose_recipients(settings: Settings, profile) -> list[str]:
     return list(settings.newsletter_recipients) or list(profile.newsletter.recipients)
 
 
+def _make_pdf(settings: Settings, profile, field, issue_key: str):
+    """The printed edition of a built issue, or None after saying why not (the caller then stops: nothing half-done is left behind)."""
+    from .application.print_edition import PrintEditionService, PrintNotAvailable
+    from .infrastructure.print_rendering import PrintUnavailable
+    try:
+        result = PrintEditionService(session_factory(settings)).render(profile, field, issue_key)
+    except (PrintNotAvailable, PrintUnavailable) as exc:
+        print(f"cannot build the printed edition: {exc}")
+        return None
+    tight = [f"{f['title'][:50]} ({f['level']})" for f in result.fit if f["level"] != "fit0"]
+    print(f"printed edition: {result.pages} pages, {len(result.fit)} full card(s)" + (f"; tightened to fit one page: {'; '.join(tight)}" if tight else ""))
+    if any(f["level"] == "flow" for f in result.fit):
+        print("  note: a card was too long for one page even at the tightest layout and continues on the next page")
+    return result
+
+
 def cmd_newsletter(args, settings: Settings) -> int:
     from .application.newsletter import IssueExists
     from .domain.newsletter import edition_date
     profile, field = load_profile(settings.config_dir, args.profile)
+    if args.nl == "pdf":
+        result = _make_pdf(settings, profile, field, args.issue)
+        if result is None:
+            return 1
+        dest = Path(args.out) if args.out else settings.outputs_dir / args.issue / result.filename
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(result.pdf)
+        print(f"{args.issue}: wrote {dest}")
+        return 0
     svc = build_newsletter(settings, field_name=field.name.lower(), max_words=profile.newsletter.summary_words)
     if args.nl == "build":
         week_end = date.fromisoformat(args.week_ending) if args.week_ending else edition_date(_today(), profile.newsletter.edition_weekday)
@@ -235,7 +261,14 @@ def cmd_newsletter(args, settings: Settings) -> int:
         if status == "sent":
             print("issue is already marked sent")
             return 1
-        ref = build_publisher(settings, args.to).publish(subject, html, text, key, choose_recipients(settings, profile), ref)
+        attachments = []
+        if profile.newsletter.print_edition.enabled and not args.no_pdf:
+            result = _make_pdf(settings, profile, field, key)       # built first: if it cannot be, no draft is created and the job fails where it can be seen
+            if result is None:
+                print("no draft was created. Fix the cause above, or publish without the printed edition with --no-pdf.")
+                return 1
+            attachments = [(result.filename, result.pdf, "application/pdf")]
+        ref = build_publisher(settings, args.to).publish(subject, html, text, key, choose_recipients(settings, profile), ref, attachments=attachments)
         svc.mark_published(profile.id, key, ref)
         print(f"{key}: draft ready via {args.to}: {ref}")
         return 0
@@ -357,6 +390,9 @@ def build_parser() -> argparse.ArgumentParser:
     nl.add_parser("list")
     sh = nl.add_parser("show"); sh.add_argument("issue"); sh.add_argument("--format", choices=["text", "html"], default="text")
     pb = nl.add_parser("publish"); pb.add_argument("issue"); pb.add_argument("--to", choices=["file", "gmail"], default="file")
+    pb.add_argument("--no-pdf", action="store_true", help="create the draft without the printed edition attached")
+    pf = nl.add_parser("pdf", help="write the printed edition (PDF) of a built issue to a file; nothing is published"); pf.add_argument("issue")
+    pf.add_argument("--out", help="where to write it; default: the outputs folder, next to the draft files")
     ms = nl.add_parser("mark-sent"); ms.add_argument("issue")
     p.set_defaults(fn=cmd_newsletter)
     p = sub.add_parser("api"); p.add_argument("action", nargs="?", choices=["serve", "token"], default="serve")

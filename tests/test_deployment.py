@@ -82,7 +82,8 @@ def read(name):
 def test_the_image_installs_the_project_with_pdf_support_and_runs_as_a_normal_user():
     d = read("Dockerfile")
     assert d.startswith("# One image") and "FROM python:3.12" in d and "poppler-utils" in d
-    assert 'pip install -e ".[gmail]"' in d                                          # editable: config/ and migrations/ are found next to the code
+    assert "libpango-1.0-0" in d and "fonts-liberation" in d                         # the printed edition (WeasyPrint) needs Pango and fonts
+    assert 'pip install -e ".[gmail,print]"' in d                                    # editable: config/ and migrations/ are found next to the code
     for folder in ("src", "config", "migrations"):
         assert f"COPY {folder} ./{folder}" in d
     assert "USER app" in d and d.index("USER app") < d.index("CMD")

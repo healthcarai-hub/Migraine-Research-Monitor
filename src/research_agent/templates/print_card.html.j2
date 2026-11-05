@@ -1,0 +1,63 @@
+{# One paper in the printed edition, in one of four shapes: full (High, a page of its own), compact (Medium), row (Listed), retraction. All text is HTML-escaped by Jinja. #}
+{% macro chips(card) %}
+<div class="chips">{% for c in card.shown_chips %}<span class="chip {{ c.kind }}">{{ c.label }}</span>{% endfor %}{% if card.more_chips %}<span class="chip more">+{{ card.more_chips }} more</span>{% endif %}</div>
+{% endmacro %}
+{% macro qrbox(card, small=False) %}
+{% if card.qr_uri %}<div class="qr {{ card.qr.kind }}"><img src="{{ card.qr_uri }}" alt="QR code"><b>{{ card.qr.caption|replace('Scan: ', '') if small else card.qr.caption }}</b>{% if not small %}<span>{{ card.qr.note }}</span>{% endif %}</div>{% endif %}
+{% endmacro %}
+{% macro doi(card) %}{% if card.doi %}<span class="doi"><small>DOI</small>{{ card.doi }}</span>{% endif %}{% endmacro %}
+{% macro brief(card) %}{% if card.text and card.text.in_brief %}{{ card.text.in_brief }}{% else %}No abstract available. <span class="nobrief">Scan the code to open the article page.</span>{% endif %}{% endmacro %}
+{% macro meta(card) %}{{ card.journal }}{% if card.published %} · {{ card.published }}{% endif %}{% endmacro %}
+{% if kind == "full" %}
+<section class="card {{ level }}{% if flow %} flow{% endif %}" id="{{ card.anchor }}">
+  <div class="hdr">
+    <div class="n">{{ card.n }} &nbsp;<span class="pill high">HIGH</span>{% for t in card.tags %}<span class="pill tag">{{ t }}</span>{% endfor %}</div>
+    <h3>{{ card.title }}</h3>
+    {{ chips(card) }}
+    <div class="cite">{% if card.authors %}{{ card.authors }} {% endif %}{% if card.year %}({{ card.year }}). {% endif %}{% if not card.condensed %}<i>{{ card.title }}.</i> {% endif %}{{ card.journal }}.</div>
+  </div>
+  <div class="facts">
+    {% if card.published %}<span class="f"><b>{{ card.date_label }}</b> {{ card.published }}</span>{% endif %}
+    {% if card.text and card.text.study_type %}<span class="f"><b>Study type</b> {{ card.text.study_type }}</span>{% endif %}
+    {% if card.text and card.text.population %}<span class="f wide"><b>Population</b> {{ card.text.population }}</span>{% endif %}
+    {% if card.pmid %}<span class="f"><b>PMID</b> {{ card.pmid }}</span>{% endif %}
+    {% if card.doi %}{{ doi(card) }}{% else %}<span class="f"><b>DOI</b> none registered</span>{% endif %}
+  </div>
+  <h4>In brief</h4>
+  <p>{{ brief(card) }}</p>
+  {% if card.text and card.text.key_findings %}
+  <h4>Key findings</h4>
+  <ul>{% for f in card.text.key_findings %}<li>{{ f }}</li>{% endfor %}</ul>
+  {% endif %}
+  <table class="lastrow"><tr>
+    <td>
+      {% if card.text and card.text.why_it_matters %}<h4>Why it matters</h4><p>{{ card.text.why_it_matters }}</p>{% endif %}
+      {% if card.text and card.text.implication %}<div class="imp{% if card.text.implication_kind == 'clinical' %} clinical{% endif %}"><span class="lbl">{{ 'Clinical' if card.text.implication_kind == 'clinical' else 'Research' }} implication</span>{{ card.text.implication }}</div>{% endif %}
+    </td>
+    <td class="qrc">{{ qrbox(card) }}</td>
+  </tr></table>
+  <div class="cardend"></div>
+</section>
+{% elif kind == "compact" %}
+<div class="cc compact"><table><tr>
+  <td>
+    <div class="t">{{ card.title }}</div>
+    <div class="m">{{ meta(card) }} · <span class="pill medium">MEDIUM</span>{% for t in card.tags %}<span class="pill tag">{{ t }}</span>{% endfor %}</div>
+    {{ chips(card) }}
+    <p>{{ brief(card) }}</p>
+    {{ doi(card) }}
+  </td>
+  <td class="qrc">{{ qrbox(card, True) }}</td>
+</tr></table></div>
+{% elif kind == "row" %}
+<tr>
+  <td><div class="t">{{ card.title }}</div><div class="m">{{ meta(card) }}{% for t in card.tags %} · {{ t }}{% endfor %}</div><div class="s">{{ brief(card) }}</div></td>
+  <td style="width:210px">{{ doi(card) }}</td>
+  <td class="q">{% if card.qr_uri %}<img src="{{ card.qr_uri }}" alt="QR code">{% endif %}</td>
+</tr>
+{% elif kind == "retraction" %}
+<div class="retract-item"><table style="width:100%;border-collapse:collapse"><tr>
+  <td><span class="pill retraction">RETRACTED</span> <b>{{ card.title }}</b><br>{{ meta(card) }}{% if card.previously_sent_in %} · sent earlier in {{ card.previously_sent_in }}{% endif %}<br>{{ doi(card) }}</td>
+  <td class="qrc" style="vertical-align:middle">{{ qrbox(card, True) }}</td>
+</tr></table></div>
+{% endif %}

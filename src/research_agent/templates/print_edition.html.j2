@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ view.title }}: {{ view.date_short }}</title><style>{{ css|safe }}</style></head><body>
+
+<section class="cover">
+  <div class="band">
+    <div class="k">{{ view.label }}</div>
+    <h1>{{ view.title }}</h1>
+    <div class="d">{{ view.date_long }}<br>Research monitored from {{ view.range }}</div>
+  </div>
+  <p class="lead">
+    {% if view.counts.high %}<b>{{ view.counts.high }} publication{{ 's' if view.counts.high != 1 }} merit{{ '' if view.counts.high != 1 else 's' }} attention this week</b> out of {{ view.counts.papers }} in this edition.
+    {% else %}<b>No paper reached High priority this week.</b> {{ view.counts.papers }} paper{{ 's' if view.counts.papers != 1 }} {{ 'are' if view.counts.papers != 1 else 'is' }} in this edition.{% endif %}
+  </p>
+  {% if view.synthesis %}<div class="theme"><span class="lbl">Theme of the week</span>{{ view.synthesis.theme }}</div>{% endif %}
+  <table class="stats"><tr>
+    <td class="stat"><b>{{ view.counts.papers }}</b>papers in this edition</td>
+    <td class="stat"><b>{{ view.counts.high }}</b>High priority</td>
+    <td class="stat"><b>{{ view.counts.monitored }}</b>from monitored journals or researchers</td>
+    <td class="stat"><b>{{ view.counts.retractions }}</b>retraction{{ 's' if view.counts.retractions != 1 }}</td>
+  </tr></table>
+  <h2>At a glance</h2>
+  <table class="g">
+    <tr><th style="width:84px">Priority</th><th>Paper</th><th style="width:150px">Type</th><th style="width:60px">Page</th></tr>
+    {% for c in view.high %}
+    <tr class="{{ 'alt' if loop.index is even }}"><td><span class="pill high">HIGH</span></td><td><b>{{ c.title }}</b><br><span style="color:#5b6675">{{ c.journal }}</span></td><td>{{ c.text.study_type if c.text and c.text.study_type else '' }}</td><td><a class="pg" href="#{{ c.anchor }}"></a></td></tr>
+    {% endfor %}
+    {% if view.counts.medium %}<tr><td><span class="pill medium">MEDIUM</span></td><td>Further papers, grouped by topic</td><td>{{ view.counts.medium }} paper{{ 's' if view.counts.medium != 1 }}</td><td><a class="pg" href="#medium"></a></td></tr>{% endif %}
+    {% if view.counts.listed %}<tr><td><span class="pill listed">LISTED</span></td><td>Other papers in this edition: title, DOI and QR code</td><td>{{ view.counts.listed }} paper{{ 's' if view.counts.listed != 1 }}</td><td><a class="pg" href="#listed"></a></td></tr>{% endif %}
+  </table>
+</section>
+
+<section class="guide" style="page-break-before: always">
+  {% if view.retractions %}
+  <div class="retract-box"><h3>Retractions and withdrawals</h3>{% for html in view.retraction_html %}{{ html|safe }}{% endfor %}</div>
+  {% endif %}
+  <h2 style="margin-top:0">How to read this edition</h2>
+  <div class="legend">
+    <div><b>Priority</b> shows how closely a paper matches what {{ view.recipient }} monitors. <b>High</b> papers get a full page, <b>Medium</b> papers a short card, <b>Listed</b> papers a line. It is a working guide, not a clinical judgement.</div>
+    <div><b>QR code</b> (bottom right of each card). Scan it to open the <b>full text (PDF)</b> when we found a free copy. If there is none, it opens the paper's <b>article page</b>. The <b>DOI</b> is always printed in full.</div>
+    <div><b>In brief.</b> A short plain-language description of each paper, written by a language model from its abstract and checked against it, so every number must appear in the abstract. Papers without an abstract say so.</div>
+    <div><b>Chips under a title</b> show why we picked the paper up, by colour and shape. More than {{ view.max_chips }} are shortened to "+N more".
+      <div class="chips" style="margin-bottom:0"><span class="chip journal">monitored journal</span><span class="chip researcher">monitored researcher</span><span class="chip source">first source that found it</span><span class="chip topic">matching subject</span><span class="chip more">+N more</span></div></div>
+  </div>
+  <h2 class="sources">Where this week's papers came from</h2>
+  {% if view.sources %}
+  <table class="src sans"><tr>{% for name, n in view.sources %}<th>{{ name }}</th>{% endfor %}</tr><tr>{% for name, n in view.sources %}<td>{{ n }}</td>{% endfor %}</tr></table>
+  <p class="src-note">A paper found by several sources is counted once for each of them. Full text is held for {{ view.counts.full_text }} of {{ view.counts.papers }} paper{{ 's' if view.counts.papers != 1 }}.</p>
+  {% else %}
+  <p>No source information is stored for this edition. Full text is held for {{ view.counts.full_text }} of {{ view.counts.papers }} paper{{ 's' if view.counts.papers != 1 }}.</p>
+  {% endif %}
+</section>
+
+{% for html in view.high_html %}{{ html|safe }}{% endfor %}
+
+<div style="page-break-before: always; height: 0"></div>
+{% for group, cards in view.medium_html %}
+<div class="sec medium-title"{% if loop.first %} id="medium"{% endif %}>Medium priority · {{ group }} · {{ cards|length }} paper{{ 's' if cards|length != 1 }}</div>
+{% for html in cards %}{{ html|safe }}{% endfor %}
+{% endfor %}
+
+{% if view.surveillance %}
+<div class="sec summary-title">Surveillance · by subject</div>
+<div class="surv sans">{% for s in view.surveillance %}<p><b>{{ s.name }}:</b> {{ s.text }}{% if not s.count and s.watched %} ({{ s.watched }}){% endif %}.</p>{% endfor %}</div>
+{% endif %}
+
+{% if view.synthesis %}
+<div class="keep">
+<div class="sec">Research significance</div>
+<p>{{ view.synthesis.significance }}</p>
+<div class="imp"><span class="lbl">Overall assessment</span>{{ view.synthesis.assessment }}</div>
+<p class="note">These notes are drafted by a language model from the papers' own descriptions, checked against them, and reviewed by a person before the edition is sent.</p>
+</div>
+{% endif %}
+
+{% if view.listed_html %}
+<div class="sec listed-title" id="listed">Listed · also in this edition · {{ view.listed_html|length }} paper{{ 's' if view.listed_html|length != 1 }}</div>
+<table class="l">{% for html in view.listed_html %}{{ html|safe }}{% endfor %}</table>
+{% endif %}
+
+<div class="sign"><b>{{ view.signature }}</b><span>Automated surveillance, reviewed by a person before sending. This briefing is not medical advice.</span></div>
+</body></html>

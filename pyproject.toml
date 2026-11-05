@@ -24,6 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.3,<10", "pytest-cov>=6,<7"]
 gmail = ["google-api-python-client>=2.160,<3", "google-auth>=2.38,<3", "google-auth-oauthlib>=1.2,<2"]
+print = ["weasyprint>=63,<71", "segno>=1.6,<2"]    # the printed (PDF) edition; WeasyPrint also needs the Pango system library (see docs/GETTING-STARTED.md)
 
 [project.scripts]
 research-agent = "research_agent.cli:main"

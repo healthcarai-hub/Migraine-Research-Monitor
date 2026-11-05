@@ -17,13 +17,15 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from ..domain.field_config import FieldConfig, ProfileConfig
 from ..domain.gate import FieldMatcher
-from ..domain.newsletter import ItemView, SectionView, apply_caps, authors_short, format_long_date, format_pub, is_stale, score, tidy_title
+from ..domain.newsletter import ItemView, SectionView, apply_caps, authors_short, format_long_date, format_pub, is_stale, score, summarise, tidy_title
+from ..domain.print_edition import PrintRequest, PrintText, band_for, build_chips, choose_qr, citation_authors, year_of
 from ..domain.selection import SOURCES, Selection
 from ..domain.summary import SummaryRequest, SummaryResult
 from ..infrastructure.db import models as m
 from ..infrastructure.db.repository import Repository
 from ..infrastructure.db.session import session_scope
 from ..ports import NewsletterRenderer, RecordEnricher
+from .print_texts import PrintTextService
 from .summaries import SummaryService, final_summary
 
 log = logging.getLogger(__name__)
@@ -62,8 +64,11 @@ def cutoff_for(week_end: date, now: datetime) -> datetime:
 
 class NewsletterService:
     def __init__(self, factory: sessionmaker[Session], renderer: NewsletterRenderer, enrichers: dict[str, RecordEnricher] | None = None,
-                 summaries: SummaryService | None = None, *, now=lambda: datetime.now(timezone.utc)):
+                 summaries: SummaryService | None = None, print_texts: PrintTextService | None = None, *, now=lambda: datetime.now(timezone.utc)):
         self.factory, self.renderer, self.enrichers, self.summaries, self.now = factory, renderer, enrichers or {}, summaries, now
+        self.print_texts = print_texts
+        self._print_results: dict[int, PrintText] = {}     # printed texts written in the model pre-pass, by paper id
+        self._synthesis: dict | None = None                # the cover theme and closing notes, when the model wrote them
         self._last_stale = 0
         self._last_deselected = 0
         self._selection = Selection()
@@ -75,6 +80,7 @@ class NewsletterService:
         cutoff = cutoff_for(week_end, self.now())
         key = f"{profile.id}-{week_end.isoformat()}"
         notes: list[str] = []
+        self._print_results, self._synthesis = {}, None
         summaries, report = self._model_summaries(profile, field_cfg, key, cutoff, rebuild) if use_llm and cfg.use_llm else ({}, None)
         with session_scope(self.factory) as s:
             repo = Repository(s)
@@ -142,6 +148,7 @@ class NewsletterService:
             items = kept_items
             issue = m.Issue(profile_id=profile.id, issue_key=key, window_start=start, window_end=cutoff, subject=subject, html=rendered.html, text=rendered.text,
                             stats={"html_bytes": size, "counts": counts, "summaries": {"llm": sum(i.summary_source == "llm" for i in items), "extractive": sum(i.summary_source != "llm" for i in items)}, "candidates": len(cands), "retraction_alerts": len(alerts), "held_back": held_by, "left_out_as_stale": self._last_stale, "left_out_by_selection": self._last_deselected, "carried_over": sum(1 for i in kept_items if i.carried_over), "selection": sel.summary(), "notes": notes, "empty": not any(counts.values())})
+            issue.stats["print"] = {"synthesis": self._synthesis, "bands": cfg.print_edition.bands.model_dump(), "enabled": cfg.print_edition.enabled}
             s.add(issue)
             s.flush()
             pos = 0
@@ -152,7 +159,8 @@ class NewsletterService:
                         s.add(m.IssueItem(issue_id=issue.id, profile_id=profile.id, paper_id=it.paper_id, role="retraction" if sec.key == "retractions" else "digest",
                                           section=sec.key, position=pos, snapshot={"title": it.title, "journal": it.journal, "doi": it.doi, "track": it.track, "group": it.group,
                                                                                     "fulltext": it.fulltext_status, "summary": it.summary, "summary_source": it.summary_source, "score": it.score,
-                                                                                    "previously_sent_in": it.previously_sent_in, "first_seen": it.first_seen, "carried_over": it.carried_over}))
+                                                                                    "previously_sent_in": it.previously_sent_in, "first_seen": it.first_seen, "carried_over": it.carried_over,
+                                                                                    "print": self._print_payload(it, cfg)}))
             s.flush()
             return IssueResult(issue.id, key, issue.status, True, subject, counts, start, cutoff, notes)
 
@@ -206,7 +214,18 @@ class NewsletterService:
             keep = {i.paper_id for i in kept}
             papers = {p.id: p for p in s.scalars(select(m.Paper).where(m.Paper.id.in_(keep or {0})))}
             reqs = [SummaryRequest(pid, papers[pid].title or "", papers[pid].abstract or "") for pid in sorted(keep)]
-        return self.summaries.ensure(reqs)
+            pe, by_id = cfg.print_edition, {i.paper_id: i for i in kept}
+            titles = {pid: papers[pid].title or "" for pid in keep}
+            preqs = [PrintRequest(pid, titles[pid], papers[pid].abstract or "",
+                                  "high" if by_id[pid].section != "retractions" and band_for(by_id[pid].score, pe.bands.high_min, pe.bands.medium_min) == "high" else "other")
+                     for pid in sorted(keep, key=lambda p: -by_id[p].score)]
+        result = self.summaries.ensure(reqs)
+        if self.print_texts is not None and pe.enabled:       # the printed edition's texts, written and cached the same way (see application/print_texts.py)
+            self._print_results = self.print_texts.ensure(preqs)
+            highs = [{"title": titles[r.paper_id], "in_brief": t.in_brief, "key_findings": t.key_findings}
+                     for r in preqs if r.tier == "high" and (t := self._print_results.get(r.paper_id)) is not None and t.source == "llm"]
+            self._synthesis = self.print_texts.synthesise(highs) if highs else None
+        return result
 
     def _view(self, p: m.Paper, mt: m.ProfileMatch, profile: ProfileConfig, field_cfg: FieldConfig, ft: m.PaperFulltext | None,
               notice, cfg, model_summary: SummaryResult | None = None, retraction: bool = False, selection: Selection | None = None, carried_before: datetime | None = None,
@@ -283,6 +302,11 @@ class NewsletterService:
         has_abstract = bool((p.abstract or "").strip())
         if grouped and not has_abstract:
             group = cfg.no_abstract_heading          # gathered at the end of the section, under their own heading
+        qr = choose_qr(doi=p.doi, pdf_url=pdf.url if pdf else None, pmc_url=(f"https://pmc.ncbi.nlm.nih.gov/articles/{p.pmcid}/" if p.pmcid else None), page_url=p.url, pmid=p.pmid)
+        print_facts = {"authors": citation_authors(p.authors or []), "year": year_of(p.published_label), "pmid": p.pmid, "pmcid": p.pmcid,
+                       "qr": ({"url": qr.url, "caption": qr.caption, "note": qr.note, "kind": qr.kind} if qr else None),
+                       "tags": [b for b in badges if b == "RETRACTED" or b.startswith("Preprint")],
+                       "fallback_brief": summarise(p.abstract or "", max_sentences=3, max_chars=600) if has_abstract else "", "printable_text": printable_text}
         return ItemView(
             paper_id=p.id, title=tidy_title(p.title) or "(untitled)", journal=journal_name, published=format_pub(p.published_label), authors=authors_short(p.authors or []),
             url=primary, doi=p.doi, summary=summary.text or "No abstract available.", summary_source=summary.source,
@@ -292,7 +316,22 @@ class NewsletterService:
             journal_tier=mon_journal.tier if mon_journal else "", researchers=mon_researchers,
             previously_sent_in=earlier, fulltext_status=(ft.status if ft else "unknown"), carried_over=late, has_abstract=has_abstract, first_seen=(p.first_seen_at.date().isoformat() if p.first_seen_at else ""),
             date_label="Registered" if p.kind == "trial" else "Published",
-            score=score(title_match=bool(self._gate(field_cfg).gate_matches(p.title or "")), watched_journal=watched_j, watched_researcher=watched_r, specific_subjects=len(specific), has_abstract=bool(p.abstract), printable_full_text=printable_text, core_journal=core, weights=cfg.ranking.weights, carried_over=late, carryover_penalty=cfg.carryover_penalty))
+            score=score(title_match=bool(self._gate(field_cfg).gate_matches(p.title or "")), watched_journal=watched_j, watched_researcher=watched_r, specific_subjects=len(specific), has_abstract=bool(p.abstract), printable_full_text=printable_text, core_journal=core, weights=cfg.ranking.weights, carried_over=late, carryover_penalty=cfg.carryover_penalty),
+            subjects=[s["name"] for s in specific], print_facts=print_facts)
+
+    def _print_payload(self, it: ItemView, cfg) -> dict:
+        """Everything the PDF needs about one paper, stored with the edition item so a published edition can be printed again exactly as built.
+        The band comes from the score now and is frozen; the score itself is not stored here (it is in the snapshot already) and never printed."""
+        pe, f = cfg.print_edition, it.print_facts
+        text = self._print_results.get(it.paper_id)
+        if text is None and it.has_abstract and f.get("fallback_brief"):
+            text = PrintText(in_brief=f["fallback_brief"], source="extractive")      # no model (or it failed the checks): an excerpt of the abstract
+        chips = build_chips(journal=it.journal_name or None, researchers=it.researchers, source=(it.sources[0] if it.sources else None), topics=it.subjects)
+        return {"band": "retraction" if it.section == "retractions" else band_for(it.score, pe.bands.high_min, pe.bands.medium_min), "section": it.section, "kind": it.kind,
+                "authors": f.get("authors", ""), "year": f.get("year", ""), "published": it.published, "date_label": it.date_label, "pmid": f.get("pmid"), "pmcid": f.get("pmcid"),
+                "doi": it.doi, "journal": it.journal, "qr": f.get("qr"), "chips": [{"kind": c.kind, "label": c.label} for c in chips], "tags": f.get("tags", []),
+                "sources": it.sources, "subjects": it.subjects, "group": it.group, "has_abstract": it.has_abstract, "printable_text": f.get("printable_text", False),
+                "text": text.to_dict() if text else None, "notice_url": it.notice_url, "previously_sent_in": it.previously_sent_in}
 
     def _sections(self, items: list[ItemView], profile: ProfileConfig, field_cfg: FieldConfig, cfg) -> list[SectionView]:
         subject_order = {s.name: i for i, s in enumerate(field_cfg.subjects)}

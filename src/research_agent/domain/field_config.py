@@ -186,8 +186,39 @@ class AppLinkConfig(BaseModel):
         return self
 
 
+class PrintBands(BaseModel):
+    """Priority bands for the printed edition, from the ranking score. A loose guide until the client gives strict criteria; the score is never printed."""
+    high_min: int = 8      # this score or more: High, a full card on a page of its own
+    medium_min: int = 5    # this score up to High: Medium, a compact card; below it: Listed, a row
+
+    @model_validator(mode="after")
+    def _ordered(self) -> "PrintBands":
+        if not 0 <= self.medium_min < self.high_min:
+            raise ValueError("print_edition.bands: need 0 <= medium_min < high_min")
+        return self
+
+
+class PrintConfig(BaseModel):
+    """The printed (PDF) edition: the same papers as the weekly edition, laid out for paper. Set `enabled: false` for no PDF."""
+    enabled: bool = True
+    title: str | None = None            # the cover title; the newsletter title when left out
+    recipient: str | None = None        # who it is for, as named in the reading guide ("what Curt monitors"); the profile name when left out
+    label: str = "Weekly research edition"   # the small capitals line above the title
+    running_header: str | None = None   # small text at the top of every page; the title when left out
+    credit: str | None = None           # the line printed on the last page only; newsletter.footer when left out
+    bands: PrintBands = PrintBands()
+    max_chips: int = 6                  # chips under a title; more are shortened to '+N more'
+
+    @field_validator("max_chips")
+    @classmethod
+    def _chips(cls, v):
+        if v < 3:
+            raise ValueError("max_chips must be at least 3")
+        return v
+
+
 class NewsletterConfig(BaseModel):
-    """Digital edition settings. Print-edition settings are deliberately absent: the print template has not been supplied yet."""
+    """Digital edition settings; `print_edition` holds the settings of the PDF made from the same edition."""
     title: str = "Research digest"
     subtitle: str = ""
     header_label: str = "Research briefing"   # the small capitals line above the title in the header band
@@ -206,6 +237,7 @@ class NewsletterConfig(BaseModel):
     closing: str = "That is everything for this week. Have a good weekend."
     signature: SignatureConfig | None = None
     app_link: AppLinkConfig | None = None   # the web application link box under At a glance (HTML and text)
+    print_edition: PrintConfig = PrintConfig()
     footer: str = ""                  # a line at the very end of the edition, e.g. who prepared it
     lookback_days: int = 7            # normal window length: papers first stored in the last 7 days
     max_catchup_days: int = 14        # how far back a later edition looks: this week plus one more, so a paper held back once may return in the next edition and then drops out
